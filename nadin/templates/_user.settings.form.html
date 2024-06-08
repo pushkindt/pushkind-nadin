@@ -1,0 +1,121 @@
+<form method="POST" action="{{ url_for('main.ShowSettings') }}">
+	<div {% if current_user.role.name=="admin" %}class="modal-body" {% endif %}>
+		{{ user_form.csrf_token(id=False) }}
+		{{ user_form.user_id or '' }}
+		<div class="row mb-3">
+			{{ user_form.about_user.full_name.label(class_='col-md-2 col-form-label') }}
+			<div class="col-md-10">
+				{{ user_form.about_user.full_name(class_='form-control', value=current_user.name or '') }}
+			</div>
+		</div>
+		<div class="row mb-3">
+			{{ user_form.about_user.phone.label(class_='col-md-2 col-form-label') }}
+			<div class="col-md-10">
+				{{ user_form.about_user.phone(class_='form-control', value=current_user.phone or '') }}
+			</div>
+		</div>
+		<div class="row mb-3">
+			{{ user_form.about_user.position.label(class_='col-md-2 col-form-label') }}
+			<div class="col-md-10">
+				{{ user_form.about_user.position(class_='form-control', value=current_user.position.name or '') }}
+			</div>
+		</div>
+		<div class="row mb-3">
+			{{ user_form.about_user.location.label(class_='col-md-2 col-form-label') }}
+			<div class="col-md-10">
+				{{ user_form.about_user.location(class_='form-control', value=current_user.location or '') }}
+			</div>
+		</div>
+		{% if current_user.role.name == 'admin' %}
+		<div class="row mb-3">
+			{{ user_form.note.label(class_='col-md-2 col-form-label') }}
+			<div class="col-md-10">
+				{{ user_form.note(class_='form-control') }}
+			</div>
+		</div>
+		<div class="row mb-3">
+			{{ user_form.birthday.label(class_='col-md-2 col-form-label') }}
+			<div class="col-md-10">
+				{{ user_form.birthday(class_='form-control') }}
+			</div>
+		</div>
+		<div class="row mb-3">
+			{{ user_form.dashboard_url.label(class_='col-md-2 col-form-label') }}
+			<div class="col-md-10">
+				{{ user_form.dashboard_url(class_='form-control') }}
+			</div>
+		</div>
+		<div class="row mb-3">
+			{{ user_form.role.label(class_='col-md-2 col-form-label') }}
+			<div class="col-md-10">
+				{{ user_form.role(class_='form-select') }}
+			</div>
+		</div>
+		<p class="text-muted">
+			<small>После смены роли необходимо сохранить, прежде чем настраивать проекты и категории.</small>
+		</p>
+		{% endif %}
+		<div class="row mb-3">
+			<div class="col-md-2">Оповещения</div>
+			<div class="col-md-10">
+				<div class="form-check form-check-inline">
+					{{ user_form.about_user.email_new(class_='form-check-input', checked=current_user.email_new) }}
+					{{ user_form.about_user.email_new.label(class_='form-check-label') }}
+				</div>
+				<div class="form-check form-check-inline">
+					{{ user_form.about_user.email_modified(class_='form-check-input',
+					checked=current_user.email_modified) }}
+					{{ user_form.about_user.email_modified.label(class_='form-check-label') }}
+				</div>
+				<div class="form-check form-check-inline">
+					{{ user_form.about_user.email_disapproved(class_='form-check-input',
+					checked=current_user.email_disapproved) }}
+					{{ user_form.about_user.email_disapproved.label(class_='form-check-label') }}
+				</div>
+				<div class="form-check form-check-inline">
+					{{ user_form.about_user.email_approved(class_='form-check-input',
+					checked=current_user.email_approved) }}
+					{{ user_form.about_user.email_approved.label(class_='form-check-label') }}
+				</div>
+				<div class="form-check form-check-inline">
+					{{ user_form.about_user.email_comment(class_='form-check-input', checked=current_user.email_comment)
+					}}
+					{{ user_form.about_user.email_comment.label(class_='form-check-label') }}
+				</div>
+			</div>
+		</div>
+		{% if current_user.role.name in ['validator', 'purchaser', 'admin'] %}
+		<div class="row mb-3" id="userDataWrapper">
+			<div class="col-12 fw-bold">Подписка</div>
+			<div class="col-md">
+				{{ user_form.about_user.projects.label(class_='form-label projectsDropDown') }}
+				<a class="projectsDropDown" href="#">добавить из списка</a>
+				{{ user_form.about_user.projects(class_='form-control', style="width:100%") }}
+				<a id="selectAllProjects" href="#">выделить все</a>
+				<a id="selectNoneProjects" href="#" class="text-danger">удалить все</a>
+			</div>
+			<div class="col-md">
+				{{ user_form.about_user.categories.label(class_='form-label categoriesDropDown') }}
+				<a class="categoriesDropDown" href="#">добавить из списка</a>
+				{{ user_form.about_user.categories(class_='form-control', style="width:100%") }}
+				<a id="selectAllCategories" href="#">выделить все</a>
+				<a id="selectNoneCategories" href="#" class="text-danger">удалить все</a>
+			</div>
+		</div>
+		{% endif %}
+	</div>
+	{% if current_user.role.name == 'admin' %}
+	<div class="modal-footer">
+		{{ user_form.submit(class_='btn btn-primary text-white') }}
+		<a href="" id="removeUserButton" class="btn btn-danger text-white"
+			onclick="return confirm('Удалить пользователя?')">Удалить</a>
+		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+	</div>
+	{% else %}
+	<div class="row mb-3">
+		<div class="col">
+			{{ user_form.submit(class_='btn btn-primary text-white') }}
+		</div>
+	</div>
+	{% endif %}
+</form>

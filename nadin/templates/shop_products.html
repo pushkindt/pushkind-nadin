@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+
+{% block styles%}
+    <style>
+        @keyframes addedToCart {
+            from {background-color: #089feb;}
+            to {background-color: #157347;}
+        }
+        .addedToCart {
+            animation-name: addedToCart;
+            animation-duration: 2s;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container my-2">
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <input class="form-control" id="productFilter" type="text" placeholder="Фильтр...">
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {% set glob={} %}
+            {% for vendor in vendors %}
+                {% if vendor_id == vendor.id %}
+                    {% set _ = glob.update({'vendor_name':vendor.name}) %}
+                    <a href="{{ url_for('main.shop_products', vendor_id=vendor.id, cat_id=category.id) }}"
+                        class="text-decoration-none badge bg-primary">
+                        {{ vendor.name }}
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('main.shop_products', vendor_id=vendor.id, cat_id=category.id) }}"
+                        class="text-decoration-none badge bg-white fw-normal text-secondary border">
+                        {{ vendor.name }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+            <a href="{{ url_for('main.shop_products', cat_id=category.id) }}"
+                class="text-decoration-none badge {% if vendor_id is none %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}">
+                все
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<div class="container">
+
+    <div class="row">
+        <div class="col overflow-hidden">
+            <strong>НОВАЯ ЗАЯВКА</strong>
+        </div>
+        <div class="col-auto text-end overflow-hidden">
+            <a class="text-muted" href="{{url_for('main.shop_cart')}}">
+                <i class="bi bi-cart fs-4"></i>
+                <br>
+                <small class="text-muted" id="inCartItems"></small>
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <strong>Проект:</strong>
+            <a href="{{url_for('main.shop_categories')}}"
+                id="projectName"
+                class="siteProjectSelect">
+                Не указан
+            </a><br>
+            <strong>Объект:</strong>
+            <a href="{{url_for('main.shop_categories')}}"
+                id="siteName"
+                class="siteProjectSelect">
+                Не указан
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <strong>Инициатор:</strong>
+            {% set user = current_user %}
+            {% include '_user.popover.html' %}
+            {{ user.name or user.email }}
+        </div>
+    </div>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{url_for('main.shop_categories')}}">Категории</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{url_for('main.shop_products', cat_id=category.id)}}">
+                    {{category.name}}
+                </a>
+            </li>
+            {% if 'vendor_name' in glob %}
+                <li class="breadcrumb-item active" aria-current="page">{{glob['vendor_name']}}</li>
+            {% endif %}
+        </ol>
+    </nav>
+
+    <div id="productList">
+        {% for product in products %}
+            <div id="product{{product.id}}"
+                class="row bg-white my-1 rounded selectable"
+                data-id="{{product.id}}">
+                <div class="col-auto">
+                    <img src="{{product.image or config['PLACEHOLDER_IMAGE']}}"
+                        height="64"
+                        width="64">
+                </div>
+                <div class="col col-sm-6 overflow-hidden">
+                    <h5>{{product.name}}</h5>
+                    <small>Артикул: {{product.sku}}</small>
+                </div>
+                <div class="col-sm overflow-hidden pt-sm-4">{{ product.vendor.name }}</div>
+                <div class="col overflow-hidden pt-sm-4 pt-2">
+                    <strong>{{ '{:,.2f}'.format(product.price) }}</strong>
+                    ₽/{{ product.measurement }}
+                </div>
+                <div class="col overflow-hidden pt-sm-3 mb-1">
+                    <div class="input-group mb-3 has-validation">
+                        <input readonly type="number" class="form-control" aria-label="Количество">
+                        <span class="input-group-text d-none"><i class="bi bi-plus"></i></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade"
+                id="descriptionModal{{product.id}}"
+                tabindex="-1"
+                data-id="{{product.id}}"
+                data-name="{{product.name}}"
+                data-sku="{{product.sku}}"
+                data-price="{{product.price}}"
+                data-vendor="{{product.vendor.name}}"
+                data-image="{{product.image or ''}}"
+                data-measurement="{{product.measurement}}"
+                aria-labelledby="descriptionModalLabel{{product.id}}"
+                aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"
+                                id="descriptionModalLabel{{product.id}}">
+                                {{product.name}}
+                            </h5>
+                            <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close">
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-sm">
+                                        <div id="carouselControls{{product.id}}"
+                                            class="carousel carousel-dark slide"
+                                            data-bs-ride="carousel">
+                                            <div class="carousel-inner">
+                                                <div class="carousel-item active">
+                                                    <img src="{{product.image or config['PLACEHOLDER_IMAGE']}}"
+                                                        class="d-block w-100"
+                                                        alt="Main image">
+                                                </div>
+                                                <div class="carousel-item">
+                                                    <img src="{{product.image or config['PLACEHOLDER_IMAGE']}}"
+                                                        class="d-block w-100"
+                                                        alt="Media image">
+                                                </div>
+                                            </div>
+                                            <button class="carousel-control-prev"
+                                                type="button"
+                                                data-bs-target="#carouselControls{{product.id}}"
+                                                data-bs-slide="prev">
+                                                <span class="carousel-control-prev-icon"
+                                                    aria-hidden="true">
+                                                </span>
+                                                <span class="visually-hidden">Previous</span>
+                                            </button>
+                                            <button class="carousel-control-next"
+                                                type="button"
+                                                data-bs-target="#carouselControls{{product.id}}"
+                                                data-bs-slide="next">
+                                                <span class="carousel-control-next-icon"
+                                                    aria-hidden="true">
+                                                </span>
+                                                <span class="visually-hidden">Next</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm">
+                                        <div class="row my-1 py-1 mb-3 d-none border rounded bg-yellow">
+                                            <div class="col">
+                                                <div class="mb-1">
+                                                    <label
+                                                        for="descriptionModalProductClones{{product.id}}"
+                                                        class="form-label">
+                                                        Выберите ранее сохраненный вариант для просмотра/изменения или добавьте новый
+                                                    </label>
+                                                    <select class="form-select selectClones"
+                                                        id="descriptionModalProductClones{{product.id}}">
+                                                    </select>
+                                                </div>
+                                                <div class="text-center">
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <h6 class="text-center">
+                                            Редактирование варианта
+                                        </h6>
+                                        <div class="row">
+                                            <div class="col">
+                                                <textarea class="form-control productText"
+                                                    rows="3"
+                                                    placeholder="Комментарий"
+                                                    id="descriptionModalProductText{{product.id}}">
+                                                </textarea>
+                                            </div>
+                                        </div>
+                                        {% if product.options %}
+                                            {% for rows in product.options|batch(3) %}
+                                                <div class="row">
+                                                    {% for option in rows %}
+                                                        <div class="col-md-4 my-1">
+                                                            <select class="form-select productOption"
+                                                                name="{{option}}">
+                                                                <option selected disabled value="0">
+                                                                    {{ option }}
+                                                                </option>
+                                                                {% for value in product.options[option]%}
+                                                                    <option value="{{value}}">
+                                                                        {{value}}
+                                                                    </option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                        <div class="row my-1">
+                                            <div class="col">
+                                                <div class="input-group">
+                                                    <span class="input-group-text">Количество</span>
+                                                    <input type="number"
+                                                        class="form-control productQuantity"
+                                                        min="0"
+                                                        step="1"
+                                                        aria-label="Количество"
+                                                        value="">
+                                                    <span class="input-group-text">
+                                                        {{product.measurement}}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row justify-content-center my-1">
+                                            <div class="col-auto">
+                                                <button type="button"
+                                                    class="btn btn-primary addToCart text-white"
+                                                    {% if not product.options %}data-bs-dismiss="modal"{% endif %}>
+                                                    Сохранить
+                                                </button>
+                                                <button type="button"
+                                                    class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">
+                                                    Закрыть
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <strong>Описание:</strong>
+                                    <pre>{{product.description or ''}}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <nav aria-label="Products pagination">
+        <ul class="pagination justify-content-center flex-wrap" id="productPagination">
+        </ul>
+    </nav>
+
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/sugar.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/shoppingCart.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pagination.js') }}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const productFilter = document.querySelector("#productFilter");
+        const productList = document.querySelector("#productList");
+
+        InstantiatePagination("productList", "selectable", "productPagination", 10, 'productFilter');
+
+        PopulateProductQuantities();
+        SetInCartText();
+        CheckProjectAndSite(() => {
+            window.location = "{{ url_for('main.shop_categories') }}";
+        });
+
+        productFilter.addEventListener("keyup", () => {
+            const filterValue = productFilter.value.toLowerCase();
+            const productRows = productList.querySelectorAll(".selectable");
+            if (filterValue.length > 0){
+                productRows.forEach(row => {
+                    const rowText = row.textContent.toLowerCase();
+                    const showRow = rowText.indexOf(filterValue) > -1;
+                    if (showRow)
+                        row.classList.remove("d-none")
+                    else
+                        row.classList.add("d-none");
+                });
+            } else {
+                const page = document.querySelector("#productPagination li.active");
+                page.click();
+            }
+        });
+
+        const addToCartButtons = document.querySelectorAll(".addToCart");
+        addToCartButtons.forEach(button => {
+            button.addEventListener("click", event => {
+                button.classList.add("addedToCart");
+                HandleAddToCart(event);
+            });
+            button.addEventListener("animationend", event => {
+                button.classList.remove("addedToCart");
+            });
+        });
+
+        const selectClones = document.querySelectorAll(".selectClones");
+        selectClones.forEach(select => {
+            select.addEventListener("change", HandleProductModalChangeClone);
+        });
+
+        const selectableElements = document.querySelectorAll(".selectable");
+        selectableElements.forEach(selectable => {
+            selectable.addEventListener("click", ShowProductModal);
+        });
+
+        const modals = document.querySelectorAll(".modal");
+        modals.forEach(modal => {
+            modal.addEventListener("shown.bs.modal", event => {
+                let quantityInput = modal.querySelector(".productQuantity");
+                quantityInput.focus();
+            });
+        });
+    });
+</script>
+{%endblock %}

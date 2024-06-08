@@ -1,0 +1,7 @@
+<b>Роль</b>: {{current_user.role}}<br>
+<a href='{{url_for("main.ShowSettings")}}'>профиль</a><br>
+{% if current_user.role.name in ['admin'] %}
+<a href='{{url_for("admin.ShowAdminPage")}}'>настройки</a><br>
+{% endif %}
+<a href='{{ url_for("main.ShowHelp") }}'>справка</a><br>
+<a href='{{url_for("auth.logout")}}'>выйти</a>

@@ -1,0 +1,92 @@
+{% if 'selectedOptions' not in product %}
+{% set _ = glob.update({'no_measurements':True}) %}
+{% endif %}
+<div class="row my-1 py-1 bg-white rounded selectable {% if product['id'] in order.user_approvals|map(attribute='product_id')|list %}border border-danger{%endif%}"
+    data-id="{{ product.id }}">
+    <div class="col-auto">
+        <img src="{{ product['imageUrl'] or config['PLACEHOLDER_IMAGE'] }}" height="96" width="96" alt="thumbnail">
+    </div>
+    <div class="col overflow-hidden">
+        <h5>{{ product['name'] }}</h5>
+        <div class="row">
+            <div class="col small">
+                Артикул: {{ product['sku'] }}
+            </div>
+        </div>
+        {% if 'selectedOptions' in product %}
+        <div class="row">
+            <div class="col small">
+                {% for option in product['selectedOptions'][1:] %}
+                {{ option['name'] }}:&nbsp;<strong>{{ option['value'] }}</strong>{% if not loop.last %},{%endif%}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="col-sm-2 overflow-hidden pt-sm-4">
+        {{ product['vendor'] }}
+    </div>
+    <div class="col-sm-2 overflow-hidden pt-sm-4">
+        <strong>{{ '{:,.2f}'.format(product['price']) }}</strong> ₽
+    </div>
+    <div class="col-sm-1 overflow-hidden pt-sm-4">
+        <strong>{{product['selectedOptions'][0]['value'] if 'selectedOptions' in product else ''}}</strong>
+    </div>
+    <div class="col-sm-2 overflow-hidden pt-sm-3 text-end">
+        {% if current_user.role.name == 'admin' or current_user.id == order.initiative_id %}
+        <form class="changeQuantityForm" action="{{ url_for('main.SaveQuantity', order_id=order.id) }}" method="POST">
+            {{ quantity_form.csrf_token(id=False) }}
+            {{ quantity_form.product_id(class_='d-none', hidden='', value=product['id'], id=False) }}
+            <input name="product_quantity" type="number" class="form-control" min="0" step="1" aria-label="Количество"
+                value="{{product['quantity']}}">
+        </form>
+        {% else %}
+        <input readonly type="number" class="form-control" aria-label="Количество" value="{{product['quantity']}}">
+        {% endif %}
+        {% if product['id'] in order.user_approvals|map(attribute='product_id')|list %}
+        <a class="showRemarks text-danger fs-4" href="#" data-bs-toggle="modal" data-bs-target="#remarksModal"
+            data-id="{{ product.id }}"><i class="bi bi-chat-left"></i></a>
+        <br>
+        {% endif %}
+        {% if current_user.role.name in ['validator'] %}
+        <a href="#" class="approveButton text-decoration-none" data-id="{{ product['id'] }}" data-target="product">
+            +замечание
+        </a>
+        {% endif %}
+    </div>
+</div>
+<div class="modal fade" id="descriptionModal{{product.id}}" tabindex="-1"
+    aria-labelledby="#descriptionModalLabel{{product.id}}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="descriptionModalLabel{{product.id}}">{{product.name}}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="carouselControls{{product.id}}" class="carousel carousel-dark slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <img src="{{ product['imageUrl'] or config['PLACEHOLDER_IMAGE'] }}" class="d-block w-100"
+                                alt="Main image">
+                        </div>
+                        <div class="carousel-item">
+                            <img src="{{ product['imageUrl'] or config['PLACEHOLDER_IMAGE'] }}" class="d-block w-100"
+                                alt="Media image">
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselControls{{product.id}}"
+                        data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselControls{{product.id}}"
+                        data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

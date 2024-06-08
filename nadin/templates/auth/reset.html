@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+	<div class="row justify-content-center">
+		<div class="col-md-8">
+			<div class="card">
+				<div class="card-header text-muted fw-bold">
+					Сброс пароля
+				</div>
+				<div class="card-body">
+					<form method="POST">
+						{{ form.csrf_token(id=False) }}
+						<div class="row mb-3">
+							{{ form.password.label (class_ = "col-md-4 col-form-label text-md-right") }}
+							<div class="col-md-6">
+								{{ form.password(class_ = 'form-control') }}
+							</div>
+						</div>
+						<div class="row mb-3">
+							{{ form.password2.label (class_ = "col-md-4 col-form-label text-md-right") }}
+							<div class="col-md-6">
+								{{ form.password2(class_ = 'form-control') }}
+							</div>
+						</div>
+						<div class="row mb-3">
+							<div class="col-md-6 offset-md-4">
+								{{ form.submit(class_ = 'btn btn-primary text-white') }}
+							</div>
+						</div>
+					</form>
+				</div>
+				<div class="card-footer">
+					<a href="{{ url_for('auth.login') }}">Вернуться</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+{% endblock %}

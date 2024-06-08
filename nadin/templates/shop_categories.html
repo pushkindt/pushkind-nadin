@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block styles%}
+<style>
+    .card:hover {
+        box-shadow: 0 0 0 0.2rem #bce3f6;
+        border-color: #bce3f6;
+        transition: all .55s ease-in-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container my-2">
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <input class="form-control" id="categoryFilter" type="text" placeholder="Фильтр...">
+        </div>
+    </div>
+
+</div>
+
+<div class="container">
+
+    <div class="row">
+        <div class="col overflow-hidden">
+            <strong>НОВАЯ ЗАЯВКА</strong>
+        </div>
+        <div class="col-auto text-end overflow-hidden">
+            <a class="text-muted" href="{{url_for('main.shop_cart')}}">
+                <i class="bi bi-cart fs-4"></i>
+                <br>
+                <small class="text-muted" id="inCartItems"></small>
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <strong>Проект:</strong>
+            <a href="#"
+                id="projectName"
+                class="siteProjectSelect">
+                Не указан
+            </a><br>
+            <strong>Объект:</strong>
+            <a href="#"
+                id="siteName"
+                class="siteProjectSelect">
+                Не указан
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <strong>Инициатор:</strong>
+            {% set user = current_user %}
+            {% include '_user.popover.html' %}
+            {{ user.name or user.email }}
+        </div>
+    </div>
+
+    <div id="categoryList">
+        {% for rows in categories|batch(5) %}
+            <div class="row my-4">
+                {% for category in rows %}
+                    <div class="col-sm m-1">
+                        <div class="card text-center selectable" data-id="{{category.id}}">
+                            <div class="card-body">
+                                <img src="{{category.image or config['PLACEHOLDER_IMAGE']}}"
+                                    height="128"
+                                    width="128"
+                                    alt="thumbnail">
+                            </div>
+                            <div class="card-footer bg-white border-top-0">
+                                {{category.name}}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                {% for i in range(5 - rows|length) %}
+                    <div class="col-sm m-1">
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+
+<div class="modal fade"
+    id="siteProjectModal"
+    tabindex="-1"
+    aria-labelledby="siteProjectModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="siteProjectModalLabel">Проект и объект</h5>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm my-1">
+                        <select class="form-select border-danger" id="projectSelect">
+                            <option value="" disabled selected>Выберите проект...</option>
+                            {% for project in projects %}
+                                <option value="{{ project.id }}">{{ project.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm my-1">
+                        <select class="form-select border-danger" id="siteSelect">
+                            <option value="" disabled selected>Выберите объект...</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-auto my-1">
+                        <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal"
+                            disabled
+                            id="siteProjectDismiss">
+                            Продолжить
+                        </button>
+                    </div>
+                </div>
+                <div class="alert alert-warning my-1 d-none" role="alert" id="limitAlert">
+                    Внимание! Для выбранного проекта сумма ранее полученных заявок
+                    по некоторым статьям бюджета превысила 95% от лимита.
+                    Вы можете продолжить создание заявки, но учтите риск её
+                    отклонения на этапе согласования. Возможно необходимо инициировать
+                    увеличение бюджета.
+                </div>
+                <div class="d-none" id="limits">
+                    <div class="row d-none d-sm-flex fw-bold">
+                        <div class="col">
+                            <div class="row">
+                                <div class="col overflow-hidden">
+                                    Проект
+                                </div>
+                                <div class="col overflow-hidden">
+                                    БДДС
+                                </div>
+                                <div class="col overflow-hidden">
+                                    Интервал
+                                </div>
+                                <div class="col overflow-hidden">
+                                    Лимит
+                                </div>
+                                <div class="col overflow-hidden">
+                                    Сумма
+                                </div>
+                                <div class="col overflow-hidden">
+                                    Остаток
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% for limit in limits %}
+                        {% include '_limit.html' %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/sugar.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/shoppingCart.js') }}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        SetInCartText();
+
+        let siteProjectModal = new bootstrap.Modal(document.getElementById('siteProjectModal'), { 'backdrop': 'static' });
+
+        const projects = [{% for project in projects %}{{ project | safe }}, {% endfor %}];
+
+        CheckProjectAndSite(() => {
+            siteProjectModal.show();
+        });
+
+        const projectSelect = document.getElementById("projectSelect");
+        const projectName = document.getElementById("projectName");
+        const siteName = document.getElementById("siteName");
+        const siteProjectSelect = document.getElementById("siteProjectSelect");
+        const siteSelect = document.getElementById("siteSelect");
+        const limits = document.getElementById("limits");
+        const limitAlert = document.getElementById("limitAlert");
+        const siteProjectDismiss = document.getElementById("siteProjectDismiss");
+
+        projectSelect.addEventListener("change", function () {
+            const id = Number(projectSelect.value);
+            const name = projectSelect.options[projectSelect.selectedIndex].text;
+            sessionStorage.setItem("project_id", id);
+            sessionStorage.setItem("project_name", name);
+            sessionStorage.removeItem('site_id');
+            sessionStorage.removeItem('site_name');
+            projectName.textContent = name;
+            siteName.textContent = "Не указан";
+            projectSelect.classList.remove("border-danger");
+            siteProjectDismiss.disabled = true;
+            siteProjectDismiss.classList.add("btn-secondary");
+            siteProjectDismiss.classList.remove("btn-primary");
+            siteSelect.innerHTML = "";
+            let defaultSite = document.createElement("option");
+            defaultSite.textContent = "Выберите объект...";
+            defaultSite.disabled = true;
+            defaultSite.selected = true;
+            siteSelect.appendChild(defaultSite);
+            let show_limit_alert = false;
+            const project = projects.find(obj => obj.id === id);
+            for (let j = 0; j < project.sites.length; j++) {
+                let siteOption = document.createElement("option");
+                siteOption.textContent = project.sites[j].name;
+                siteOption.value = project.sites[j].id;
+                siteSelect.appendChild(siteOption);
+            }
+            limits.classList.remove("d-none");
+            const limitElements = document.querySelectorAll(".limit");
+            limitElements.forEach((element) => {
+                let show = element.dataset.project == id;
+                element.style.display = show ? "block" : "none";
+                if (show)
+                    show_limit_alert |= element.dataset.overlimit;
+            });
+            if (show_limit_alert)
+                limitAlert.classList.remove("d-none");
+            else {
+                limitAlert.classList.add("d-none");
+                limits.classList.add("d-none");
+            }
+        });
+
+        siteSelect.addEventListener("change", function () {
+            const id = Number(siteSelect.value);
+            const name = siteSelect.options[siteSelect.selectedIndex].text;
+            sessionStorage.setItem("site_id", id);
+            sessionStorage.setItem("site_name", name);
+            siteName.textContent = name;
+            siteSelect.classList.remove("border-danger");
+            siteProjectDismiss.disabled = false;
+            siteProjectDismiss.classList.remove("btn-secondary");
+            siteProjectDismiss.classList.add("btn-primary");
+        });
+
+        const selectables = document.querySelectorAll(".selectable");
+
+        selectables.forEach(function (selectable) {
+            selectable.addEventListener("click", function (event) {
+                const categoryId = selectable.dataset.id;
+                const url = "{{ url_for('main.shop_products', cat_id=0) }}".replace("0", categoryId);
+                window.location.href = url;
+            });
+        });
+
+        const categoryFilter = document.getElementById("categoryFilter");
+        const categoryList = document.getElementById("categoryList");
+
+        categoryFilter.addEventListener("input", () => {
+            const value = categoryFilter.value.toLowerCase();
+            const cards = categoryList.querySelectorAll(".card");
+            cards.forEach(function (card) {
+                const cardText = card.textContent.toLowerCase();
+                const show = cardText.indexOf(value) > -1;
+                card.style.display = show ? "flex" : "none";
+            });
+        });
+    });
+
+</script>
+{%endblock %}

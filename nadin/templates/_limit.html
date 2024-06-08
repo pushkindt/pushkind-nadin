@@ -1,0 +1,44 @@
+{% set leftover = limit.value - limit.current %}
+{% set overlimit = limit.current > 0.95 * limit.value %}
+<div class="row border-bottom py-1 limit" data-id="{{ limit.id }}" data-project="{{ limit.project_id }}" {%if overlimit%} data-overlimit="true" {%endif%}>
+    <div class="col">
+        <div class="row">
+            <div class="col-sm overflow-hidden">
+                <span class="d-sm-none fw-bold">Проект:</span>
+                {{ limit.project.name }}
+            </div>
+            <div class="col-sm overflow-hidden">
+                <span class="d-sm-none fw-bold">Объект:</span>
+                {{ limit.cashflow_statement.name }}
+            </div>
+            <div class="col-sm overflow-hidden">
+                <span class="d-sm-none fw-bold">Интервал:</span>
+                {{ limit.interval }}
+            </div>
+            <div class="col-sm overflow-hidden">
+                <span class="d-sm-none fw-bold">Лимит:</span>
+                {{ '{:,.2f}'.format(limit.value) }}
+            </div>
+            <div class="col-sm overflow-hidden">
+                <span class="d-sm-none fw-bold">Сумма:</span>
+                {{ '{:,.2f}'.format(limit.current) }}
+            </div>
+            {% if overlimit %}
+                <div class="col-sm overflow-hidden text-danger">
+                    <span class="d-sm-none fw-bold">Остаток:</span>
+                    {{ '{:,.2f}'.format(leftover) }}
+                </div>
+            {% else %}
+                <div class="col-sm overflow-hidden">
+                    <span class="d-sm-none fw-bold">Остаток:</span>
+                    {{ '{:,.2f}'.format(leftover) }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% if show_remove_limit %}
+        <div class="col-auto">
+            <a href="{{ url_for('main.RemoveLimit', limit_id=limit.id) }}" class="btn btn-danger text-white" onclick="return confirm('Удалить лимит?')">Удалить</a>
+        </div>
+    {% endif %}
+</div>

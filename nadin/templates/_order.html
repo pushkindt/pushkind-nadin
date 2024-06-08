@@ -1,0 +1,110 @@
+{% if order.children | length > 1 %}
+	<div class="row text-muted border bg-white my-1 rounded order" data-id="{{ order.id }}" data-total="{{ order.total }}">
+		<div class="col-sm-1 overflow-hidden">
+			{{ order.number }}<br>
+			<small>разделена на</small><br>
+			{% for child in order.children %}
+				<a class="text-decoration-none" href="{{ url_for('main.ShowOrder', order_id=child.id) }}">
+					{{ child.number }}
+				</a><br>
+			{% endfor %}
+		</div>
+{% elif order.children | length == 1 %}
+	<div class="row text-muted border bg-white my-1 rounded order" data-id="{{ order.id }}" data-total="{{ order.total }}">
+		<div class="col-sm-1 overflow-hidden">
+			{{ order.number }}<br>
+			<small>объединена в</small><br>
+			<a class="text-decoration-none" href="{{ url_for('main.ShowOrder', order_id=order.children[0].id) }}">
+				{{ order.children[0].number }}
+			</a>
+		</div>
+{% elif order.status.name == 'cancelled' %}
+<div class="row text-muted border bg-white my-1 rounded order" data-id="{{ order.id }}" data-total="{{ order.total }}">
+	<div class="col-sm-1 overflow-hidden">
+		<span class="d-sm-none fw-bold">Заявка:</span>
+		<a class="text-decoration-none" href="{{ url_for('main.ShowOrder', order_id=order.id) }}">{{ order.number }}</a>
+		<br>
+		<span class="text-muted">
+			{{ moment(order.create_date).format() }}
+		</span>
+	</div>
+{% else %}
+	<div class="row selectable border bg-white my-1 rounded order" data-id="{{ order.id }}" data-total="{{ order.total }}">
+		<div class="col-sm-1 overflow-hidden">
+			<span class="d-sm-none fw-bold">Заявка:</span>
+			<a class="text-decoration-none" href="{{ url_for('main.ShowOrder', order_id=order.id) }}">{{ order.number }}</a>
+			<br>
+			<span class="text-muted">
+				{{ moment(order.create_date).format() }}
+			</span>
+		</div>
+{% endif %}
+	<div class="col-sm-2 overflow-hidden">
+		<span class="d-sm-none fw-bold">Категории:</span>
+		{% for cat in order.categories %}
+			{{ cat.code or '' }}<br>
+		{% endfor %}
+	</div>
+	<div class="col-sm-3 overflow-hidden">
+		<span class="d-sm-none fw-bold">Инициатор:</span>
+		<span class="fw-bold">
+			{{ order.site.name if order.site else 'объект не указан' }}
+		</span>
+		<br>
+		<small>{{ order.initiative.name }}</small>
+	</div>
+	<div class="col col-sm overflow-hidden">
+		<span class="d-sm-none fw-bold">Согласен:</span>
+		{% for appr in order.approvals %}
+			{% if appr.approved is sameas true %}
+				{{ appr.position.name }}<br>
+			{% endif %}
+		{% endfor %}
+	</div>
+	<div class="col col-sm overflow-hidden">
+		<span class="d-sm-none fw-bold">Не согласен:</span>
+		<span class="text-danger">
+			{% set positions = order.user_approvals|rejectattr('product_id','none')|map(attribute='user')|map(attribute='position')|map(attribute='name')|unique %}
+			{% for position in positions %}
+				{{ position }}<br>
+			{% endfor %}
+		</span>
+	</div>
+	<div class="col col-sm overflow-hidden">
+		<span class="d-sm-none fw-bold">Ожидаем:</span>
+		{% if order['status'].name == 'not_approved' %}
+			Инициатор<br>
+			устраняет<br>
+			замечания
+		{% else %}
+			{% for appr in order.approvals %}
+				{% if appr.approved is sameas false %}
+					{{ appr.position.name }}<br>
+				{% endif %}
+			{% endfor %}
+		{% endif %}
+	</div>
+	<div class="col-sm-1 overflow-hidden fs-7 py-1">
+		<span class="d-sm-none fw-bold">Статус:</span>
+		{% include '_order.status.html' %}
+	</div>
+	{% if order.parents | length > 1 %}
+		<div class="col-12">
+			<small>
+				&sum;
+				{% for parent in order.parents %}
+					#{{ parent.number }}
+				{% endfor %}
+			</small>
+		</div>
+	{% elif order.parents | length == 1 %}
+		<div class="col-12">
+			<small>
+				&divide;
+				{% for parent in order.parents %}
+					#{{ parent.number }}
+				{% endfor %}
+			</small>
+		</div>
+	{% endif %}
+</div>

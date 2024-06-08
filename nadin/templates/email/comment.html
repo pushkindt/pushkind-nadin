@@ -1,0 +1,15 @@
+<p>
+    Пользователь {{ current_user.name }} ({{ current_user.location }}) уведомляет о заявке #{{ order.number }}.
+</p>
+{% if data %}
+<p>
+    <strong>Комментарии:</strong> {{ data }}
+</p>
+{% endif %}
+<p>
+    Нажмите на <a href="{{ url_for('auth.login_token', token=token, next=next_page, _external=True) }}">ссылку</a> для
+    перехода в Личный Кабинет.
+</p>
+<p>
+    Это автоматическое уведомление, не отвечайте на него.
+</p>

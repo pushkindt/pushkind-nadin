@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container my-2">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <input class="form-control" id="eventFilter" type="text" placeholder="Фильтр..">
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {% for d in dates %}
+                <a href="{{ url_for('main.ShowHistory', from=dates[d]) }}" class="text-decoration-none badge {% if filter_from == dates[d] %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}">{{ d }}</a>
+            {% endfor %}
+            <a href="{{ url_for('main.ShowHistory', from=0) }}" class="text-decoration-none badge {% if filter_from == 0 %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}">все</a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row bg-light d-none d-sm-flex border">
+        <div class="col-1 overflow-hidden">
+            Время
+        </div>
+        <div class="col-1 overflow-hidden">
+            Заявка
+        </div>
+        <div class="col-2 overflow-hidden">
+            Пользователь
+        </div>
+        <div class="col-2 overflow-hidden">
+            Событие
+        </div>
+        <div class="col overflow-hidden">
+            Описание
+        </div>
+    </div>
+    <div id="eventList">
+        {% for event in events %}
+            <div class="row border bg-white my-1 rounded event" data-id="{{ event.id }}">
+                <div class="col-sm-1 overflow-hidden mt-sm-3">
+                    <span class="d-sm-none fw-bold">Время:</span>
+                    {{ moment(event.timestamp).format() }}
+                </div>
+                <div class="col-sm-1 overflow-hidden mt-sm-3">
+                    <span class="d-sm-none fw-bold">Заявка:</span>
+                    <a class="text-decoration-none" href="{{ url_for('main.ShowOrder', order_id=event.order_id) }}">#{{ event.order.number }}</a>
+                </div>
+                <div class="col-sm-2 overflow-hidden mt-sm-3">
+                    <span class="d-sm-none fw-bold">Пользователь:</span>
+                    {% set user = event.user %}
+                    {% include '_user.popover.html' %}
+                    {{ event.user.name }}
+                </div>
+                <div class="col-sm-2 overflow-hidden mt-sm-3">
+                    <span class="d-sm-none fw-bold">Событие:</span>
+                    <span class="fw-bold text-{{event.type.color()}}">{{ event.type }}</span>
+                </div>
+                <div class="col-sm overflow-hidden mt-sm-3">
+                    <span class="d-sm-none fw-bold">Описание:</span>
+                    {{ event.data or '' }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<nav aria-label="Events pagination">
+    <ul class="pagination justify-content-center flex-wrap" id="eventPagination">
+    </ul>
+</nav>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/pagination.js') }}"></script>
+<script>
+    $(document).ready(function () {
+
+        const eventFilter = document.querySelector("#eventFilter");
+        const eventList = document.querySelector("#eventList");
+
+        InstantiatePagination("eventList", "event", "eventPagination", 10, 'eventFilter');
+
+        eventFilter.addEventListener("keyup", () => {
+            const filterValue = eventFilter.value.toLowerCase();
+            const eventRows = eventList.querySelectorAll(".event");
+            if (filterValue.length > 0){
+                eventRows.forEach(row => {
+                    const rowText = row.textContent.toLowerCase();
+                    const showRow = rowText.indexOf(filterValue) > -1;
+                    if (showRow)
+                        row.classList.remove("d-none")
+                    else
+                        row.classList.add("d-none");
+                });
+            } else {
+                const page = document.querySelector("#eventPagination li.active");
+                page.click();
+            }
+
+        });
+    });
+</script>
+{% endblock %}

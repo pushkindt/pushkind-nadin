@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% set show_remove_limit = current_user.role.name in ['admin', 'purchaser'] %}
+
+<div class="container">
+	<div class="row justify-content-center">
+		<div class="col-md-8">
+			<input class="form-control" id="limitFilter" type="text" placeholder="Фильтр..">
+		</div>
+	</div>
+	<div class="row justify-content-center">
+		<div class="col-md-8">
+			{% for i in intervals %}
+				<a href="{{ url_for('main.ShowLimits', from=i.value) }}" class="text-decoration-none badge {% if filter_from == i %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}">{{ i }}</a>
+			{% endfor %}
+			<a href="{{ url_for('main.ShowLimits') }}" class="text-decoration-none badge {% if filter_from is none %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}">все</a>
+		</div>
+	</div>
+    <div class="row">
+        <div class="col text-end">
+            <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#limitFormCollapse" aria-expanded="false" aria-controls="limitFormCollapse">
+                Добавить лимит
+            </button>
+        </div>
+    </div>
+    <div class="collapse" id="limitFormCollapse">
+        <form method="POST" action="{{ url_for('main.AddLimit') }}">
+            {{ form.csrf_token(id=False) }}
+            <div class="row mb-3">
+                {{ form.interval.label(class_='col-md-2 col-form-label') }}
+                <div class="col-md-10">
+                    {{ form.interval(class_ = 'form-select') }}
+                </div>
+            </div>
+            <div class="row mb-3">
+                {{ form.value.label(class_='col-md-2 col-form-label') }}
+                <div class="col-md-10">
+                    {{ form.value(class_='form-control') }}
+                </div>
+            </div>
+            <div class="row mb-3">
+                {{ form.project.label(class_='col-md-2 col-form-label') }}
+                <div class="col-md-10">
+                    {{ form.project(class_='form-select') }}
+                </div>
+            </div>
+            <div class="row mb-3">
+                {{ form.cashflow.label(class_='col-md-2 col-form-label') }}
+                <div class="col-md-10">
+                    {{ form.cashflow(class_='form-select') }}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {{ form.submit(class_='btn btn-primary text-white') }}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if limits|length > 0 %}
+    <div class="container bg-white border rounded">
+        <div class="row d-none d-sm-flex fw-bold">
+            <div class="col">
+                <div class="row">
+                    <div class="col overflow-hidden">
+                        Проект
+                    </div>
+                    <div class="col overflow-hidden">
+                        БДДС
+                    </div>
+                    <div class="col overflow-hidden">
+                        Интервал
+                    </div>
+                    <div class="col overflow-hidden">
+                        Лимит
+                    </div>
+                    <div class="col overflow-hidden">
+                        Сумма
+                    </div>
+                    <div class="col overflow-hidden">
+                        Остаток
+                    </div>
+                </div>
+            </div>
+            {% if show_remove_limit %}
+                <div class="col-auto overflow-hidden">
+                    Удалить
+                </div>
+            {% endif %}
+        </div>
+        {% for limit in limits %}
+            {% include '_limit.html' %}
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+    $(document).ready(function () {
+
+		$("#limitFilter").on("keyup", function () {
+			let value = $(this).val().toLowerCase();
+			$(".limit").filter(function () {
+				let show = $(this).text().toLowerCase().indexOf(value) > -1;
+				$(this).toggle(show);
+			});
+		});
+    });
+</script>
+
+{% endblock %}

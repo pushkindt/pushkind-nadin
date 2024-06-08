@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block styles%}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="row my-2">
+        <div class="col overflow-hidden">
+            <strong>ПРОСМОТР ЗАЯВКИ</strong>
+        </div>
+        <div class="col-auto text-end overflow-hidden">
+            <a class="text-muted" href="{{url_for('main.shop_categories')}}">
+                Вернуться в каталог
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <strong>Проект:</strong>
+            <a href="{{url_for('main.shop_categories')}}"
+                id="projectName"
+                class="siteProjectSelect">
+                Не указан
+            </a><br>
+            <strong>Объект:</strong>
+            <a href="{{url_for('main.shop_categories')}}"
+                id="siteName"
+                class="siteProjectSelect">
+                Не указан
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <strong>Инициатор:</strong>
+            {% set user = current_user %}
+            {% include '_user.popover.html' %}
+            {{ user.name or user.email }}
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col">
+            <span id="inCartItems"></span>
+        </div>
+    </div>
+
+    <form method="POST" action="{{url_for('main.shop_cart')}}" id="shoppingCartForm">
+        {{ form.csrf_token(id=False) }}
+        {{ form.project_id(class_='d-none') }}
+        {{ form.site_id(class_='d-none') }}
+        <div class="alert alert-secondary my-1" id="emptyCartAlert">
+            Корзина пуста
+        </div>
+        <div id="shoppingCartItems">
+        </div>
+        <div class="row my-3">
+            <div class="col text-center">
+                {{ form.submit(class_='btn btn-primary text-white d-none') }}
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="modal fade"
+    id="descriptionModal"
+    tabindex="-1"
+    aria-labelledby="descriptionModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="descriptionModalLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm">
+                            <div id="carouselControls"
+                                class="carousel carousel-dark slide" data-bs-ride="carousel">
+                                <div class="carousel-inner">
+                                    <div class="carousel-item active">
+                                        <div class="carousel-item active">
+                                            <img src="{{config['PLACEHOLDER_IMAGE']}}"
+                                                class="d-block w-100"
+                                                alt="Main image">
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="carousel-control-prev"
+                                    type="button"
+                                    data-bs-target="#carouselControls"
+                                    data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next"
+                                    type="button"
+                                    data-bs-target="#carouselControls"
+                                    data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-sm">
+                            <div class="row">
+                                <div class="col">
+                                    <label for="descriptionModalProductText"
+                                        class="form-label">
+                                        Для некоторых товаров можно добавить пояснение/опции
+                                    </label>
+                                    <textarea class="form-control productText"
+                                        rows="3"
+                                        id="descriptionModalProductText"
+                                        placeholder="Комментарий">
+                                    </textarea>
+                                </div>
+                            </div>
+                            <div class="my-1" id="descriptionModalProductOptions">
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="input-group">
+                                        <span class="input-group-text">Количество</span>
+                                        <input type="number"
+                                            class="form-control productQuantity"
+                                            min="0"
+                                            step="1"
+                                            aria-label="Количество"
+                                            value="0"
+                                            id="descriptionModalProductQuantity">
+                                        <span class="input-group-text"
+                                            id="descriptionModalProductMeasurement">
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center my-1">
+                                <div class="col-auto">
+                                    <button type="button"
+                                        class="btn btn-primary addToCart text-white"
+                                        data-bs-dismiss="modal">
+                                        Сохранить
+                                    </button>
+                                    <button type="button"
+                                        class="btn btn-secondary"
+                                        data-bs-dismiss="modal">
+                                        Закрыть
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block templates %}
+<div class="row rounded bg-white my-1 cartItem selectable" id="cartItemTemplate">
+    <div class="col-auto">
+        <input required type="number" class="d-none" name="cart-_-product" hidden id="productIdTemplate">
+        <input type="text" class="d-none" name="cart-_-text" hidden id="productTextTemplate">
+        <input type="text" class="d-none" name="cart-_-options" hidden id="productOptionsTemplate">
+        <img id="productImageTemplate" src="{{ config['PLACEHOLDER_IMAGE'] }}" height="64" width="64">
+    </div>
+    <div class="col col-sm-6 overflow-hidden">
+        <h5 id="productNameTemplate"></h5>
+        <div class="row">
+            <div class="col small">
+                Артикул: <span id="productSkuTemplate"></span>
+            </div>
+        </div>
+        <div class="row d-none">
+            <div class="col small" id="productOptionsValuesTemplate">
+            </div>
+        </div>
+        <div class="row d-none">
+            <div class="col small">
+                Комментарий: <strong id="productTextValueTemplate" class="productTextValue"></strong>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <a href="#" class="cloneProductButton">клонировать</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm overflow-hidden pt-sm-4">
+        <span id="productVendorTemplate"></span>
+    </div>
+    <div class="col overflow-hidden pt-sm-4 pt-2">
+        <strong id="productPriceTemplate"></strong>
+        ₽/<span id="productMeasurementTemplate"></span>
+    </div>
+    <div class="col overflow-hidden pt-sm-3 mb-1">
+        <input readonly
+            type="number"
+            class="form-control productQuantity"
+            name="cart-_-quantity"
+            id="productQuantityTemplate"
+            aria-label="Количество">
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/sugar.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/shoppingCart.js') }}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const [projectId, siteId, siteName, projectName] = CheckProjectAndSite(() => {
+            window.location = "{{ url_for('main.shop_categories') }}";
+        });
+
+        document.querySelector("#project_id").value = projectId;
+        document.querySelector("#site_id").value = siteId;
+
+        PopulateCartProducts()
+
+        const addToCartButtons = document.querySelectorAll(".addToCart");
+        addToCartButtons.forEach(addToCartButton => {
+            addToCartButton.addEventListener("click", HandleAddToCart2);
+        });
+
+        const modals = document.querySelectorAll(".modal");
+        modals.forEach(modal => {
+            modal.addEventListener("shown.bs.modal", event => {
+                let quantityInput = modal.querySelector(".productQuantity");
+                quantityInput.focus();
+            });
+        });
+
+    });
+
+</script>
+{%endblock %}

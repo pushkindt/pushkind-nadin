@@ -1,0 +1,19 @@
+<p>
+    Инициатор {{ order.initiative.name }} создал заявку #{{ order.number }} для объекта "{{ order.site.name or 'Объект не указан!' }}".
+</p>
+{% if order.parents %}
+	<p>
+		Заявка была получена из заявок &sum;
+		{% for parent in order.parents %}
+			#{{ parent.number }}
+		{% endfor %}
+	</p>
+{% endif %}
+<p>
+    Нажмите на <a href="{{ url_for('auth.login_token', token=token, next=next_page, _external=True) }}">ссылку</a> для
+    перехода в Личный Кабинет.
+</p>
+<p>
+    Это автоматическое уведомление, не отвечайте на него. В случае возникновения вопросов по заявке - свяжитесь с
+    инициатором.
+</p>

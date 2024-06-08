@@ -1,0 +1,21 @@
+default:
+  title: "Личный кабинет"
+  static_upload_path: upload
+  sqlalchemy_database_uri: sqlite:///app.db
+  login_message: "Please login"
+  placeholder_image: "/static/placeholder.png"
+  admins: []
+  import_products_conf_sheet: "Настройка импорта"
+
+development:
+  debug: true
+
+production:
+  debug: false
+  login_message: "Пожалуйста, авторизуйтесь, чтобы увидеть эту страницу."
+
+testing:
+  title: testing
+  login_disabled: true
+  sqlalchemy_database_uri: sqlite://
+  secret_key: testing

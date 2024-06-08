@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    .uploadImageIcon:hover {
+        border: 1px solid #6c757d !important;
+        border-radius: 0.25rem !important;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container my-2">
+    <div class="row gx-1 justify-content-center">
+        <div class="col-md-6 mb-1">
+            <input class="form-control" id="productFilter" type="text" placeholder="Фильтр..">
+        </div>
+        {% if current_user.role.name != 'vendor' %}
+        <div class="col-md-3 mb-1">
+            <select class="form-select" aria-label="Vendor select" id="vendorSelect">
+                {% for v in vendors %}
+                <option {% if v.id==vendor.id %}selected{% endif %} value="{{ v.id }}">{{ v.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        <div class="col-auto">
+            <a class="btn btn-primary text-white" href="{{url_for('main.DownloadProducts', vendor_id=vendor.id)}}">
+                <i class="bi bi-cloud-download"></i>
+            </a>
+        </div>
+        <div class="col-auto">
+            <form method="POST" enctype="multipart/form-data" id="uploadProductsForm"
+                action="{{url_for('main.UploadProducts', vendor_id=vendor.id)}}">
+                {{ products_form.csrf_token(id=False) }}
+                <label for="uploadProductsButton">
+                    <span class="btn btn-warning mb-1 text-white">
+                        <i class="bi bi-cloud-upload"></i>
+                    </span>
+                </label>
+                <input id="uploadProductsButton" type="file" name="products" class="d-none" accept=".xlsx">
+            </form>
+        </div>
+        <div class="col-auto">
+            <form method="POST" enctype="multipart/form-data" id="uploadImagesForm"
+                action="{{url_for('main.UploadImages', vendor_id=vendor.id)}}">
+                {{ images_form.csrf_token(id=False) }}
+                <label for="uploadImagesButton">
+                    <span class="btn btn-success mb-1 text-white">
+                        <i class="bi bi-card-image"></i>
+                    </span>
+                </label>
+                <input id="uploadImagesButton" type="file" name="images" class="d-none" accept=".zip">
+            </form>
+        </div>
+        <div class="col-auto">
+            <form action="{{ url_for('main.remove_products', vendor_id=vendor.id) }}" method="POST">
+                <button type="submit" class="btn btn-danger text-white"
+                    onclick="return confirm('Очистить список товаров?')">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {% for category in categories %}
+            <span class="text-decoration-none badge bg-secondary">{{ category.name }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="alert bg-yellow my-1" role="alert">
+                <ol class="my-0">
+                    <li>
+                        Скачайте текущий каталог и используйте полученный Excel-файл как шаблон.
+                        Помимо обязательных столбцов вы можете добавить столбцы с опциями товаров.
+                        Значения ячеек таких столбцов - список опций через запятую.
+                    </li>
+                    <li>
+                        Загрузите обновленный каталог из Excel.
+                    </li>
+                    <li>
+                        Загрузите картинки в zip-архиве (имя файла = "артикул товара") или добавьте по одной (ссылка "фото")
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div id="productList">
+        {% for product in vendor.products|sort(attribute='name') %}
+        <div class="row my-1 bg-white rounded product">
+            <div class="col-auto text-center">
+                <form method="POST" enctype="multipart/form-data" id="uploadProductImageForm{{product.id}}"
+                    action="{{url_for('main.UploadProductImage', product_id=product.id, vendor_id=vendor.id)}}">
+                    {{ product_image_form.csrf_token(id=False) }}
+                    <label for="uploadProductImageButton{{product.id}}">
+                        <img src="{{product.image or config['PLACEHOLDER_IMAGE']}}" height="64" width="64"
+                            class="uploadImageIcon">
+                        <br>
+                        <span class="text-primary">фото</span>
+                    </label>
+                    <input id="uploadProductImageButton{{product.id}}" type="file" name="image"
+                        class="d-none uploadProductImageButton" accept="image/png,image/jpeg">
+                </form>
+            </div>
+            <div class="col">
+                <div class="row" data-id="{{product.id}}">
+                    <div class="col col-sm-6 overflow-hidden selectable">
+                        <h5>{{product.name}}</h5>
+                        <small>Артикул: {{product.sku}}</small>
+                    </div>
+                    <div class="col-sm overflow-hidden pt-sm-4 selectable">
+                        {{ product.category.name }}
+                    </div>
+                    <div class="col-sm overflow-hidden pt-sm-4 pt-2 selectable">
+                        <strong>{{ '{:,.2f}'.format(product.price) }}</strong> ₽/{{ product.measurement }}
+                    </div>
+                    {% if product.options %}
+                    <div class="col-12">
+                        <div class="row">
+                            <div class="col-auto fw-bold pt-2">
+                                Опции:
+                            </div>
+                            <div class="col">
+                                {% for rows in product.options|batch(4) %}
+                                <div class="row">
+                                    {% for option in rows %}
+                                    <div class="col-sm-3 my-1">
+                                        <select class="form-select">
+                                            <option selected disabled>{{ option }}</option>
+                                            {% for value in product.options[option]%}
+                                            <option value="{{value}}">{{value}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="descriptionModal{{product.id}}" tabindex="-1"
+            aria-labelledby="descriptionModalLabel{{product.id}}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="descriptionModalLabel{{product.id}}">{{product.name}}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="carouselControls{{product.id}}" class="carousel carousel-dark slide"
+                            data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <img src="{{product.image or config['PLACEHOLDER_IMAGE']}}" class="d-block w-100"
+                                        alt="Main image">
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="{{product.image or config['PLACEHOLDER_IMAGE']}}" class="d-block w-100"
+                                        alt="Media image">
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button"
+                                data-bs-target="#carouselControls{{product.id}}" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button"
+                                data-bs-target="#carouselControls{{product.id}}" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                        <strong>Описание:</strong>
+                        <pre>{{product.description or ''}}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <nav aria-label="Products pagination">
+        <ul class="pagination justify-content-center flex-wrap" id="productPagination">
+        </ul>
+    </nav>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/pagination.js') }}"></script>
+<script>
+    $(document).ready(function () {
+
+        InstantiatePagination("productList", "product", "productPagination", 10, 'productFilter');
+
+        $('#uploadProductsButton').on('change', () => {
+            $('#uploadProductsForm').submit();
+        });
+        $('#vendorSelect').change(() => {
+            window.location = "{{url_for('main.ShowProducts', vendor_id=0)}}".replace('0', $('#vendorSelect').val());
+        });
+        $('#uploadImagesButton').on('change', () => {
+            $('#uploadImagesForm').submit();
+        });
+        $('.uploadProductImageButton').on('change', function () {
+            $(this).parent('form').submit();
+        });
+        $(".selectable").click(function (event) {
+            let productId = $(this).parent(".row").attr("data-id");
+            let modalElement = document.getElementById('descriptionModal' + productId);
+            let descriptionModal = bootstrap.Modal.getInstance(modalElement);
+            if (!descriptionModal)
+                descriptionModal = new bootstrap.Modal(modalElement, {});
+            descriptionModal.show();
+        });
+
+        const productFilter = document.querySelector("#productFilter");
+        const productList = document.querySelector("#productList");
+
+        productFilter.addEventListener("keyup", () => {
+            const filterValue = productFilter.value.toLowerCase();
+            const productRows = productList.querySelectorAll(".product");
+            if (filterValue.length > 0){
+                productRows.forEach(row => {
+                    const rowText = row.textContent.toLowerCase();
+                    const showRow = rowText.indexOf(filterValue) > -1;
+                    if (showRow)
+                        row.classList.remove("d-none")
+                    else
+                        row.classList.add("d-none");
+                });
+            } else {
+                const page = document.querySelector("#productPagination li.active");
+                page.click();
+            }
+        });
+
+    });
+</script>
+{% endblock %}

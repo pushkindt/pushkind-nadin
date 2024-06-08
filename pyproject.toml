@@ -1,0 +1,62 @@
+[tool.poetry]
+name = "nadin"
+version = "0.1.0"
+description = ""
+authors = ["Viacheslav Matrizaev <matrizaev@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+dynaconf = "^3.2.4"
+flask = "^3.0.2"
+flask-sqlalchemy = "^3.1.1"
+flask-migrate = "^4.0.5"
+flask-login = "^0.6.3"
+authlib = "^1.2.1"
+requests = "^2.31.0"
+python-dotenv = "^1.0.0"
+bootstrap-flask = "^2.3.3"
+flask-wtf = "^1.2.1"
+openpyxl = "^3.1.2"
+pandas = "^2.1.4"
+flask-mail = "^0.9.1"
+flask-moment = "^1.0.5"
+flask-httpauth = "^4.8.0"
+pyarrow = "^15.0.0"
+pyjwt = "^2.8.0"
+email-validator = "^2.1.0.post1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+pylint = "^3.0.2"
+isort = "^5.12.0"
+black = "^23.11.0"
+flake8 = "^6.1.0"
+pre-commit = "^3.6.0"
+pyproject-flake8 = "^6.1.0"
+coverage = "^7.3.2"
+flake8-pyproject = "^1.2.3"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.black]
+line-length = 120
+
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.flake8]
+max-line-length = 120
+exclude = ["migrations/*"]
+
+[tool.pylint.main]
+py-version = [ 3, 12 ]
+disable = "C0114, C0115, C0116, C0103, R0903"
+
+[tool.coverage.report]
+omit = ["tests/*", "migrations/*"]

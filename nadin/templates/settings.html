@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{% endblock %}
+
+{% block content %}
+{% if current_user.role.name == "admin" %}
+	<div class="container border bg-white rounded">
+		<div class="row">
+			<div class="col">
+				<a href="{{ url_for('auth.signup') }}">Новый пользователь</a>
+			</div>
+			<div class="col text-end">
+				<a href="{{ url_for('static', filename = 'app.log') }}">Лог файл</a>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				<input class="form-control" id="usersFilter" type="text" placeholder="Фильтр..">
+			</div>
+			<div class="col-auto">
+				<a href="{{ url_for('main.DownloadUsers') }}" class="btn btn-primary text-white"><i class="bi bi-download"></i></a>
+			</div>
+		</div>
+		<div class="row d-none d-sm-flex fw-bold px-3">
+			<div class="col overflow-hidden">
+				ФИО
+			</div>
+			<div class="col overflow-hidden">
+				Телефон
+			</div>
+			<div class="col overflow-hidden">
+				Email
+			</div>
+			<div class="col overflow-hidden">
+				Роль
+			</div>
+			<div class="col overflow-hidden">
+				Площадка
+			</div>
+			<div class="col overflow-hidden">
+				Права
+			</div>
+			<div class="col overflow-hidden">
+				Заметка
+			</div>
+			<div class="col overflow-hidden">
+				Активность
+			</div>
+		</div>
+		{% for user in users %}
+		{% include '_user.html' %}
+		{% endfor %}
+	</div>
+
+	<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="userModalLabel">НАСТРОЙКИ ПОЛЬЗОВАТЕЛЯ #<span id="about_user-id"></span>: <span id="about_user-email"></span></h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				{% include '_user.settings.form.html' %}
+			</div>
+		</div>
+	</div>
+
+{% else %}
+
+	<div class="container">
+		{% include '_user.settings.form.html' %}
+	</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+	$(document).ready(function () {
+		//Scripts
+		{% if current_user.role.name in ['validator', 'admin', 'purchaser'] %}
+			var categoriesData = $("#about_user-categories");
+			var projectsData = $("#about_user-projects");
+		{% endif %}
+		{% if current_user.role.name in ['validator', 'purchaser'] %}
+			categoriesData.val({{ current_user.categories_list }});
+			projectsData.val({{ current_user.projects_list }});
+		{% endif %}
+		
+		{% if current_user.role.name in ['validator', 'admin', 'purchaser'] %}
+			categoriesData.selectize({});
+			projectsData.selectize({});
+			selectizeCategories = categoriesData[0].selectize;
+			selectizeProjects = projectsData[0].selectize;
+
+			$('#selectAllCategories').click(function() {
+				selectizeCategories.setValue(Object.keys(selectizeCategories.options));
+			});
+
+			$('#selectAllProjects').click(function() {
+				selectizeProjects.setValue(Object.keys(selectizeProjects.options));
+			});
+
+			$('#selectNoneCategories').click(function() {
+				selectizeCategories.clear(false);
+			});
+
+			$('#selectNoneProjects').click(function() {
+				selectizeProjects.clear(false);
+			});
+			
+			$('.projectsDropDown').click(function(e) {
+				selectizeProjects.focus();
+			});
+			
+			$('.categoriesDropDown').click(function(e) {
+				selectizeCategories.focus();
+			});
+			
+		{% endif %}
+		
+		{% if current_user.role.name == 'admin' %}
+			var users = [{% for user in users %}{{ user | safe }},{% endfor %}];
+
+			var projects = [{% for project in projects %}{{ project | safe }},{% endfor %}];
+
+			function HideUserData() {
+				selectizeCategories.clear(false);
+				selectizeProjects.clear(false);
+				categoriesData.val(null);
+				projectsData.val(null);
+				projectsData.removeAttr('value');
+				categoriesData.removeAttr('value');
+				$("#userDataWrapper").hide();
+			}
+
+
+			$("#usersFilter").on("keyup", function () {
+				let value = $(this).val().toLowerCase();
+				$(".showUserModal").filter(function () {
+					$(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+				});
+			});
+
+			$(".showUserModal").click(function () {
+
+				let userModal = new bootstrap.Modal(document.getElementById('userModal'), {});
+
+				let user_id = Number($(this).attr('data-id'));
+				$("#user_id").val(user_id);
+				users.some(function (user) {
+					if (user["id"] == user_id) {
+						$("#about_user-id").text(user['id']);
+						$("#about_user-email").text(user['email']);
+						$("#about_user-phone").val(user["phone"]);
+						$("#about_user-position").val(user["position"]);
+						$("#about_user-location").val(user["location"]);
+						$("#about_user-full_name").val(user["name"]);
+						$("#about_user-email_new").prop("checked", user["email_new"]);
+						$("#about_user-email_modified").prop("checked", user["email_modified"]);
+						$("#about_user-email_disapproved").prop("checked", user["email_disapproved"]);
+						$("#about_user-email_approved").prop("checked", user["email_approved"]);
+						$("#about_user-email_comment").prop("checked", user["email_comment"]);
+						$("#role").val(user["role_id"]);
+						$("#note").val(user["note"]);
+						$("#birthday").val(user["birthday"]);
+						$("#dashboard_url").val(user["dashboard_url"]);
+						$("#removeUserButton").attr("href", "{{ url_for('main.RemoveUser', user_id='0') }}".replace("0", user_id));
+						if (user["role"] == "validator" || user["role"] == "purchaser") {
+							$("#userDataWrapper").show();
+							selectizeCategories.setValue(user["categories"]);
+							selectizeProjects.setValue(user["projects"])
+						}
+						else {
+							HideUserData();
+						}
+						return true;
+					}
+				});
+				userModal.show();
+			});
+			$("#role").change(HideUserData);
+		{% endif %}
+	});
+</script>
+{% endblock %}

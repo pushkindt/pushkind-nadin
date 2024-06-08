@@ -1,0 +1,9 @@
+Инициатор {{ current_user.name }} ({{ current_user.location }}) уведомляет о заявке #{{ order.number }}.
+{% if data %}
+Комментарии: {{ data }}
+{% endif %}
+
+Нажмите на ссылку для перехода в Личный Кабинет:
+{{ url_for('auth.login_token', token=token, next=next_page, _external=True) }}
+
+Это автоматическое уведомление, не отвечайте на него.

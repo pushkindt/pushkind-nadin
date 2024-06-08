@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block styles %}
+<style>
+    iframe {
+        display: block;
+        /* iframes are inline by default */
+        background: #000;
+        border: none;
+        /* Reset default border */
+        height: 100vh;
+        /* Viewport-relative units */
+        width: 100%;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container iframe-container">
+    {% if current_user.role.name == 'admin' %}
+    <select class="form-select my-1" aria-label="Select user" id="select-user">
+        {% for u in users %}
+        <option value="{{u.id}}" {%if u.id==user.id%}selected{%endif%}>{{u.name}}({{u.email}})</option>
+        {% endfor %}
+    </select>
+    {% endif %}
+    {% if user.dashboard_url %}
+    <iframe src="{{ user.dashboard_url }}"></iframe>
+    {% else %}
+    <div class="alert alert-warning alert-dismissible" role="alert">
+        Для пользователя не настроены дашборд.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const selectUser = document.getElementById("select-user");
+        selectUser.addEventListener("change", function () {
+            const userId = Number(selectUser.value);
+            document.location.href = "{{url_for('main.show_dashboard_all', user_id=-1)}}".replace("-1", userId);
+        });
+
+
+    });
+
+</script>
+{%endblock %}

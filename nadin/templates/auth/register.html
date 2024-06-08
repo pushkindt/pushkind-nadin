@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+	<div class="row justify-content-center">
+		<div class="col-md-8">
+			<div class="card">
+				<div class="card-header text-muted fw-bold">
+					Регистрация
+				</div>
+				<div class="card-body">
+					<form method="POST">
+						{{ form.csrf_token(id=False) }}
+						<div class="row mb-3">
+							{{ form.email.label (class_ = "col-md-4 col-form-label text-md-right") }}
+							<div class="col-md-6">
+								{{ form.email(class_ = 'form-control', autofocus = '') }}
+							</div>
+						</div>
+						<div class="row mb-3">
+							{{ form.password.label (class_ = "col-md-4 col-form-label text-md-right") }}
+							<div class="col-md-6">
+								{{ form.password(class_ = 'form-control') }}
+							</div>
+						</div>
+						<div class="row mb-3">
+							{{ form.password2.label (class_ = "col-md-4 col-form-label text-md-right") }}
+							<div class="col-md-6">
+								{{ form.password2(class_ = 'form-control') }}
+							</div>
+						</div>
+						<div class="row mb-3">
+							<div class="col-md-6 offset-md-4">
+								{{ form.submit(class_ = 'btn btn-primary text-white') }}
+								{% if current_user.is_anonymous %}
+									<a href="{{ url_for('auth.login') }}" class="btn btn-link">
+										Авторизация
+									</a>
+								{% endif %}
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

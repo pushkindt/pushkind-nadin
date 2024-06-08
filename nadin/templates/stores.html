@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if current_user.role.name == "admin" %}
+	<div class="container">
+		<div class="row">
+			<div class="col text-end">
+				<button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#storeFormCollapse" aria-expanded="false" aria-controls="storeFormCollapse">
+					Добавить поставщика
+				</button>
+			</div>
+		</div>
+		<div class="collapse" id="storeFormCollapse">
+			<form method="POST" action="{{url_for('main.AddStore')}}">
+				{{ store_form.csrf_token(id=False) }}
+				<div class="row mb-3">
+					{{ store_form.name.label(class_='col-md-2 col-form-label') }}
+					<div class="col-md-10">
+						{{ store_form.name(class_ = 'form-control') }}
+					</div>
+				</div>
+				<div class="row mb-3">
+					{{ store_form.email.label(class_='col-md-2 col-form-label') }}
+					<div class="col-md-10">
+						{{ store_form.email(class_='form-control') }}
+					</div>
+				</div>
+				<div class="row mb-3">
+					{{ store_form.password.label(class_='col-md-2 col-form-label') }}
+					<div class="col-md-10">
+						{{ store_form.password(class_='form-control') }}
+					</div>
+				</div>
+				<div class="row mb-3">
+					<div class="col">
+						{{ store_form.submit(class_='btn btn-primary text-white') }}
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+
+{% endif %}
+{% if stores|length > 0 %}
+	<div class="container bg-white border rounded">
+		<div class="row d-none d-sm-flex fw-bold">
+			<div class="col overflow-hidden">
+				Номер
+			</div>
+			<div class="col overflow-hidden">
+				Название
+			</div>
+			<div class="col overflow-hidden">
+				Электронная почта
+			</div>
+			<div class="col overflow-hidden">
+				&nbsp;
+			</div>
+		</div>
+		{% for store in stores %}
+			{% include '_store.html' %}
+		{% endfor %}
+	</div>
+{% endif %}
+{% endblock %}
