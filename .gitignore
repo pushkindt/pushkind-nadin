@@ -168,3 +168,5 @@ migrations/
 .vscode/
 
 .secrets.yaml
+
+nadin/static/upload/
