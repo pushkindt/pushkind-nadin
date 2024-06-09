@@ -12,7 +12,7 @@ def SendEmailAsync(app, msg):
 
 
 def SendEmail(subject, sender, recipients, text_body, html_body, attachments=None, sync=False):
-    if not current_app.config["MAIL_SERVER"]:
+    if not current_app.config.get("MAIL_SERVER"):
         return
     msg = Message(subject, sender=sender, recipients=recipients)
     msg.body = text_body

@@ -17,8 +17,8 @@ def send_password_reset_email(user):
 def send_user_registered_email(user):
     SendEmail(
         "Зарегистрирован новый пользователь",
-        sender=(current_app.config["MAIL_SENDERNAME"], current_app.config["MAIL_USERNAME"]),
-        recipients=[current_app.config["ADMIN_EMAIL"]],
+        sender=(current_app.config["MAIL_SENDERNAME"], current_app.config["ADMINS"][0]),
+        recipients=[current_app.config["ADMINS"][0]],
         text_body=render_template("email/registered.txt", user=user),
         html_body=render_template("email/registered.html", user=user),
     )

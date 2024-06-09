@@ -5,6 +5,7 @@ default:
   login_message: "Please login"
   placeholder_image: "/static/placeholder.png"
   admins: []
+  mail_sendername: Administrator
   import_products_conf_sheet: "Настройка импорта"
 
 development:

@@ -166,3 +166,5 @@ migrations/
 
 #VSCode
 .vscode/
+
+.secrets.yaml
