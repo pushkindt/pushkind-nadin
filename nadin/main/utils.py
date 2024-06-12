@@ -78,7 +78,7 @@ def SendEmailNotification(kind, order, recipients_id=None, data=None):
         next_page = url_for("main.ShowOrder", order_id=order.id)
         SendEmail(
             f"Уведомление по заявке #{order.number}",
-            sender=(current_app.config["MAIL_SENDERNAME"], current_app.config["MAIL_USERNAME"]),
+            sender=(current_app.config["MAIL_SENDERNAME"], current_app.config["ADMINS"][0]),
             recipients=[recipient.email],
             text_body=render_template(f"email/{kind}.txt", next_page=next_page, token=token, order=order, data=data),
             html_body=render_template(f"email/{kind}.html", next_page=next_page, token=token, order=order, data=data),
@@ -97,7 +97,7 @@ def SendEmail1C(recipients, order, data):
 
     SendEmail(
         subject,
-        sender=(current_app.config["MAIL_SENDERNAME"], current_app.config["MAIL_USERNAME"]),
+        sender=(current_app.config["MAIL_SENDERNAME"], current_app.config["ADMINS"][0]),
         recipients=recipients,
         text_body=render_template("email/export1C.txt", order=order),
         html_body=render_template("email/export1C.html", order=order),
