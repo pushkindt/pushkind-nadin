@@ -11,7 +11,6 @@ from flask_login import current_user, login_required
 from nadin.extensions import db
 from nadin.main.forms import UploadImagesForm, UploadProductImageForm, UploadProductsForm
 from nadin.main.routes import bp
-from nadin.main.upload.excel_processor import process1
 from nadin.main.utils import role_forbidden
 from nadin.models import Category, Product, UserRoles, Vendor
 from nadin.utils import first
@@ -35,7 +34,10 @@ MANDATORY_COLUMNS = [
 def _get_vendor(vendor_id: int) -> Vendor:
     if current_user.role == UserRoles.vendor:
         return Vendor.query.filter_by(email=current_user.email).first()
-    return Vendor.query.filter_by(id=vendor_id).first()
+    vendor = Vendor.query.filter_by(id=vendor_id).first()
+    if not vendor:
+        vendor = Vendor.query.filter_by(id=current_user.hub_id).first()
+    return vendor
 
 
 def product_columns_to_json(row: pd.Series) -> str:
@@ -135,7 +137,11 @@ def UploadProducts():
     if form.validate_on_submit():
         categories = Category.query.filter_by(hub_id=current_user.hub_id).all()
         categories = {c.name.lower(): c.id for c in categories}
-        df = process1(form.products.data, current_app.config["IMPORT_PRODUCTS_CONF_SHEET"])
+        try:
+            df = pd.read_excel(form.products.data, engine="openpyxl", dtype=str, keep_default_na=False)
+        except ValueError as e:
+            flash(str(e), category="error")
+            return redirect(url_for("main.ShowProducts", vendor_id=vendor.id))
         df = products_excel_to_df(df, vendor.id, categories)
         skus = df.sku.values.tolist()
         Product.query.filter_by(vendor_id=vendor.id).filter(Product.sku.in_(skus)).delete()
