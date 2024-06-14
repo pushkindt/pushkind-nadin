@@ -2,7 +2,6 @@ import io
 import json
 import re
 from pathlib import Path
-from typing import BinaryIO
 from zipfile import ZipFile
 
 import pandas as pd

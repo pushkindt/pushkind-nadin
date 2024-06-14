@@ -106,6 +106,32 @@
         </ol>
     </nav>
 
+    <div id="categoryList">
+        {% for rows in categories|batch(5) %}
+            <div class="row my-4">
+                {% for cat in rows %}
+                    <div class="col-sm m-1">
+                        <div class="card text-center selectable" data-id="{{cat.id}}">
+                            <div class="card-body">
+                                <img src="{{cat.image or config['PLACEHOLDER_IMAGE']}}"
+                                    height="128"
+                                    width="128"
+                                    alt="thumbnail">
+                            </div>
+                            <div class="card-footer bg-white border-top-0">
+                                {{cat.name}}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                {% for i in range(5 - rows|length) %}
+                    <div class="col-sm m-1">
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+
     <div id="productList">
         {% for product in products %}
             <div id="product{{product.id}}"
@@ -309,6 +335,7 @@
 
         const productFilter = document.querySelector("#productFilter");
         const productList = document.querySelector("#productList");
+        const categoryList = document.querySelector("#categoryList");
 
         InstantiatePagination("productList", "selectable", "productPagination", 10, 'productFilter');
 
@@ -352,10 +379,23 @@
             select.addEventListener("change", HandleProductModalChangeClone);
         });
 
-        const selectableElements = document.querySelectorAll(".selectable");
+
+        const selectableElements = productList.querySelectorAll(".selectable");
         selectableElements.forEach(selectable => {
             selectable.addEventListener("click", ShowProductModal);
         });
+
+
+        const selectables = categoryList.querySelectorAll(".selectable");
+
+        selectables.forEach(function (selectable) {
+            selectable.addEventListener("click", function (event) {
+                const categoryId = selectable.dataset.id;
+                const url = "{{ url_for('main.shop_products', cat_id=0) }}".replace("0", categoryId);
+                window.location.href = url;
+            });
+        });
+
 
         const modals = document.querySelectorAll(".modal");
         modals.forEach(modal => {

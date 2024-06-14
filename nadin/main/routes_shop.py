@@ -44,6 +44,12 @@ def shop_products(cat_id, vendor_id):
     category = Category.query.filter_by(id=cat_id, hub_id=current_user.hub_id).first()
     if category is None:
         return redirect(url_for("main.shop_categories"))
+    if category.children:
+        categories = Category.query.filter(
+            Category.hub_id == current_user.hub_id, Category.id.in_(category.children)
+        ).all()
+    else:
+        categories = []
     products = Product.query.filter_by(cat_id=cat_id)
     if vendor_id is not None:
         products = products.filter_by(vendor_id=vendor_id)
@@ -54,6 +60,7 @@ def shop_products(cat_id, vendor_id):
     return render_template(
         "shop_products.html",
         category=category,
+        categories=categories,
         vendors=vendors,
         products=products,
         vendor_id=vendor_id,
