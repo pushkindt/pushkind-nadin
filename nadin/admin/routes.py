@@ -60,6 +60,8 @@ def ShowAdminPage():
     cashflows = CashflowStatement.query.filter(CashflowStatement.hub_id == current_user.hub_id)
     cashflows = cashflows.order_by(CashflowStatement.name).all()
 
+    forms["add_category"].parent.choices = [(c.id, c.name) for c in categories]
+    forms["add_category"].parent.choices.insert(0, (0, "Выберите категорию..."))
     forms["edit_category"].income_statement.choices = [(i.id, i.name) for i in incomes]
     forms["edit_category"].cashflow_statement.choices = [(c.id, c.name) for c in cashflows]
     forms["edit_category"].income_statement.choices.append((0, "Выберите БДР..."))
@@ -399,7 +401,7 @@ def EditCashflow():
         else:
             flash("Такой БДДС не существует.")
     else:
-        for error in form.cashflow_id.errors + form.cashflow_name.errors:
+        for _, error in form.errors.items():
             flash(error)
     return redirect(url_for("admin.ShowAdminPage"))
 
@@ -409,10 +411,16 @@ def EditCashflow():
 @role_required([UserRoles.admin])
 def AddCategory():
     form = AddCategoryForm()
+    categories = Category.query.filter(Category.hub_id == current_user.hub_id).all()
+    form.parent.choices = [(c.id, c.name) for c in categories]
+    form.parent.choices.insert(0, (0, ""))
     if form.validate_on_submit():
-        category_name = form.category_name.data.strip()
+        category_name = form.category_name.data.strip().replace("/", "_")
         category = Category.query.filter_by(hub_id=current_user.hub_id, name=category_name).first()
         if category is None:
+            if form.parent.data > 0:
+                parent = Category.query.get(form.parent.data)
+                category_name = parent.name + "/" + category_name
             category = Category(name=category_name, hub_id=current_user.hub_id, children=[])
             db.session.add(category)
             db.session.commit()
@@ -420,7 +428,7 @@ def AddCategory():
         else:
             flash(f"Категория {category_name} уже существует.")
     else:
-        for error in form.category_name.errors:
+        for _, error in form.errors.items():
             flash(error)
     return redirect(url_for("admin.ShowAdminPage"))
 

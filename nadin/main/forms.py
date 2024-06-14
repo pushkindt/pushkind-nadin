@@ -334,6 +334,11 @@ class AddCategoryForm(FlaskForm):
             Length(max=128, message="Слишком длинное название."),
         ],
     )
+    parent = SelectField(
+        "Категория-родитель",
+        validators=[Optional()],
+        coerce=int,
+    )
     submit = SubmitField("Создать")
 
 

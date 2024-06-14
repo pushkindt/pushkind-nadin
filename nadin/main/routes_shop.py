@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from flask import flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
+from sqlalchemy import not_
 
 from nadin.extensions import db
 from nadin.main.forms import CreateOrderForm
@@ -31,7 +32,7 @@ def shop_categories():
     projects = projects.filter_by(hub_id=current_user.hub_id)
     projects = projects.order_by(Project.name).all()
     limits = OrderLimit.query.filter_by(hub_id=current_user.hub_id).all()
-    categories = Category.query.filter_by(hub_id=current_user.hub_id).all()
+    categories = Category.query.filter(Category.hub_id == current_user.hub_id, not_(Category.name.like("%/%"))).all()
     return render_template("shop_categories.html", projects=projects, limits=limits, categories=categories)
 
 

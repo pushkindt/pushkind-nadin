@@ -303,6 +303,12 @@
 						for='addCategoryName') }}
 						{{ forms['add_category'].category_name(id='addCategoryName', class_='form-control') }}
 					</div>
+					<div class="mb-3">
+						{{ forms['add_category'].parent.label(id=False, class_='form-label',
+						for='addCategoryParent') }}
+						{{ forms['add_category'].parent(id='addCategoryParent', class_='form-select',
+						placeholder='Выберите категорию...', value=0) }}
+					</div>
 				</div>
 				<div class="modal-footer">
 					{{ forms['add_category'].submit(id=False, class_='btn btn-primary text-white') }}
@@ -554,13 +560,13 @@
 <script>
 	$(document).ready(function () {
 
-		var projects = [{% for project in projects %}{{ project| safe }}, {% endfor %}];
+	var projects = [{% for project in projects %}{{ project| safe }}, {% endfor %}];
 
-	var incomes = [{% for income in incomes %} { { income | safe } }, {% endfor %}];
+	var incomes = [{% for income in incomes %} {{ income | safe }}, {% endfor %}];
 
-	var cashflows = [{% for cashflow in cashflows %} { { cashflow | safe } }, {% endfor %}];
+	var cashflows = [{% for cashflow in cashflows %} {{ cashflow | safe }}, {% endfor %}];
 
-	var categories = [{% for category in categories %} { { category | safe } }, {% endfor %}];
+	var categories = [{% for category in categories %} {{ category | safe }}, {% endfor %}];
 
 
 	for (let i = 0; i < categories.length; i++) {
