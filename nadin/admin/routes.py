@@ -140,7 +140,7 @@ def SaveCategoryResponsibility():
                 f = form.image.data
                 file_name, file_ext = os.path.splitext(f.filename)
                 file_name = f"category-{category.id}{file_ext}"
-                full_path = os.path.join("app", "static", "upload", file_name)
+                full_path = os.path.join("nadin", "static", "upload", file_name)
                 f.save(full_path)
                 category.image = url_for("static", filename=os.path.join("upload", file_name))
 
