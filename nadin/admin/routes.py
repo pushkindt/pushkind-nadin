@@ -2,6 +2,7 @@ import os
 
 from flask import Blueprint, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
+from sqlalchemy.orm.attributes import flag_modified
 
 from nadin.extensions import db
 from nadin.main.forms import (
@@ -421,9 +422,15 @@ def AddCategory():
             if form.parent.data > 0:
                 parent = Category.query.get(form.parent.data)
                 category_name = parent.name + "/" + category_name
+            else:
+                parent = None
             category = Category(name=category_name, hub_id=current_user.hub_id, children=[])
             db.session.add(category)
             db.session.commit()
+            if parent:
+                parent.children.append(category.id)
+                flag_modified(parent, "children")
+                db.session.commit()
             flash(f"Категория {category_name} добавлена.")
         else:
             flash(f"Категория {category_name} уже существует.")
@@ -439,8 +446,16 @@ def AddCategory():
 def RemoveCategory(category_id):
     category = Category.query.filter_by(id=category_id).first()
     if category is not None:
+        if category.children:
+            flash("Невозможно удалить категорию, содержащую подкатегории.")
+            return redirect(url_for("admin.ShowAdminPage"))
         db.session.delete(category)
         db.session.commit()
+        parent = Category.query.filter(Category.children.contains([category_id])).first()
+        if parent:
+            parent.children.remove(category_id)
+            flag_modified(parent, "children")
+            db.session.commit()
         flash(f'Категория "{category.name}" удалена.')
     else:
         flash("Такой категории не существует.")
