@@ -76,7 +76,7 @@ def products_excel_to_df(df: pd.DataFrame, vendor_id: int, categories: "dict[str
     df.drop(["category"], axis=1, inplace=True)
     df.dropna(subset=["cat_id", "name", "sku", "price", "measurement"], inplace=True)
 
-    static_path = Path(f"app/static/upload/vendor{vendor_id}")
+    static_path = Path(f"nadin/static/upload/vendor{vendor_id}")
     static_path.mkdir(parents=True, exist_ok=True)
     image_list = {
         f.stem: url_for("static", filename=Path(*static_path.parts[2:]) / f.name)
@@ -176,7 +176,7 @@ def UploadImages():
                 if sku not in products:
                     continue
                 zip_info.filename = sku + file_name.suffix
-                static_path = Path(f"app/static/upload/vendor{vendor.id}")
+                static_path = Path(f"nadin/static/upload/vendor{vendor.id}")
                 static_path.mkdir(parents=True, exist_ok=True)
                 zip_file.extract(zip_info, static_path)
                 static_path = static_path / zip_info.filename
@@ -259,7 +259,7 @@ def UploadProductImage(product_id):
         file_data = form.image.data
         file_name = Path(file_data.filename)
         file_name = Path(str(product.sku) + file_name.suffix)
-        static_path = Path(f"app/static/upload/vendor{vendor.id}")
+        static_path = Path(f"nadin/static/upload/vendor{vendor.id}")
         static_path.mkdir(parents=True, exist_ok=True)
         full_path = static_path / file_name
         file_data.save(full_path)
