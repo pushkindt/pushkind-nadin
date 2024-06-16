@@ -27,7 +27,6 @@ MANDATORY_COLUMNS = [
     "measurement",
     "category",
     "description",
-    "input_required",
 ]
 
 
@@ -48,6 +47,18 @@ def product_columns_to_json(row: pd.Series) -> str:
     return json.dumps(result, ensure_ascii=False) if result else ""
 
 
+def process_product_tags(df_tags: pd.DataFrame, vendor_id: int) -> pd.DataFrame:
+    product_ids = {p.sku: p.id for p in Product.query.filter_by(vendor_id=vendor_id).all()}
+    df_tags["product_id"] = df_tags["sku"].apply(product_ids.get)
+    df_tags.drop(["sku"], axis=1, inplace=True)
+    df_tags["tags"] = df_tags["tags"].str.split(",")
+    df_tags = df_tags.explode("tags")
+    df_tags = df_tags.drop_duplicates()
+    df_tags.rename(columns={"tags": "tag"}, inplace=True)
+    df_tags["tag"] = df_tags["tag"].apply(lambda x: x.lower().strip()[:128])
+    return df_tags
+
+
 def clean_column_names(name: str) -> str:
     return re.sub(r"[^\w]+", "_", name.lower())
 
@@ -61,6 +72,8 @@ def products_excel_to_df(df: pd.DataFrame, vendor_id: int, categories: "dict[str
     extra_columns = list(df.columns.difference(MANDATORY_COLUMNS))
     if "options" in extra_columns:
         extra_columns.remove("options")
+    if "tags" in extra_columns:
+        extra_columns.remove("tags")
     df["options"] = df[extra_columns].apply(product_columns_to_json, axis=1)
     df.drop(
         extra_columns,
@@ -68,7 +81,6 @@ def products_excel_to_df(df: pd.DataFrame, vendor_id: int, categories: "dict[str
         inplace=True,
     )
     df["price"] = df["price"].apply(pd.to_numeric, errors="coerce")
-    df["input_required"] = df["input_required"].astype(bool)
     df["options"] = df["options"].replace("", None)
 
     df["vendor_id"] = vendor_id
@@ -142,11 +154,21 @@ def UploadProducts():
         except ValueError as e:
             flash(str(e), category="error")
             return redirect(url_for("main.ShowProducts", vendor_id=vendor.id))
-        df = products_excel_to_df(df, vendor.id, categories)
+        try:
+            df = products_excel_to_df(df, vendor.id, categories)
+        except ValueError as e:
+            flash(str(e), category="error")
+            return redirect(url_for("main.ShowProducts", vendor_id=vendor.id))
         skus = df.sku.values.tolist()
         Product.query.filter_by(vendor_id=vendor.id).filter(Product.sku.in_(skus)).delete()
         db.session.commit()
+        df_tags = df[["sku", "tags"]].dropna(subset=["tags"])
+        df.drop(["tags"], axis=1, inplace=True)
         df.to_sql(name="product", con=db.engine, if_exists="append", index=False)
+        db.session.commit()
+        df_tags = process_product_tags(df_tags, vendor.id)
+        print(df_tags)
+        df_tags.to_sql(name="product_tag", con=db.engine, if_exists="append", index=False)
         db.session.commit()
         flash("Список товаров успешно обновлён.")
     else:

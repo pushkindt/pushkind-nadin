@@ -146,7 +146,14 @@
                     <h5>{{product.name}}</h5>
                     <small>Артикул: {{product.sku}}</small>
                 </div>
-                <div class="col-sm overflow-hidden pt-sm-4">{{ product.vendor.name }}</div>
+                <div class="col-sm overflow-hidden pt-sm-1">
+                    {{ product.vendor.name }}
+                    <div>
+                        {% for tag in product.tags %}
+                            <small class="badge bg-secondary">{{tag.tag}}</small>
+                        {% endfor %}
+                    </div>
+                </div>
                 <div class="col overflow-hidden pt-sm-4 pt-2">
                     <strong>{{ '{:,.2f}'.format(product.price) }}</strong>
                     ₽/{{ product.measurement }}

@@ -788,10 +788,10 @@ class Product(db.Model):
     measurement = db.Column(db.String(128), nullable=True)
     cat_id = db.Column(db.Integer, db.ForeignKey("category.id", ondelete="CASCADE"), nullable=False)
     description = db.Column(db.String(512), nullable=True)
-    input_required = db.Column(db.Boolean, nullable=False, default=False, server_default=expression.false())
     options = db.Column(db.JSON())
     vendor = db.relationship("Vendor", back_populates="products")
     category = db.relationship("Category", back_populates="products")
+    tags = db.relationship("ProductTag", backref="product", cascade="all, delete-orphan")
 
     def to_dict(self):
         return {
@@ -805,5 +805,11 @@ class Product(db.Model):
             "sku": self.sku,
             "price": self.price,
             "measurement": self.measurement,
-            "input_required": self.input_required,
+            "tags": [tag.name for tag in self.tags],
         }
+
+
+class ProductTag(db.Model):
+    __tablename__ = "product_tag"
+    product_id = db.Column(db.Integer, db.ForeignKey("product.id"), primary_key=True)
+    tag = db.Column(db.String(128), nullable=False, index=True, primary_key=True)

@@ -67,7 +67,7 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             {% for category in categories %}
-            <span class="text-decoration-none badge bg-secondary">{{ category.name }}</span>
+            <span class="text-decoration-none badge bg-primary">{{ category.name }}</span>
             {% endfor %}
         </div>
     </div>
@@ -116,8 +116,13 @@
                         <h5>{{product.name}}</h5>
                         <small>Артикул: {{product.sku}}</small>
                     </div>
-                    <div class="col-sm overflow-hidden pt-sm-4 selectable">
+                    <div class="col-sm overflow-hidden pt-sm-1 selectable">
                         {{ product.category.name }}
+                        <div>
+                            {% for tag in product.tags %}
+                                <small class="badge bg-secondary">{{tag.tag}}</small>
+                            {% endfor %}
+                        </div>
                     </div>
                     <div class="col-sm overflow-hidden pt-sm-4 pt-2 selectable">
                         <strong>{{ '{:,.2f}'.format(product.price) }}</strong> ₽/{{ product.measurement }}

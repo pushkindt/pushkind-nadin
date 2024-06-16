@@ -23,8 +23,13 @@
         </div>
         {% endif %}
     </div>
-    <div class="col-sm-2 overflow-hidden pt-sm-4">
+    <div class="col-sm-2 overflow-hidden pt-sm-1">
         {{ product['vendor'] }}
+        <div>
+            {% for tag in product.tags %}
+            <small class="badge bg-secondary">{{tag.tag}}</small>
+            {% endfor %}
+        </div>
     </div>
     <div class="col-sm-2 overflow-hidden pt-sm-4">
         <strong>{{ '{:,.2f}'.format(product['price']) }}</strong> ₽

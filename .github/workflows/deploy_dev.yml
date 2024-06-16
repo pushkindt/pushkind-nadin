@@ -16,4 +16,4 @@ jobs:
           known_hosts: ${{ secrets.CICD_KNOWN_HOSTS }}
           if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
       - name: Pull
-        run: ssh cicd@reports.pushkind.com "cd /var/www6/html/ && git pull origin dev && supervisorctl restart nadin_dev"
+        run: ssh cicd@reports.pushkind.com "cd /var/www6/html/ && make deploy_dev"
