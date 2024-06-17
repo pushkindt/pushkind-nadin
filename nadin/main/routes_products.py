@@ -12,7 +12,7 @@ from nadin.extensions import db
 from nadin.main.forms import UploadImagesForm, UploadProductImageForm, UploadProductsForm
 from nadin.main.routes import bp
 from nadin.main.utils import role_forbidden
-from nadin.models import Category, Product, UserRoles, Vendor
+from nadin.models import Category, Product, ProductTag, UserRoles, Vendor
 from nadin.utils import first
 
 ################################################################################
@@ -221,7 +221,9 @@ def remove_products():
     if vendor is None:
         flash("Такой поставщик не найден.")
         return redirect(url_for("main.ShowProducts"))
-    Product.query.filter_by(vendor_id=vendor.id).filter().delete()
+    products = Product.query.filter_by(vendor_id=vendor.id).all()
+    ProductTag.query.filter(ProductTag.product_id.in_([p.id for p in products])).delete()
+    Product.query.filter_by(vendor_id=vendor.id).delete()
     db.session.commit()
     flash("Список товаров успешно очищен.")
     return redirect(url_for("main.ShowProducts", vendor_id=vendor.id))

@@ -805,7 +805,7 @@ class Product(db.Model):
             "sku": self.sku,
             "price": self.price,
             "measurement": self.measurement,
-            "tags": [tag.name for tag in self.tags],
+            "tags": [tag.tag for tag in self.tags],
         }
 
 
