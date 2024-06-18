@@ -65,9 +65,11 @@ function PopulateCartProducts() {
     let shoppingCart = CleanShoppingCart();
     shoppingCart.forEach(PopulateProduct);
     const submitButton = document.querySelector("#submit");
+    const comment = document.querySelector("#comment");
     const emptyCartAlert = document.querySelector("#emptyCartAlert");
     if (shoppingCart.length > 0) {
         submitButton.classList.remove("d-none");
+        comment.classList.remove("d-none");
         emptyCartAlert.classList.add("d-none");
     }
     submitButton.addEventListener("click", function () {
@@ -374,7 +376,7 @@ function HandleAddToCart(event) {
 
 function HandleAddToCart2(event) {
 
-    const shoppingCart = GetShoppingCart();
+    let shoppingCart = GetShoppingCart();
     const form = event.target.closest('.modal');
     const productPos = Number(form.dataset.pos);
     const quantityInput = document.getElementById("descriptionModalProductQuantity");
@@ -403,8 +405,12 @@ function HandleAddToCart2(event) {
 
     if (shoppingCart.filter(Boolean).length == 0) {
         shoppingCart = [];
+        const submitButton = document.querySelector("#submit");
+        const comment = document.querySelector("#comment");
+        const emptyCartAlert = document.querySelector("#emptyCartAlert");
         submitButton.classList.add("d-none");
         emptyCartAlert.classList.remove("d-none");
+        comment.classList.add("d-none");
     }
     sessionStorage.setItem('shoppingCart', JSON.stringify(shoppingCart));
     SetInCartText(shoppingCart);
