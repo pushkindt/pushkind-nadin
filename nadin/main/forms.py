@@ -492,6 +492,7 @@ class CreateOrderForm(FlaskForm):
         validators=[DataRequired(message="ID объекта - обязательное поле.")],
         render_kw={"hidden": ""},
     )
+    comment = TextAreaField("Комментарий", render_kw={"placeholder": "Адрес и комментарий"})
     cart = FieldList(FormField(CartItemForm))
     submit = SubmitField("Отправить заявку на согласование")
 

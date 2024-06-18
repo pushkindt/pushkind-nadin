@@ -11,7 +11,9 @@ from nadin.main.utils import GetNewOrderNumber, SendEmailNotification, role_requ
 from nadin.models import (
     AppSettings,
     Category,
+    EventType,
     Order,
+    OrderEvent,
     OrderLimit,
     OrderStatus,
     Product,
@@ -137,6 +139,16 @@ def shop_cart():
             order.categories = categories
             db.session.commit()
             order.update_positions()
+            if form.comment.data:
+                event = OrderEvent(
+                    user_id=current_user.id,
+                    order_id=order.id,
+                    type=EventType.commented,
+                    data=form.comment.data,
+                    timestamp=datetime.now(tz=timezone.utc),
+                )
+                db.session.add(event)
+                db.session.commit()
             flash("Заявка успешно создана.")
             SendEmailNotification("new", order)
             return redirect(url_for("main.ShowIndex"))
