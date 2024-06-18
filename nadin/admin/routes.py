@@ -99,7 +99,7 @@ def SaveAppSettings():
             f = form.image.data
             file_name, file_ext = os.path.splitext(f.filename)
             file_name = f"logo{current_user.hub_id}{file_ext}"
-            full_path = os.path.join("app", "static", "upload", file_name)
+            full_path = os.path.join("nadin", "static", "upload", file_name)
             f.save(full_path)
         db.session.commit()
         flash("Настройки рассылки 1С успешно сохранены.")

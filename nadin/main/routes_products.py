@@ -167,7 +167,6 @@ def UploadProducts():
         df.to_sql(name="product", con=db.engine, if_exists="append", index=False)
         db.session.commit()
         df_tags = process_product_tags(df_tags, vendor.id)
-        print(df_tags)
         df_tags.to_sql(name="product_tag", con=db.engine, if_exists="append", index=False)
         db.session.commit()
         flash("Список товаров успешно обновлён.")
