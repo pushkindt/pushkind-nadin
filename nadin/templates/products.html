@@ -21,19 +21,19 @@
         <div class="col-md-3 mb-1">
             <select class="form-select" aria-label="Vendor select" id="vendorSelect">
                 {% for v in vendors %}
-                <option {% if v.id==vendor.id %}selected{% endif %} value="{{ v.id }}">{{ v.name }}</option>
+                <option {% if v.id==vendor_id %}selected{% endif %} value="{{ v.id }}">{{ v.name }}</option>
                 {% endfor %}
             </select>
         </div>
         {% endif %}
         <div class="col-auto">
-            <a class="btn btn-primary text-white" href="{{url_for('main.DownloadProducts', vendor_id=vendor.id)}}">
+            <a class="btn btn-primary text-white" href="{{url_for('main.DownloadProducts', vendor_id=vendor_id)}}">
                 <i class="bi bi-cloud-download"></i>
             </a>
         </div>
         <div class="col-auto">
             <form method="POST" enctype="multipart/form-data" id="uploadProductsForm"
-                action="{{url_for('main.UploadProducts', vendor_id=vendor.id)}}">
+                action="{{url_for('main.UploadProducts', vendor_id=vendor_id)}}">
                 {{ products_form.csrf_token(id=False) }}
                 <label for="uploadProductsButton">
                     <span class="btn btn-warning mb-1 text-white">
@@ -45,7 +45,7 @@
         </div>
         <div class="col-auto">
             <form method="POST" enctype="multipart/form-data" id="uploadImagesForm"
-                action="{{url_for('main.UploadImages', vendor_id=vendor.id)}}">
+                action="{{url_for('main.UploadImages', vendor_id=vendor_id)}}">
                 {{ images_form.csrf_token(id=False) }}
                 <label for="uploadImagesButton">
                     <span class="btn btn-success mb-1 text-white">
@@ -56,7 +56,7 @@
             </form>
         </div>
         <div class="col-auto">
-            <form action="{{ url_for('main.remove_products', vendor_id=vendor.id) }}" method="POST">
+            <form action="{{ url_for('main.remove_products', vendor_id=vendor_id) }}" method="POST">
                 <button type="submit" class="btn btn-danger text-white"
                     onclick="return confirm('Очистить список товаров?')">
                     <i class="bi bi-x-lg"></i>
@@ -67,7 +67,8 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             {% for category in categories %}
-            <span class="text-decoration-none badge bg-primary">{{ category.name }}</span>
+            <a href="{{url_for('main.ShowProducts', vendor_id=vendor_id, category_id=category.id)}}"
+                class="text-decoration-none badge {%if category_id == category.id%}bg-success{%else%}bg-primary{%endif%}">{{category.name }}</a>
             {% endfor %}
         </div>
     </div>
@@ -84,7 +85,8 @@
                         Загрузите обновленный каталог из Excel.
                     </li>
                     <li>
-                        Загрузите картинки в zip-архиве (имя файла = "артикул товара") или добавьте по одной (ссылка "фото")
+                        Загрузите картинки в zip-архиве (имя файла = "артикул товара") или добавьте по одной (ссылка
+                        "фото")
                     </li>
                 </ol>
             </div>
@@ -94,11 +96,11 @@
 
 <div class="container">
     <div id="productList">
-        {% for product in vendor.products|sort(attribute='name') %}
+        {% for product in products %}
         <div class="row my-1 bg-white rounded product">
             <div class="col-auto text-center">
                 <form method="POST" enctype="multipart/form-data" id="uploadProductImageForm{{product.id}}"
-                    action="{{url_for('main.UploadProductImage', product_id=product.id, vendor_id=vendor.id)}}">
+                    action="{{url_for('main.UploadProductImage', product_id=product.id, vendor_id=vendor_id)}}">
                     {{ product_image_form.csrf_token(id=False) }}
                     <label for="uploadProductImageButton{{product.id}}">
                         <img src="{{product.image or config['PLACEHOLDER_IMAGE']}}" height="64" width="64"
@@ -120,7 +122,7 @@
                         {{ product.category.name }}
                         <div>
                             {% for tag in product.tags %}
-                                <small class="badge bg-secondary">{{tag.tag}}</small>
+                            <small class="badge bg-secondary">{{tag.tag}}</small>
                             {% endfor %}
                         </div>
                     </div>
@@ -237,7 +239,7 @@
         productFilter.addEventListener("keyup", () => {
             const filterValue = productFilter.value.toLowerCase();
             const productRows = productList.querySelectorAll(".product");
-            if (filterValue.length > 0){
+            if (filterValue.length > 0) {
                 productRows.forEach(row => {
                     const rowText = row.textContent.toLowerCase();
                     const showRow = rowText.indexOf(filterValue) > -1;

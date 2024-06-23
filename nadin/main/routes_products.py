@@ -117,22 +117,31 @@ def ShowProducts():
         vendors = vendors.filter_by(email=current_user.email)
     vendors = vendors.all()
 
-    vendor = _get_vendor(request.args.get("vendor_id", type=int))
-    if vendor is None:
-        if current_user.role == UserRoles.vendor:
-            flash("Такой поставщик не найден.")
-            return redirect(url_for("auth.logout"))
-        vendor = first(vendors)
+    if not vendors:
+        vendors.append(current_user.hub)
 
-    categories = Category.query.filter_by(hub_id=current_user.hub_id).all()
+    vendor_id = request.args.get("vendor_id", type=int)
+    if vendor_id is None or vendor_id not in (v.id for v in vendors):
+        vendor_id = first(vendors).id
+
+    category_id = request.args.get("category_id", type=int)
+    categories = Category.query.filter_by(hub_id=current_user.hub_id)
+    categories = categories.order_by(Category.name).all()
+
+    products = Product.query.filter_by(vendor_id=vendor_id)
+    if category_id:
+        products = products.filter_by(cat_id=category_id)
+    products = products.order_by(Product.name).all()
     return render_template(
         "products.html",
         vendors=vendors,
-        vendor=vendor,
+        vendor_id=vendor_id,
+        products=products,
         categories=categories,
         products_form=products_form,
         images_form=images_form,
         product_image_form=product_image_form,
+        category_id=category_id,
     )
 
 
