@@ -33,7 +33,7 @@
         </div>
         <div class="col-auto">
             <form method="POST" enctype="multipart/form-data" id="uploadProductsForm"
-                action="{{url_for('main.UploadProducts', vendor_id=vendor_id)}}">
+                action="{{url_for('main.UploadProducts', vendor_id=vendor_id, category_id=category_id)}}">
                 {{ products_form.csrf_token(id=False) }}
                 <label for="uploadProductsButton">
                     <span class="btn btn-warning mb-1 text-white">
