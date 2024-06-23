@@ -69,18 +69,13 @@
             {% for category in categories %}
             {% if "/" not in category.name %}
             |
-            {% else %}
-            <small>
-            {%endif%}
+            {% endif %}
             {%if category_id == category.id%}
             <a href="{{url_for('main.ShowProducts', vendor_id=vendor_id)}}"
                 class="text-decoration-none badge bg-success">{{category.name.split("/")[-1]}}</a>
             {%else%}
             <a href="{{url_for('main.ShowProducts', vendor_id=vendor_id, category_id=category.id)}}"
                 class="text-decoration-none badge bg-primary">{{category.name.split("/")[-1]}}</a>
-            {%endif%}
-            {% if "/" in category.name %}
-            </small>
             {%endif%}
             {% endfor %}
         </div>
