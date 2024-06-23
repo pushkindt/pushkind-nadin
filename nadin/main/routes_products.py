@@ -155,6 +155,8 @@ def UploadProducts():
         flash("Такой поставщик не найден.")
         return redirect(url_for("main.ShowProducts"))
 
+    category_id = request.args.get("category_id", type=int)
+
     if form.validate_on_submit():
         categories = Category.query.filter_by(hub_id=current_user.hub_id).all()
         categories = {c.name.lower(): c.id for c in categories}
@@ -176,13 +178,15 @@ def UploadProducts():
         df.to_sql(name="product", con=db.engine, if_exists="append", index=False)
         db.session.commit()
         df_tags = process_product_tags(df_tags, vendor.id)
+        ProductTag.query.filter(ProductTag.product_id.in_(df_tags["product_id"].to_list())).delete()
+        db.session.commit()
         df_tags.to_sql(name="product_tag", con=db.engine, if_exists="append", index=False)
         db.session.commit()
         flash("Список товаров успешно обновлён.")
     else:
         for error in form.products.errors:
             flash(error)
-    return redirect(url_for("main.ShowProducts", vendor_id=vendor.id))
+    return redirect(url_for("main.ShowProducts", vendor_id=vendor.id, category_id=category_id))
 
 
 @bp.route("/products/upload/images", methods=["GET", "POST"])
