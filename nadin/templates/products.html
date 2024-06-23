@@ -65,15 +65,18 @@
         </div>
     </div>
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col">
             {% for category in categories %}
+            {% if "/" not in category.name %}
+            |
+            {% endif %}
             <a href="{{url_for('main.ShowProducts', vendor_id=vendor_id, category_id=category.id)}}"
-                class="text-decoration-none badge {%if category_id == category.id%}bg-success{%else%}bg-primary{%endif%}">{{category.name }}</a>
+                class="text-decoration-none badge {%if category_id == category.id%}bg-success{%else%}bg-primary{%endif%}">{{category.name.split("/")[-1] }}</a>
             {% endfor %}
         </div>
     </div>
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col">
             <div class="alert bg-yellow my-1" role="alert">
                 <ol class="my-0">
                     <li>
