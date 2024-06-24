@@ -7,8 +7,11 @@
 {% if current_user.role.name == "admin" %}
 	<div class="container border bg-white rounded">
 		<div class="row">
-			<div class="col">
+			<div class="col-auto">
 				<a href="{{ url_for('auth.signup') }}">Новый пользователь</a>
+			</div>
+			<div class="col-auto">
+				<a href="{{ url_for('oauth.home') }}">Oauth</a>
 			</div>
 			<div class="col text-end">
 				<a href="{{ url_for('static', filename = 'app.log') }}">Лог файл</a>

@@ -6,9 +6,10 @@ from pathlib import Path
 from dynaconf import FlaskDynaconf
 from flask import Flask, render_template, request
 
-from nadin import admin, api, auth
+from nadin import admin, api, auth, oauth
 from nadin.extensions import db, login_manager, mail, migrate, moment
 from nadin.main import routes as main_routes
+from nadin.oauth2 import config_oauth
 
 
 def create_app(**config):
@@ -31,6 +32,7 @@ def register_extensions(app):
     migrate.init_app(app, db)
     mail.init_app(app)
     moment.init_app(app)
+    config_oauth(app)
 
 
 def register_blueprints(app):
@@ -38,6 +40,7 @@ def register_blueprints(app):
     app.register_blueprint(auth.routes.bp, url_prefix="/auth")
     app.register_blueprint(api.routes.bp, url_prefix="/api")
     app.register_blueprint(main_routes.bp, url_prefix="/")
+    app.register_blueprint(oauth.routes.bp, url_prefix="/oauth")
 
 
 def register_errorhandlers(app):

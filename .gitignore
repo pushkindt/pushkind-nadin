@@ -170,3 +170,7 @@ migrations/
 .secrets.yaml
 
 nadin/static/upload/
+
+private.pem
+private.pem.pub
+public.pem
