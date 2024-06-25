@@ -221,6 +221,9 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return json.dumps(self.to_dict(), ensure_ascii=False)
 
+    def get_user_id(self):
+        return self.id
+
     def set_password(self, password):
         self.password = generate_password_hash(password)
 
@@ -325,6 +328,10 @@ class Category(db.Model):
         cascade="all, delete",
         passive_deletes=True,
     )
+
+    @property
+    def short_name(self):
+        return self.name.split("/")[-1]
 
     def __repr__(self):
         return json.dumps(self.to_dict(), ensure_ascii=False)

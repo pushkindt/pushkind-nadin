@@ -7,6 +7,7 @@ default:
   admins: []
   mail_sendername: Administrator
   import_products_conf_sheet: "Настройка импорта"
+  oauth2_refresh_token_generator: true
 
 development:
   debug: true

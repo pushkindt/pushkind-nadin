@@ -72,10 +72,10 @@
             {% endif %}
             {%if category_id == category.id%}
             <a href="{{url_for('main.ShowProducts', vendor_id=vendor_id)}}"
-                class="text-decoration-none badge bg-success">{{category.name.split("/")[-1]}}</a>
+                class="text-decoration-none badge bg-success">{{category.short_name}}</a>
             {%else%}
             <a href="{{url_for('main.ShowProducts', vendor_id=vendor_id, category_id=category.id)}}"
-                class="text-decoration-none badge bg-primary">{{category.name.split("/")[-1]}}</a>
+                class="text-decoration-none badge bg-primary">{{category.short_name}}</a>
             {%endif%}
             {% endfor %}
         </div>

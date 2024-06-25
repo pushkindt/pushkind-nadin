@@ -14,8 +14,13 @@ bp = Blueprint("auth", __name__)
 
 @bp.route("/login/", methods=["GET", "POST"])
 def login():
+
+    next_page = request.args.get("next")
+    if not next_page or url_parse(next_page).netloc != "":
+        next_page = url_for("main.ShowIndex")
+
     if current_user.is_authenticated:
-        return redirect(url_for("main.ShowIndex"))
+        return redirect(next_page)
     form = LoginForm()
     if form.validate_on_submit():
         email = form.email.data.lower()
@@ -26,7 +31,7 @@ def login():
         login_user(user, remember=form.remember_me.data)
         current_app.logger.info("%s logged", user.email)
         db.session.commit()
-        return redirect(url_for("main.ShowIndex"))
+        return redirect(next_page)
     for error in form.email.errors + form.password.errors + form.remember_me.errors:
         flash(error)
     return render_template("auth/login.html", form=form)

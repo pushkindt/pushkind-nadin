@@ -4,7 +4,7 @@ from pathlib import Path
 from authlib.integrations.flask_oauth2 import current_token
 from authlib.jose import JsonWebKey, KeySet
 from authlib.oauth2 import OAuth2Error
-from flask import Blueprint, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from werkzeug.security import gen_salt
 
@@ -61,9 +61,10 @@ def create_client():
 def authorize():
     if request.method == "GET":
         try:
-            grant = authorization.validate_consent_request(end_user=current_user)
+            grant = authorization.get_consent_grant(end_user=current_user)
         except OAuth2Error as error:
-            return jsonify(dict(error.get_body()))
+            flash(error.description, category="error")
+            return redirect(url_for("main.ShowIndex"))
         return render_template("oauth/authorize.html", user=current_user, grant=grant)
     if request.form["confirm"]:
         grant_user = current_user
@@ -84,56 +85,76 @@ def remove_client(client_id):
 
 @bp.route("/token", methods=("POST",))
 def issue_token():
-    return authorization.create_token_response()
+    response = authorization.create_token_response()
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 
 @bp.route("/userinfo")
 @require_oauth("profile")
-def api_me():
+def userinfo():
     return jsonify(generate_user_info(current_token.user, current_token.scope))
 
 
 @bp.route("/.well-known/openid-configuration")
 def well_known_openid_configuration():
 
-    return jsonify(
+    response = jsonify(
         {
             "authorization_endpoint": url_for("oauth.authorize", _external=True),
             "token_endpoint": url_for("oauth.issue_token", _external=True),
-            "userinfo_endpoint": url_for("oauth.api_me", _external=True),
-            "jwks_uri": url_for("oauth.jwks_endpoint", _external=True),
-            # Do I even need this one?
-            # IMO the OIDC server doesn't have a concept of a user being still logged in? --mh
-            # "end_session_endpoint": "http://oidc:4000/openid/end-session",
+            "userinfo_endpoint": url_for("oauth.userinfo", _external=True),
+            "jwks_uri": url_for("oauth.jwks", _external=True),
+            "end_session_endpoint": url_for("oauth.logout", _external=True),
             "id_token_signing_alg_values_supported": ["HS256", "RS256"],
             "issuer": JWT_CONFIG["iss"],
+            "scopes_supported": [
+                "openid",
+                "profile",
+                "email",
+            ],
+            "grant_types_supported": [
+                "authorization_code",
+                "refresh_token",
+            ],
             "response_types_supported": [
                 "code",
-                # TODO check what it takes to support these too
-                # "id_token",
-                # "id_token token",
-                # "code token",
-                # "code id_token",
-                # "code id_token token"
+                "token",
+                "id_token",
+                "code token",
+                "code id_token",
+                "token id_token",
+                "code token id_token",
+                "none",
             ],
             "subject_types_supported": ["public"],
             "token_endpoint_auth_methods_supported": [
-                # TODO is supporting both a good idea? --mh
                 "client_secret_post",
                 "client_secret_basic",
+                "none",
             ],
+            "code_challenge_methods_supported": ["S256"],
         }
     )
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 
 def load_public_keys():
     public_key_path = Path("public.pem")
-    public_key = JsonWebKey.import_key(public_key_path.read_bytes())
-    public_key["use"] = "sig"
-    public_key["alg"] = "RS256"
+    public_key = JsonWebKey.import_key(public_key_path.read_bytes(), {"use": "sig", "alg": "RS256"})
+    public_key.use = "sig"
+    public_key.alg = "RS256"
     return KeySet([public_key])
 
 
-@bp.route("/oauth/jwks")
-def jwks_endpoint():
-    return jsonify(load_public_keys().as_dict())
+@bp.route("/jwks")
+def jwks():
+    response = jsonify(load_public_keys().as_dict())
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
+
+@bp.route("/logout")
+def logout():
+    return jsonify({"result": "ok"})
