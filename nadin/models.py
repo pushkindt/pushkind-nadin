@@ -262,13 +262,13 @@ class User(UserMixin, db.Model):
         return jwt.encode(
             {"user_id": self.id, "exp": time() + expires_in},
             current_app.config["SECRET_KEY"],
-            algorithm="HS256",
+            algorithm="RS256",
         )
 
     @staticmethod
     def verify_jwt_token(token):
         try:
-            user_id = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])["user_id"]
+            user_id = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["RS256"])["user_id"]
         except ValueError:
             return None
         return User.query.get(user_id)

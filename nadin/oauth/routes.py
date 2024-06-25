@@ -106,7 +106,7 @@ def well_known_openid_configuration():
             "userinfo_endpoint": url_for("oauth.userinfo", _external=True),
             "jwks_uri": url_for("oauth.jwks", _external=True),
             "end_session_endpoint": url_for("oauth.logout", _external=True),
-            "id_token_signing_alg_values_supported": ["HS256", "RS256"],
+            "id_token_signing_alg_values_supported": ["RS256"],
             "issuer": JWT_CONFIG["iss"],
             "scopes_supported": [
                 "openid",
@@ -143,8 +143,6 @@ def well_known_openid_configuration():
 def load_public_keys():
     public_key_path = Path("public.pem")
     public_key = JsonWebKey.import_key(public_key_path.read_bytes(), {"use": "sig", "alg": "RS256"})
-    public_key.use = "sig"
-    public_key.alg = "RS256"
     return KeySet([public_key])
 
 
