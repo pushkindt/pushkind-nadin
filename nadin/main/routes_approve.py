@@ -34,7 +34,6 @@ from nadin.models import (
     OrderStatus,
     OrderVendor,
     Project,
-    Site,
     User,
     UserRoles,
     Vendor,
@@ -58,7 +57,7 @@ def GetOrder(order_id):
         order = order.join(OrderCategory).filter(
             OrderCategory.category_id.in_([cat.id for cat in current_user.categories])
         )
-        order = order.join(Site).filter(Site.project_id.in_([p.id for p in current_user.projects]))
+        order = order.join(Project).filter(Project.id.in_([p.id for p in current_user.projects]))
     elif current_user.role == UserRoles.vendor:
         vendor = Vendor.query.filter_by(hub_id=current_user.hub_id, email=current_user.email).first()
         order = order.filter(
@@ -121,15 +120,11 @@ def ShowOrder(order_id):
     approver_form.process()
 
     initiative_form.project.choices = [(p.id, p.name) for p in projects]
-    if order.site is None:
+    if order.project is None:
         initiative_form.project.choices.append((0, "Выберите проект..."))
         initiative_form.project.default = 0
-        initiative_form.site.choices = [(0, "Выберите объект...")]
-        initiative_form.site.default = 0
     else:
-        initiative_form.project.default = order.site.project_id
-        initiative_form.site.choices = [(s.id, s.name) for s in order.site.project.sites]
-        initiative_form.site.default = order.site_id
+        initiative_form.project.default = order.project_id
     initiative_form.process()
 
     split_form = SplitOrderForm()
@@ -197,7 +192,7 @@ def SplitOrder(order_id):
             new_order.total = sum(product["quantity"] * product["price"] for product in new_order.products)
             new_order.income_id = order.income_id
             new_order.cashflow_id = order.cashflow_id
-            new_order.site_id = order.site_id
+            new_order.project_id = order.project_id
             new_order.status = OrderStatus.new
             new_order.create_timestamp = int(now.timestamp())
             new_order.hub_id = order.hub_id
@@ -234,10 +229,10 @@ def SplitOrder(order_id):
         db.session.add(event)
         db.session.commit()
 
-        if order.site is not None and order.cashflow_statement is not None:
+        if order.project is not None and order.cashflow_statement is not None:
             OrderLimit.update_current(
                 current_user.hub_id,
-                project_id=order.site.project_id,
+                project_id=order.project_id,
                 cashflow_id=order.cashflow_id,
             )
 
@@ -270,7 +265,7 @@ def DuplicateOrder(order_id):
     new_order.total = order.total
     new_order.income_id = order.income_id
     new_order.cashflow_id = order.cashflow_id
-    new_order.site_id = order.site_id
+    new_order.project_id = order.project_id
     new_order.status = OrderStatus.new
     new_order.create_timestamp = int(now.timestamp())
 
@@ -300,10 +295,10 @@ def DuplicateOrder(order_id):
 
     new_order.update_positions()
 
-    if order.site is not None and order.cashflow_statement is not None:
+    if order.project is not None and order.cashflow_statement is not None:
         OrderLimit.update_current(
             current_user.hub_id,
-            project_id=order.site.project_id,
+            project_id=order.project_id,
             cashflow_id=order.cashflow_id,
         )
 
@@ -365,10 +360,10 @@ def SaveQuantity(order_id):
 
         db.session.commit()
 
-        if order.site is not None and order.cashflow_statement is not None:
+        if order.project is not None and order.cashflow_statement is not None:
             OrderLimit.update_current(
                 current_user.hub_id,
-                project_id=order.site.project_id,
+                project_id=order.project_id,
                 cashflow_id=order.cashflow_id,
             )
 
@@ -418,7 +413,7 @@ def GetExcelReport1(order_id):
                 target_cell.alignment = copy(source_cell.alignment)
         ws.cell(i, 1).value = k + 1
         ws.cell(i, 5).value = product["name"]
-        ws.cell(i, 3).value = order.site.project.name if order.site is not None else ""
+        ws.cell(i, 3).value = order.project.name if order.project is not None else ""
         ws.cell(i, 7).value = product.get("vendor", "")
         ws.cell(i, 8).value = product["quantity"]
         c1 = ws.cell(i, 8).coordinate
@@ -469,7 +464,7 @@ def GetExcelReport2(order_id):
     wb = load_workbook(filename=os.path.join("app", "static", "upload", "template2.xlsx"))
     ws = wb.active
 
-    ws.title = order.site.name if order.site is not None else "Объект не указан"
+    ws.title = order.project.name if order.project is not None else "Проект не указан"
 
     i = starting_row
     for product in order_products:
@@ -568,7 +563,7 @@ def Prepare1CReport(order, excel_date):
 
             # Object
 
-            ws.cell(i, 2).value = order.site.name if order.site is not None else ""
+            ws.cell(i, 2).value = order.project.name if order.project is not None else ""
             # Initiative
 
             ws.cell(i, 5).value = order.initiative.name
@@ -807,10 +802,10 @@ def SaveApproval(order_id):
                     if data is not None:
                         SendEmail1C([app_data.email_1C], order, data.read())
 
-            if order.site is not None and order.cashflow_statement is not None:
+            if order.project is not None and order.cashflow_statement is not None:
                 OrderLimit.update_current(
                     current_user.hub_id,
-                    project_id=order.site.project_id,
+                    project_id=order.project_id,
                     cashflow_id=order.cashflow_id,
                 )
 
@@ -879,10 +874,10 @@ def SaveStatements(order_id):
             db.session.add(event)
         db.session.commit()
 
-        if order.site is not None and order.cashflow_statement is not None:
+        if order.project is not None and order.cashflow_statement is not None:
             OrderLimit.update_current(
                 current_user.hub_id,
-                project_id=order.site.project_id,
+                project_id=order.project_id,
                 cashflow_id=order.cashflow_id,
             )
 
@@ -915,36 +910,20 @@ def SaveParameters(order_id):
     form.categories.choices = [(c.id, c.name) for c in categories]
     form.project.choices = [(p.id, p.name) for p in projects]
 
-    project = Project.query.filter_by(id=form.project.data, hub_id=current_user.hub_id).first()
-    if project is not None:
-        form.site.choices = [(s.id, s.name) for s in project.sites]
-    else:
-        form.site.choices = []
-
     if form.validate_on_submit() is True:
-        new_site = Site.query.filter_by(id=form.site.data, project_id=form.project.data).first()
-        if new_site is not None and (order.site is None or order.site.id != new_site.id):
-            old_project = order.site.project
-            message = f'Объект изменён с «{order.site.name if order.site else ""}» на «{new_site.name}»'
+        new_project = Project.query.filter_by(id=form.project.data, hub_id=current_user.hub_id).first()
+        if new_project is not None and (order.project is None or order.project_id != new_project.id):
+            message = f'Проект изменён «{order.project.name if order.project else ""}» на «{new_project.name}»'
             event = OrderEvent(
                 user_id=current_user.id,
                 order_id=order_id,
-                type=EventType.site,
+                type=EventType.project,
                 data=message,
                 timestamp=datetime.now(tz=timezone.utc),
             )
             db.session.add(event)
-            order.site = Site.query.filter_by(id=form.site.data, project_id=form.project.data).first()
-            if old_project.id != order.site.project.id:
-                message = f'Проект изменён с «{old_project.name if order.site else ""}» на «{order.site.project.name}»'
-                event = OrderEvent(
-                    user_id=current_user.id,
-                    order_id=order_id,
-                    type=EventType.project,
-                    data=message,
-                    timestamp=datetime.now(tz=timezone.utc),
-                )
-                db.session.add(event)
+            order.project = new_project
+
         order.categories = Category.query.filter(
             Category.id.in_(form.categories.data),
             Category.hub_id == current_user.hub_id,
@@ -952,15 +931,15 @@ def SaveParameters(order_id):
         OrderApproval.query.filter_by(order_id=order.id).delete()
         db.session.commit()
         order.update_positions(update_status=True)
-        if order.site is not None and order.cashflow_statement is not None:
+        if order.project is not None and order.cashflow_statement is not None:
             OrderLimit.update_current(
                 current_user.hub_id,
-                project_id=order.site.project_id,
+                project_id=order.project_id,
                 cashflow_id=order.cashflow_id,
             )
         flash("Параметры заявки успешно сохранены.")
     else:
-        for error in form.project.errors + form.site.errors + form.categories.errors:
+        for _, error in form.errors.items():
             flash(error)
     return redirect(url_for("main.ShowOrder", order_id=order_id))
 

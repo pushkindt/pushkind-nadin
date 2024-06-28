@@ -262,13 +262,13 @@ class User(UserMixin, db.Model):
         return jwt.encode(
             {"user_id": self.id, "exp": time() + expires_in},
             current_app.config["SECRET_KEY"],
-            algorithm="RS256",
+            algorithm="HS256",
         )
 
     @staticmethod
     def verify_jwt_token(token):
         try:
-            user_id = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["RS256"])["user_id"]
+            user_id = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])["user_id"]
         except ValueError:
             return None
         return User.query.get(user_id)
@@ -400,8 +400,16 @@ class Project(db.Model):
         index=True,
     )
     uid = db.Column(db.String(128), nullable=True)
+    tin = db.Column(db.String(128), nullable=True)  # taxpayer identification number
+    phone = db.Column(db.String(128), nullable=True)
+    email = db.Column(db.String(128), nullable=True)
+    contact = db.Column(db.String(128), nullable=True)
+    note = db.Column(db.Text, nullable=True)
+    legal_address = db.Column(db.Text, nullable=True)
+    shipping_address = db.Column(db.Text, nullable=True)
     hub = db.relationship("Vendor", back_populates="projects")
-    sites = db.relationship("Site", cascade="all, delete", back_populates="project", passive_deletes=True)
+    orders = db.relationship("Order", back_populates="project")
+
     order_limits = db.relationship(
         "OrderLimit",
         back_populates="project",
@@ -418,25 +426,6 @@ class Project(db.Model):
             "name": self.name,
             "uid": self.uid,
             "enabled": self.enabled,
-            "sites": [site.to_dict() for site in self.sites],
-        }
-        return data
-
-
-class Site(db.Model):
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
-    name = db.Column(db.String(128), nullable=False, index=True)
-    project_id = db.Column(db.Integer, db.ForeignKey("project.id", ondelete="CASCADE"), nullable=False)
-    uid = db.Column(db.String(128), nullable=True)
-    orders = db.relationship("Order", back_populates="site")
-    project = db.relationship("Project", back_populates="sites")
-
-    def to_dict(self):
-        data = {
-            "id": self.id,
-            "project_id": self.project_id,
-            "name": self.name,
-            "uid": self.uid,
         }
         return data
 
@@ -462,7 +451,7 @@ class Order(db.Model):
         default=OrderStatus.new,
         server_default="new",
     )
-    site_id = db.Column(db.Integer, db.ForeignKey("site.id", ondelete="SET NULL"), nullable=True)
+    project_id = db.Column(db.Integer, db.ForeignKey("project.id", ondelete="SET NULL"), nullable=True)
     income_id = db.Column(  # БДР
         db.Integer,
         db.ForeignKey("income_statement.id", ondelete="SET NULL"),
@@ -507,10 +496,10 @@ class Order(db.Model):
     income_statement = db.relationship("IncomeStatement", back_populates="orders")
     cashflow_statement = db.relationship("CashflowStatement", back_populates="orders")
     initiative = db.relationship("User", back_populates="orders")
-    site = db.relationship("Site", back_populates="orders")
+    project = db.relationship("Project", back_populates="orders")
 
     def update_status(self):
-        if self.site is None or self.site.project.enabled is False or self.status == OrderStatus.cancelled:
+        if self.project is None or self.project.enabled is False or self.status == OrderStatus.cancelled:
             return
         approved = [p.approved for p in self.approvals]
         if all(approved):
@@ -542,14 +531,14 @@ class Order(db.Model):
 
     @property
     def validators(self):
-        if self.site is None or len(self.categories) == 0:
+        if self.project is None or len(self.categories) == 0:
             return []
         validators = (
             User.query.filter_by(role=UserRoles.validator)
             .join(UserCategory)
             .filter(UserCategory.category_id.in_(self.categories_list))
             .join(UserProject)
-            .filter(UserProject.project_id == self.site.project_id)
+            .filter(UserProject.project_id == self.project_id)
             .join(Position)
             .join(OrderPosition)
             .filter_by(order_id=self.id)
@@ -558,28 +547,28 @@ class Order(db.Model):
 
     @property
     def purchasers(self):
-        if self.site is None or len(self.categories) == 0:
+        if self.project is None or len(self.categories) == 0:
             return []
         purchasers = (
             User.query.filter_by(role=UserRoles.purchaser)
             .join(UserCategory)
             .filter(UserCategory.category_id.in_(self.categories_list))
             .join(UserProject)
-            .filter(UserProject.project_id == self.site.project_id)
+            .filter(UserProject.project_id == self.project_id)
         )
         return purchasers.all()
 
     @property
     def reviewers(self):
         result = User.query.filter_by(id=self.initiative_id).all()
-        if self.site is None or len(self.categories) == 0:
+        if self.project is None or len(self.categories) == 0:
             return result
         result += self.validators + self.purchasers
         return result
 
     def update_positions(self, update_status=False):
-        # Orders with no site and categories binding have no responsible positions
-        if self.site is None or len(self.categories) == 0:
+        # Orders with no project and categories binding have no responsible positions
+        if self.project is None or len(self.categories) == 0:
             return
         # Query positions which have validators with the same project
         # and categories bindings as the order
@@ -591,7 +580,7 @@ class Order(db.Model):
             .join(UserCategory, User.id == UserCategory.user_id)
             .filter(UserCategory.category_id.in_(self.categories_list))
             .join(UserProject, User.id == UserProject.user_id)
-            .filter(UserProject.project_id == self.site.project_id)
+            .filter(UserProject.project_id == self.project_id)
             .all()
         )
 
@@ -776,8 +765,8 @@ class OrderLimit(db.Model):
                 orders = orders.filter(Order.create_timestamp > filters["annually"])
 
             orders = orders.filter(Order.cashflow_id == limit.cashflow_id)
-            orders = orders.join(Site)
-            orders = orders.filter(Site.project_id == limit.project_id).all()
+            orders = orders.join(Project)
+            orders = orders.filter(Project.id == limit.project_id).all()
             limit.current = sum(o.total for o in orders if o.status == OrderStatus.approved)
             if limit.current > 0.95 * limit.value:
                 for order in orders:

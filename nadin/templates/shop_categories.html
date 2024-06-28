@@ -42,13 +42,7 @@
             <strong>Проект:</strong>
             <a href="#"
                 id="projectName"
-                class="siteProjectSelect">
-                Не указан
-            </a><br>
-            <strong>Объект:</strong>
-            <a href="#"
-                id="siteName"
-                class="siteProjectSelect">
+                class="projectSelect">
                 Не указан
             </a>
         </div>
@@ -93,14 +87,14 @@
 
 
 <div class="modal fade"
-    id="siteProjectModal"
+    id="projectModal"
     tabindex="-1"
-    aria-labelledby="siteProjectModalLabel"
+    aria-labelledby="projectModalLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="siteProjectModalLabel">Проект и объект</h5>
+                <h5 class="modal-title" id="projectModalLabel">Проект</h5>
             </div>
             <div class="modal-body">
                 <div class="row">
@@ -112,17 +106,12 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="col-sm my-1">
-                        <select class="form-select border-danger" id="siteSelect">
-                            <option value="" disabled selected>Выберите объект...</option>
-                        </select>
-                    </div>
                     <div class="col-sm-auto my-1">
                         <button type="button"
                             class="btn btn-secondary"
                             data-bs-dismiss="modal"
                             disabled
-                            id="siteProjectDismiss">
+                            id="projectDismiss">
                             Продолжить
                         </button>
                     </div>
@@ -178,54 +167,41 @@
 
         SetInCartText();
 
-        let siteProjectModal = new bootstrap.Modal(document.getElementById('siteProjectModal'), { 'backdrop': 'static' });
+        let projectModal = new bootstrap.Modal(document.getElementById('projectModal'), { 'backdrop': 'static' });
 
         const projects = [{% for project in projects %}{{ project | safe }}, {% endfor %}];
 
-        CheckProjectAndSite(() => {
-            siteProjectModal.show();
+        CheckProject(() => {
+            projectModal.show();
         });
 
         const projectSelect = document.getElementById("projectSelect");
         const projectName = document.getElementById("projectName");
-        const siteName = document.getElementById("siteName");
-        const siteProjectSelect = document.getElementById("siteProjectSelect");
-        const siteSelect = document.getElementById("siteSelect");
+
         const limits = document.getElementById("limits");
         const limitAlert = document.getElementById("limitAlert");
-        const siteProjectDismiss = document.getElementById("siteProjectDismiss");
+        const projectDismiss = document.getElementById("projectDismiss");
 
         projectSelect.addEventListener("change", function () {
             const id = Number(projectSelect.value);
             const name = projectSelect.options[projectSelect.selectedIndex].text;
             sessionStorage.setItem("project_id", id);
             sessionStorage.setItem("project_name", name);
-            sessionStorage.removeItem('site_id');
-            sessionStorage.removeItem('site_name');
+
             projectName.textContent = name;
-            siteName.textContent = "Не указан";
+
             projectSelect.classList.remove("border-danger");
-            siteProjectDismiss.disabled = true;
-            siteProjectDismiss.classList.add("btn-secondary");
-            siteProjectDismiss.classList.remove("btn-primary");
-            siteSelect.innerHTML = "";
-            let defaultSite = document.createElement("option");
-            defaultSite.textContent = "Выберите объект...";
-            defaultSite.disabled = true;
-            defaultSite.selected = true;
-            siteSelect.appendChild(defaultSite);
+            projectDismiss.disabled = true;
+            projectDismiss.classList.add("btn-secondary");
+            projectDismiss.classList.remove("btn-primary");
+
             let show_limit_alert = false;
             const project = projects.find(obj => obj.id === id);
-            for (let j = 0; j < project.sites.length; j++) {
-                let siteOption = document.createElement("option");
-                siteOption.textContent = project.sites[j].name;
-                siteOption.value = project.sites[j].id;
-                siteSelect.appendChild(siteOption);
-            }
+
             limits.classList.remove("d-none");
             const limitElements = document.querySelectorAll(".limit");
             limitElements.forEach((element) => {
-                let show = element.dataset.project == id;
+                let show = Number(element.dataset.project) == id;
                 element.style.display = show ? "block" : "none";
                 if (show)
                     show_limit_alert |= element.dataset.overlimit;
@@ -236,18 +212,11 @@
                 limitAlert.classList.add("d-none");
                 limits.classList.add("d-none");
             }
-        });
 
-        siteSelect.addEventListener("change", function () {
-            const id = Number(siteSelect.value);
-            const name = siteSelect.options[siteSelect.selectedIndex].text;
-            sessionStorage.setItem("site_id", id);
-            sessionStorage.setItem("site_name", name);
-            siteName.textContent = name;
-            siteSelect.classList.remove("border-danger");
-            siteProjectDismiss.disabled = false;
-            siteProjectDismiss.classList.remove("btn-secondary");
-            siteProjectDismiss.classList.add("btn-primary");
+            projectDismiss.disabled = false;
+            projectDismiss.classList.remove("btn-secondary");
+            projectDismiss.classList.add("btn-primary");
+
         });
 
         const selectables = document.querySelectorAll(".selectable");

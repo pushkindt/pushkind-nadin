@@ -69,13 +69,7 @@
             <strong>Проект:</strong>
             <a href="{{url_for('main.shop_categories')}}"
                 id="projectName"
-                class="siteProjectSelect">
-                Не указан
-            </a><br>
-            <strong>Объект:</strong>
-            <a href="{{url_for('main.shop_categories')}}"
-                id="siteName"
-                class="siteProjectSelect">
+                class="projectSelect">
                 Не указан
             </a>
         </div>
@@ -348,7 +342,7 @@
 
         PopulateProductQuantities();
         SetInCartText();
-        CheckProjectAndSite(() => {
+        CheckProject(() => {
             window.location = "{{ url_for('main.shop_categories') }}";
         });
 

@@ -24,7 +24,7 @@ def ShowHelp():
             text(
                 f"""select
                 '' as status,
-                '' as `site_name`,
+                '' as `project_name`,
                 '' as category_name,
                 sum(total) as price,
                 count(*) as `cnt`
@@ -32,12 +32,12 @@ def ShowHelp():
                 union all
                 select
                 o.status,
-                s.name as site_name,
+                p.name as project_name,
                 c.name as category_name,
                 sum(o.total) as price,
                 count(*) as `cnt`
                 from `order` o
-                inner join site s on o.site_id = s.id
+                inner join project p on o.project_id = p.id
                 inner join order_category oc on o.id = oc.order_id
                 inner join category c on oc.category_id = c.id
                 where o.hub_id = {current_user.hub_id}
@@ -51,7 +51,7 @@ def ShowHelp():
     stats.rename(
         {
             "status": "Статус",
-            "site_name": "Объект",
+            "project_name": "Проект",
             "category_name": "Категория",
             "price": "Сумма",
             "cnt": "Кол-во",

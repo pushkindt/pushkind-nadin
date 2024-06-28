@@ -88,8 +88,8 @@ def SendEmailNotification(kind, order, recipients_id=None, data=None):
 def SendEmail1C(recipients, order, data):
     current_app.logger.info('"export1C" email about order %s has been sent to %s', order.number, recipients)
 
-    if order.site is not None:
-        subject = f"{order.site.project.name}. {order.site.name} (pushkind_{order.number})"
+    if order.project is not None:
+        subject = f"{order.project.name}. (pushkind_{order.number})"
     else:
         subject = f"pushkind_{order.number}"
 

@@ -21,7 +21,6 @@ from nadin.models import (
     OrderStatus,
     OrderVendor,
     Project,
-    Site,
     UserRoles,
     Vendor,
 )
@@ -82,12 +81,11 @@ def ShowIndex():
 
         orders = orders.join(OrderCategory)
         orders = orders.filter(OrderCategory.category_id.in_(cat.id for cat in current_user.categories))
-        orders = orders.join(Site)
-        orders = orders.filter(Site.project_id.in_(p.id for p in current_user.projects))
+        orders = orders.join(Project)
+        orders = orders.filter(Project.id.in_(p.id for p in current_user.projects))
 
     if current_user.role == UserRoles.supervisor:
-        orders = orders.join(Site)
-        orders = orders.join(Project).filter(Project.enabled.is_(True))
+        orders = orders.filter(Project.enabled.is_(True))
 
     if current_user.role == UserRoles.vendor:
         vendor = Vendor.query.filter_by(hub_id=current_user.hub_id, email=current_user.email).first()
@@ -154,11 +152,11 @@ def MergeOrders():
 
         for order in orders[1:]:
             if (
-                order.site_id != orders[0].site_id
+                order.project_id != orders[0].project_id
                 or order.income_statement != orders[0].income_statement
                 or order.cashflow_statement != orders[0].cashflow_statement
             ):
-                flash("Нельзя объединять заявки с разными объектами, БДДР или БДДС.")
+                flash("Нельзя объединять заявки с разными проектами, БДДР или БДДС.")
                 return redirect(url_for("main.ShowIndex"))
 
         products = {}
@@ -201,7 +199,7 @@ def MergeOrders():
         order.total = sum(product["quantity"] * product["price"] for product in order.products)
         order.income_id = orders[0].income_id
         order.cashflow_id = orders[0].cashflow_id
-        order.site_id = orders[0].site_id
+        order.project_id = orders[0].project_id
         order.status = OrderStatus.new
         order.create_timestamp = int(now.timestamp())
 
@@ -275,7 +273,7 @@ def SaveOrders():
         ws["A1"] = "Номер"
         ws["B1"] = "Дата"
         ws["C1"] = "Проект"
-        ws["D1"] = "Объект"
+        ws["D1"] = ""
         ws["E1"] = "Сумма"
         ws["F1"] = "Позиций"
         ws["G1"] = "Статус"
@@ -289,9 +287,9 @@ def SaveOrders():
         for i, order in enumerate(orders, start=2):
             ws.cell(row=i, column=1, value=order.number)
             ws.cell(row=i, column=2, value=datetime.fromtimestamp(order.create_timestamp))
-            if order.site is not None:
-                ws.cell(row=i, column=3, value=order.site.project.name)
-                ws.cell(row=i, column=4, value=order.site.name)
+            if order.project is not None:
+                ws.cell(row=i, column=3, value=order.project.name)
+
             ws.cell(row=i, column=5, value=order.total)
             ws.cell(row=i, column=6, value=len(order.products))
             ws.cell(row=i, column=7, value=str(order.status))

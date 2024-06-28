@@ -59,11 +59,6 @@ class InitiativeForm(FlaskForm):
         validators=[DataRequired(message="Название проекта - обязательное поле.")],
         coerce=int,
     )
-    site = SelectField(
-        "Объект",
-        validators=[DataRequired(message="Название объекта - обязательное поле.")],
-        coerce=int,
-    )
     categories = SelectMultipleField(
         "Категории",
         validators=[DataRequired(message="Категории заявки - обязательное поле.")],
@@ -280,19 +275,6 @@ class AddProjectForm(FlaskForm):
     submit = SubmitField("Добавить")
 
 
-class AddSiteForm(FlaskForm):
-    project_id = IntegerField("ID проекта", [DataRequired(message="ID проекта - обязательное поле.")])
-    site_name = StringField(
-        "Название",
-        validators=[
-            DataRequired(message="Название объекта - обязательное поле."),
-            Length(max=128, message="Слишком длинное название."),
-        ],
-    )
-    uid = StringField("Код", validators=[Optional(), Length(max=128, message="Слишком длинный код.")])
-    submit = SubmitField("Добавить")
-
-
 class EditProjectForm(FlaskForm):
     project_id = IntegerField(
         "ID проекта",
@@ -307,22 +289,6 @@ class EditProjectForm(FlaskForm):
     )
     uid = StringField("Код", validators=[Optional(), Length(max=128, message="Слишком длинный код.")])
     enabled = BooleanField("Включить проект")
-    submit = SubmitField("Изменить")
-
-
-class EditSiteForm(FlaskForm):
-    site_id = IntegerField(
-        "ID объекта",
-        validators=[DataRequired(message="ID объекта - обязательное поле.")],
-    )
-    site_name = StringField(
-        "Название",
-        validators=[
-            DataRequired(message="Название объекта - обязательное поле."),
-            Length(max=128, message="Слишком длинное название."),
-        ],
-    )
-    uid = StringField("Код", validators=[Optional(), Length(max=128, message="Слишком длинный код.")])
     submit = SubmitField("Изменить")
 
 
@@ -485,11 +451,6 @@ class CreateOrderForm(FlaskForm):
     project_id = IntegerField(
         "ID проекта",
         validators=[DataRequired(message="ID проекта - обязательное поле.")],
-        render_kw={"hidden": ""},
-    )
-    site_id = IntegerField(
-        "ID объекта",
-        validators=[DataRequired(message="ID объекта - обязательное поле.")],
         render_kw={"hidden": ""},
     )
     comment = TextAreaField("Комментарий", render_kw={"placeholder": "Адрес и комментарий"})

@@ -48,10 +48,10 @@
 	<div class="col-sm-3 overflow-hidden">
 		<span class="d-sm-none fw-bold">Инициатор:</span>
 		<span class="fw-bold">
-			{{ order.site.name if order.site else 'объект не указан' }}
+			{{ order.project.name if order.project else 'проект не указан' }}
 		</span>
 		<br>
-		<small>{{ order.initiative.name }}</small>
+		<small>{{ order.initiative.name or "" }}</small>
 	</div>
 	<div class="col col-sm overflow-hidden">
 		<span class="d-sm-none fw-bold">Согласен:</span>

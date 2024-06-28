@@ -24,13 +24,7 @@
             <strong>Проект:</strong>
             <a href="{{url_for('main.shop_categories')}}"
                 id="projectName"
-                class="siteProjectSelect">
-                Не указан
-            </a><br>
-            <strong>Объект:</strong>
-            <a href="{{url_for('main.shop_categories')}}"
-                id="siteName"
-                class="siteProjectSelect">
+                class="projectSelect">
                 Не указан
             </a>
         </div>
@@ -54,7 +48,6 @@
     <form method="POST" action="{{url_for('main.shop_cart')}}" id="shoppingCartForm">
         {{ form.csrf_token(id=False) }}
         {{ form.project_id(class_='d-none') }}
-        {{ form.site_id(class_='d-none') }}
         <div class="alert alert-secondary my-1" id="emptyCartAlert">
             Корзина пуста
         </div>
@@ -224,12 +217,11 @@
 <script>
     document.addEventListener("DOMContentLoaded", () => {
 
-        const [projectId, siteId, siteName, projectName] = CheckProjectAndSite(() => {
+        const [projectId, projectName] = CheckProject(() => {
             window.location = "{{ url_for('main.shop_categories') }}";
         });
 
         document.querySelector("#project_id").value = projectId;
-        document.querySelector("#site_id").value = siteId;
 
         PopulateCartProducts()
 

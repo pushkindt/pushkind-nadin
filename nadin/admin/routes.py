@@ -10,16 +10,14 @@ from nadin.main.forms import (
     AddCategoryForm,
     AddIncomeForm,
     AddProjectForm,
-    AddSiteForm,
     AppSettingsForm,
     CategoryResponsibilityForm,
     EditCashflowForm,
     EditIncomeForm,
     EditProjectForm,
-    EditSiteForm,
 )
 from nadin.main.utils import role_required
-from nadin.models import AppSettings, CashflowStatement, Category, IncomeStatement, Project, Site, UserRoles
+from nadin.models import AppSettings, CashflowStatement, Category, IncomeStatement, Project, UserRoles
 
 bp = Blueprint("admin", __name__)
 
@@ -33,8 +31,6 @@ def ShowAdminPage():
         "edit_category": CategoryResponsibilityForm(),
         "add_project": AddProjectForm(),
         "edit_project": EditProjectForm(),
-        "add_site": AddSiteForm(),
-        "edit_site": EditSiteForm(),
         "add_income": AddIncomeForm(),
         "add_cashflow": AddCashflowForm(),
         "edit_income": EditIncomeForm(),
@@ -183,28 +179,6 @@ def AddProject():
     return redirect(url_for("admin.ShowAdminPage"))
 
 
-@bp.route("/site/add", methods=["POST"])
-@login_required
-@role_required([UserRoles.admin])
-def AddSite():
-    form = AddSiteForm()
-    if form.validate_on_submit():
-        site_name = form.site_name.data.strip()
-        uid = form.uid.data.strip() if form.uid.data is not None else None
-        site = Site.query.filter_by(project_id=form.project_id.data, name=site_name).first()
-        if site is None:
-            site = Site(name=site_name, uid=uid, project_id=form.project_id.data)
-            db.session.add(site)
-            db.session.commit()
-            flash(f"Объект {site_name} добавлен.")
-        else:
-            flash(f"Объект {site_name} уже существует.")
-    else:
-        for error in form.site_name.errors + form.uid.errors + form.project_id.errors:
-            flash(error)
-    return redirect(url_for("admin.ShowAdminPage"))
-
-
 @bp.route("/project/remove/<int:project_id>")
 @login_required
 @role_required([UserRoles.admin])
@@ -241,50 +215,6 @@ def EditProject():
             flash("Такого проекта не существует.")
     else:
         for error in form.project_id.errors + form.project_name.errors + form.uid.errors:
-            flash(error)
-    return redirect(url_for("admin.ShowAdminPage"))
-
-
-@bp.route("/site/remove/<int:site_id>")
-@login_required
-@role_required([UserRoles.admin])
-def RemoveSite(site_id):
-    site = Site.query.filter_by(id=site_id).first()
-    if site is not None:
-        db.session.delete(site)
-        db.session.commit()
-        flash(f"Объект {site.name} удален.")
-    else:
-        flash("Такой объект не существует.")
-    return redirect(url_for("admin.ShowAdminPage"))
-
-
-@bp.route("/site/edit/", methods=["POST"])
-@login_required
-@role_required([UserRoles.admin])
-def EditSite():
-    form = EditSiteForm()
-    if form.validate_on_submit():
-        site = Site.query.filter_by(id=form.site_id.data).first()
-        if site is not None:
-            site_name = form.site_name.data.strip()
-            existed = (
-                Site.query.filter_by(name=site_name)
-                .join(Project, Site.project_id == Project.id)
-                .filter_by(hub_id=current_user.hub_id)
-                .first()
-            )
-            if existed is None or existed.id == site.id:
-                site.name = site_name
-                site.uid = form.uid.data.strip() if form.uid.data is not None else None
-                db.session.commit()
-                flash(f"Объект {site_name} изменён.")
-            else:
-                flash(f"Объект {site_name} уже существует.")
-        else:
-            flash("Такой объект не существует.")
-    else:
-        for error in form.site_id.errors + form.site_name.errors + form.uid.errors:
             flash(error)
     return redirect(url_for("admin.ShowAdminPage"))
 

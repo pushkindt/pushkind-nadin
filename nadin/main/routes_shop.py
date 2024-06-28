@@ -18,7 +18,6 @@ from nadin.models import (
     OrderStatus,
     Product,
     Project,
-    Site,
     UserRoles,
     Vendor,
 )
@@ -81,9 +80,9 @@ def shop_cart():
             if len(products) == 0:
                 flash("Заявка не может быть пуста.")
                 return render_template("shop_cart.html", form=form)
-            site = Site.query.filter_by(id=form.site_id.data, project_id=form.project_id.data).first()
-            if site is None:
-                flash("Такой площадки не существует.")
+            project = Project.query.filter_by(id=form.project_id.data).first()
+            if project is None:
+                flash("Такого проекта не существует.")
                 return redirect(url_for("main.shop_cart"))
             order_products = []
             order_vendors = []
@@ -126,7 +125,7 @@ def shop_cart():
                 number=order_number,
                 initiative_id=current_user.id,
                 create_timestamp=int(now.timestamp()),
-                site_id=site.id,
+                project_id=project.id,
                 hub_id=current_user.hub_id,
                 products=order_products,
                 vendors=list(set(order_vendors)),

@@ -437,24 +437,19 @@ function ShowCartModal(event) {
     descriptionModal.show();
 }
 
-function CheckProjectAndSite(selectProjectSiteCallback) {
+function CheckProject(selectProjectCallback) {
     const projectId = Number(sessionStorage.getItem("project_id"));
-    const siteId = Number(sessionStorage.getItem("site_id"));
-    const siteName = sessionStorage.getItem("site_name");
     const projectName = sessionStorage.getItem("project_name");
-    const siteProjectSelect = document.querySelector(".siteProjectSelect");
-    if (!projectId || !siteId || !siteName || !projectName)
-        selectProjectSiteCallback();
+    const projectSelect = document.querySelector(".projectSelect");
+    if (!projectId || !projectName)
+        selectProjectCallback();
     else {
         document.querySelector("#projectName").textContent = projectName;
-        document.querySelector("#siteName").textContent = siteName;
     }
-    siteProjectSelect.addEventListener("click", function () {
+    projectSelect.addEventListener("click", function () {
         sessionStorage.removeItem("project_id");
         sessionStorage.removeItem("project_name");
-        sessionStorage.removeItem("site_id");
-        sessionStorage.removeItem("site_name");
-        selectProjectSiteCallback();
+        selectProjectCallback();
     });
-    return [projectId, siteId, siteName, projectName];
+    return [projectId, projectName];
 }

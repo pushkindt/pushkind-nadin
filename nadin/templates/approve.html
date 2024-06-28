@@ -78,22 +78,16 @@
 	<div class="row">
 		<div class="col">
 			{% if current_user.role.name in ['admin', 'initiative', 'validator', 'purchaser'] %}
-				{% if order.site %}
+				{% if order.project %}
 					<span class="fw-bold">Проект:</span>
-					<a href="#initiativeSettingsModal" data-bs-toggle="modal">{{ order.site.project.name }}</a><br>
-					<span class="fw-bold">Объект:</span>
-					<a href="#initiativeSettingsModal" data-bs-toggle="modal">{{ order.site.name }}</a>
+					<a href="#initiativeSettingsModal" data-bs-toggle="modal">{{ order.project.name }}</a><br>
 				{% else %}
 					<span class="fw-bold">Проект:</span>
 					<a href="#initiativeSettingsModal" data-bs-toggle="modal">указать</a><br>
-					<span class="fw-bold">Объект:</span>
-					<a href="#initiativeSettingsModal" data-bs-toggle="modal">указать</a>
 				{% endif %}
 			{% else %}
 				<span class="fw-bold">Проект:</span>
-				{{ order.site.project.name or 'не указан' }}<br>
-				<span class="fw-bold">Объект:</span>
-				{{ order.site.project.name or 'не указан' }}
+				{{ order.project.name or 'не указан' }}<br>
 			{% endif %}
 		</div>
 	</div>
@@ -162,7 +156,7 @@
 								<span class="fw-bold text-warning">ждём</span>
 								{% set ns = namespace (first = 1) %}
 								{% for user in appr.position.users | selectattr('role', 'equalto', 3) %}
-									{% if order.site.project.id in user.projects_list and order.categories_list | intersect(user.categories_list) %}
+									{% if order.project_id in user.projects_list and order.categories_list | intersect(user.categories_list) %}
 										{% if ns.first == 0 %}
 											или
 										{% endif %}
@@ -250,10 +244,6 @@
 						<div class="mb-3">
 							{{ initiative_form.project.label(class_ = 'form-label') }}
 							{{ initiative_form.project(class_ = 'form-control') }}
-						</div>
-						<div class="mb-3">
-							{{ initiative_form.site.label(class_ = 'form-label') }}
-							{{ initiative_form.site(class_ = 'form-control') }}
 						</div>
 						<div class="mb-3 {% if current_user.role.name != 'admin' %}d-none{% endif %}">
 							{{ initiative_form.categories.label(class_ = 'form-label') }}
@@ -388,8 +378,8 @@
 					<button type="submit" class="btn btn-primary my-1 text-white">Скачать</button>
 				</form>
 				<div class="form-text text-danger">
-					{%if order.site is sameas none %}
-						<span>Объект не указан.</span>
+					{%if order.project is sameas none %}
+						<span>Проект не указан.</span>
 					{%endif%}
 					{%if order.income_statement is sameas none %}
 						<span>Статья БДР не указана.</span>
@@ -434,8 +424,8 @@
 					<button type="submit" class="btn btn-primary my-1 text-white">Отправить</button>
 				</form>
 				<div class="form-text text-danger">
-					{%if order.site is sameas none %}
-						<span>Объект не указан.</span>
+					{%if order.project is sameas none %}
+						<span>Проект не указан.</span>
 					{%endif%}
 					{%if order.income_statement is sameas none %}
 						<span>Статья БДР не указана.</span>
@@ -515,7 +505,7 @@
 		var projects = [{% for project in projects %}{{ project| safe }},{% endfor %}];
 
 		$("#project option[value='0']").prop("disabled", true);
-		$("#site option[value='0']").prop("disabled", true);
+
 		$("#income_statement option[value='0']").prop("disabled", true);
 		$("#cashflow_statement option[value='0']").prop("disabled", true);
 
@@ -526,25 +516,6 @@
 		$("#project").change(function () {
 			let val = Number($(this).val());
 			$(this).removeClass("border-danger");
-			let sitesList = $("#site");
-			sitesList.empty();
-			let defaultSite = $("<option>").text("Выберите объект...");
-			defaultSite.prop("disabled", true);
-			defaultSite.prop("selected", true);
-			defaultSite.val(0);
-			sitesList.append(defaultSite);
-
-			for (let i = 0; i < projects.length; i++) {
-				let proj = projects[i];
-				if (proj["id"] === val) {
-					for (j = 0; j < proj["sites"].length; j++) {
-						let siteOption = $("<option>").text(proj["sites"][j]["name"])
-						siteOption.val(proj["sites"][j]["id"]);
-						sitesList.append(siteOption);
-					}
-					break;
-				}
-			}
 
 		});
 

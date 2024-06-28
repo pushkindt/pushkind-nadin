@@ -18,7 +18,6 @@ from nadin.models import (
     OrderStatus,
     Position,
     Project,
-    Site,
     User,
     UserRoles,
     Vendor,
@@ -277,8 +276,8 @@ def DownloadUsers():
             orders = orders.filter_by(position_id=user.position_id)
             orders = orders.join(OrderCategory)
             orders = orders.filter(OrderCategory.category_id.in_([cat.id for cat in user.categories]))
-            orders = orders.join(Site)
-            orders = orders.filter(Site.project_id.in_([p.id for p in user.projects]))
+            orders = orders.join(Project)
+            orders = orders.filter(Project.id.in_([p.id for p in user.projects]))
             orders = orders.all()
             ws.cell(i, 13).value = len(orders)
             ws.cell(i, 14).value = ", ".join([o.number for o in orders])

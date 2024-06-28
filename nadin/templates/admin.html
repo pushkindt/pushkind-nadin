@@ -183,9 +183,6 @@
 						<div class="col overflow-hidden">
 							Код
 						</div>
-						<div class="col overflow-hidden">
-							(Код) Объекты
-						</div>
 					</div>
 					<div id="projectList">
 						{% for project in projects %}
@@ -196,24 +193,10 @@
 								<a class="editProjectButton" href="#" data-bs-toggle="modal"
 									data-bs-target="#editProjectModal" data-id="{{ project.id }}"><i
 										class="bi bi-pencil"></i></a>
-								<a class="addSiteButton" href="#" data-bs-toggle="modal" data-bs-target="#addSiteModal"
-									data-id="{{ project.id }}"><i class="bi bi-plus-square"></i></a>
 							</div>
 							<div class="col-sm">
 								<span class="d-sm-none fw-bold">Код:</span>
 								{{ project.uid or '' }}
-							</div>
-							<div class="col-sm">
-								<span class="d-sm-none fw-bold">(Код) Объекты:</span>
-								{% for site in project.sites %}
-								({{ site.uid or ' ' }})
-								{{ site.name }}
-								<a class="editSiteButton" href="#" data-bs-toggle="modal"
-									data-bs-target="#editSiteModal" data-id="{{ site.id }}">
-									<i class="bi bi-pencil"></i>
-								</a>
-								<br>
-								{% endfor %}
 							</div>
 						</div>
 						{% endfor %}
@@ -348,35 +331,6 @@
 	</div>
 </div>
 
-<div class="modal fade" id="addSiteModal" tabindex="-1" aria-labelledby="addSiteModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="addSiteModalLabel">ДОБАВИТЬ ОБЪЕКТ</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<form method="POST" action="{{ url_for('admin.AddSite') }}">
-				<div class="modal-body">
-					{{ forms['add_site'].csrf_token(id=False) }}
-					{{ forms['add_site'].project_id(id='addSiteProjectId', hidden='', class_='d-none') }}
-					<div class="mb-3">
-						{{ forms['add_site'].site_name.label(id=False, class_='form-label', for='addSiteName') }}
-						{{ forms['add_site'].site_name(id='addSiteName', class_='form-control') }}
-					</div>
-					<div class="mb-3">
-						{{ forms['add_site'].uid.label(id=False, class_='form-label', for='addSiteUid') }}
-						{{ forms['add_site'].uid(id='addSiteUid',class_='form-control') }}
-					</div>
-				</div>
-				<div class="modal-footer">
-					{{ forms['add_site'].submit(id=False, class_='btn btn-primary text-white') }}
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
-
 <div class="modal fade" id="editProjectModal" tabindex="-1" aria-labelledby="editProjectModalLabel" aria-hidden="true">
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -406,37 +360,6 @@
 				<div class="modal-footer">
 					{{ forms['edit_project'].submit(id=False, class_='btn btn-primary text-white') }}
 					<a class="btn btn-danger text-white" href="#" role="button" id="removeProjectButton"
-						onclick="confirm('Вы действительно хотите удалить?')">Удалить</a>
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
-
-<div class="modal fade" id="editSiteModal" tabindex="-1" aria-labelledby="editSiteModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="editSiteModalLabel">РЕДАКТИРОВАТЬ ОБЪЕКТ</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<form method="POST" action="{{ url_for('admin.EditSite') }}">
-				<div class="modal-body">
-					{{ forms['edit_site'].csrf_token(id=False) }}
-					{{ forms['edit_site'].site_id(id='editSiteId', hidden='', class_='d-none') }}
-					<div class="mb-3">
-						{{ forms['edit_site'].site_name.label(id=False, class_='form-label', for='editSiteName') }}
-						{{ forms['edit_site'].site_name(id='editSiteName', class_='form-control') }}
-					</div>
-					<div class="mb-3">
-						{{ forms['edit_site'].uid.label(id=False, class_='form-label', for='editSiteUid') }}
-						{{ forms['edit_site'].uid(id='editSiteUid',class_='form-control') }}
-					</div>
-				</div>
-				<div class="modal-footer">
-					{{ forms['edit_site'].submit(id=False, class_='btn btn-primary text-white') }}
-					<a class="btn btn-danger text-white" href="#" role="button" id="removeSiteButton"
 						onclick="confirm('Вы действительно хотите удалить?')">Удалить</a>
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
 				</div>
@@ -625,36 +548,6 @@
 		});
 	});
 
-	$(".addSiteButton").click(function () {
-		let projectId = Number($(this).data("id"));
-		$("#addSiteProjectId").val(projectId);
-		projects.some(function (project) {
-			if (project["id"] == projectId) {
-				$("#addSiteModalLabel").text("ДОБАВИТЬ ОБЪЕКТ В \"" + project["name"] + "\"");
-				return true;
-			}
-		});
-	});
-
-	$(".editSiteButton").click(function () {
-		let siteId = Number($(this).data("id"));
-		$("#editSiteId").val(siteId);
-		$("#removeSiteButton").prop("href", "{{ url_for('admin.RemoveSite', site_id=0) }}".replace(0, siteId));
-		projects.some(function (project) {
-			let found = false;
-			project["sites"].some(function (site) {
-				if (site["id"] == siteId) {
-					$("#editSiteName").val(site["name"]);
-					$("#editSiteUid").val(site["uid"]);
-					found = true;
-					return true;
-				}
-			});
-			if (found === true)
-				return true;
-		});
-	});
-
 	$("#projectFilter").on("keyup", function () {
 		let value = $(this).val().toLowerCase();
 		$("#projectList .row").filter(function () {
@@ -692,20 +585,6 @@
 	$(".income_statement option[value='0']").prop("disabled", true);
 	$(".cashflow_statement option[value='0']").prop("disabled", true);
 
-	$("#project_name").on('input', function () {
-		let val = this.value;
-		let sitesList = $("#sitesList");
-		sitesList.empty();
-		for (let i = 0, locLen = projects.length; i < locLen; i++) {
-			loc = projects[i];
-			if (loc["name"].toUpperCase() === val.toUpperCase()) {
-				for (j = 0, siteLen = loc["sites"].length; j < siteLen; j++) {
-					sitesList.append($("<option>").text(loc["sites"][j]["name"]));
-				}
-				break;
-			}
-		}
-	});
 	});
 </script>
 {% endblock %}
