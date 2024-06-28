@@ -6,6 +6,7 @@ from nadin.main import (  # noqa: F401
     routes_index,
     routes_limits,
     routes_products,
+    routes_projects,
     routes_settings,
     routes_shop,
     routes_stores,

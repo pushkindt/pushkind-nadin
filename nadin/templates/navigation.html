@@ -13,8 +13,8 @@
 	{% endif %}
 	{% if current_user.role.name not in ['default', 'vendor'] %}
 	<li class="nav-item">
-		<a class="nav-link {% if request.endpoint == 'main.ShowLimits' %} active {% endif %}"
-			href="{{ url_for('main.ShowLimits') }}">Лимиты</a>
+		<a class="nav-link {% if request.endpoint == 'main.ShowProjects' %} active {% endif %}"
+			href="{{ url_for('main.ShowProjects') }}">Клиенты</a>
 	</li>
 	{% endif %}
 	{% if current_user.role.name in ['admin', 'purchaser'] %}

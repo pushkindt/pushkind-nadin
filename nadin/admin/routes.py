@@ -9,15 +9,13 @@ from nadin.main.forms import (
     AddCashflowForm,
     AddCategoryForm,
     AddIncomeForm,
-    AddProjectForm,
     AppSettingsForm,
     CategoryResponsibilityForm,
     EditCashflowForm,
     EditIncomeForm,
-    EditProjectForm,
 )
 from nadin.main.utils import role_required
-from nadin.models import AppSettings, CashflowStatement, Category, IncomeStatement, Project, UserRoles
+from nadin.models import AppSettings, CashflowStatement, Category, IncomeStatement, UserRoles
 
 bp = Blueprint("admin", __name__)
 
@@ -29,8 +27,6 @@ def ShowAdminPage():
     forms = {
         "add_category": AddCategoryForm(),
         "edit_category": CategoryResponsibilityForm(),
-        "add_project": AddProjectForm(),
-        "edit_project": EditProjectForm(),
         "add_income": AddIncomeForm(),
         "add_cashflow": AddCashflowForm(),
         "edit_income": EditIncomeForm(),
@@ -49,7 +45,6 @@ def ShowAdminPage():
             alert=app_data.alert,
         )
 
-    projects = Project.query.filter(Project.hub_id == current_user.hub_id).order_by(Project.name).all()
     categories = Category.query.filter(Category.hub_id == current_user.hub_id).all()
 
     incomes = IncomeStatement.query.filter(IncomeStatement.hub_id == current_user.hub_id)
@@ -68,7 +63,6 @@ def ShowAdminPage():
     return render_template(
         "admin.html",
         forms=forms,
-        projects=projects,
         categories=categories,
         incomes=incomes,
         cashflows=cashflows,
@@ -153,68 +147,6 @@ def SaveCategoryResponsibility():
             + form.code.errors
         )
         for error in errors:
-            flash(error)
-    return redirect(url_for("admin.ShowAdminPage"))
-
-
-@bp.route("/project/add", methods=["POST"])
-@login_required
-@role_required([UserRoles.admin])
-def AddProject():
-    form = AddProjectForm()
-    if form.validate_on_submit():
-        project_name = form.project_name.data.strip()
-        uid = form.uid.data.strip() if form.uid.data is not None else None
-        project = Project.query.filter_by(hub_id=current_user.hub_id, name=project_name).first()
-        if project is None:
-            project = Project(name=project_name, uid=uid, hub_id=current_user.hub_id)
-            db.session.add(project)
-            db.session.commit()
-            flash(f"Клиент {project_name} добавлен.")
-        else:
-            flash(f"Клиент {project_name} уже существует.")
-    else:
-        for error in form.project_name.errors + form.uid.errors:
-            flash(error)
-    return redirect(url_for("admin.ShowAdminPage"))
-
-
-@bp.route("/project/remove/<int:project_id>")
-@login_required
-@role_required([UserRoles.admin])
-def RemoveProject(project_id):
-    project = Project.query.filter_by(id=project_id).first()
-    if project is not None:
-        db.session.delete(project)
-        db.session.commit()
-        flash(f"Клиент {project.name} удален.")
-    else:
-        flash("Такого клиента не существует.")
-    return redirect(url_for("admin.ShowAdminPage"))
-
-
-@bp.route("/project/edit/", methods=["POST"])
-@login_required
-@role_required([UserRoles.admin])
-def EditProject():
-    form = EditProjectForm()
-    if form.validate_on_submit():
-        project = Project.query.filter_by(id=form.project_id.data).first()
-        if project is not None:
-            project_name = form.project_name.data.strip()
-            existed = Project.query.filter_by(hub_id=current_user.hub_id, name=project_name).first()
-            if existed is None or existed.id == project.id:
-                project.name = project_name
-                project.uid = form.uid.data.strip() if form.uid.data is not None else None
-                project.enabled = form.enabled.data
-                db.session.commit()
-                flash(f"Клиент {project_name} изменён.")
-            else:
-                flash(f"Клиент {project_name} уже существует.")
-        else:
-            flash("Такого клиента не существует.")
-    else:
-        for error in form.project_id.errors + form.project_name.errors + form.uid.errors:
             flash(error)
     return redirect(url_for("admin.ShowAdminPage"))
 

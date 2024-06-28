@@ -272,6 +272,21 @@ class AddProjectForm(FlaskForm):
         ],
     )
     uid = StringField("Код", validators=[Optional(), Length(max=128, message="Слишком длинный код.")])
+    tin = StringField("ИНН", validators=[Optional(), Length(max=128, message="Слишком длинный ИНН.")])
+    phone = StringField("Телефон", validators=[Optional(), Length(max=128, message="Слишком длинный телефон.")])
+    email = StringField(
+        "Электронная почта", validators=[Optional(), Length(max=128, message="Слишком длинная электронная почта.")]
+    )
+    contact = StringField(
+        "Контактное лицо", validators=[Optional(), Length(max=128, message="Слишком длинное имя контактного лица.")]
+    )
+    legal_address = StringField(
+        "Юридический адрес", validators=[Optional(), Length(max=128, message="Слишком длинный юридический адрес.")]
+    )
+    shipping_address = StringField(
+        "Адрес доставки", validators=[Optional(), Length(max=128, message="Слишком длинный адрес доставки.")]
+    )
+    note = TextAreaField("Заметка")
     submit = SubmitField("Добавить")
 
 
@@ -288,6 +303,21 @@ class EditProjectForm(FlaskForm):
         ],
     )
     uid = StringField("Код", validators=[Optional(), Length(max=128, message="Слишком длинный код.")])
+    tin = StringField("ИНН", validators=[Optional(), Length(max=128, message="Слишком длинный ИНН.")])
+    phone = StringField("Телефон", validators=[Optional(), Length(max=128, message="Слишком длинный телефон.")])
+    email = StringField(
+        "Электронная почта", validators=[Optional(), Length(max=128, message="Слишком длинная электронная почта.")]
+    )
+    contact = StringField(
+        "Контактное лицо", validators=[Optional(), Length(max=128, message="Слишком длинное имя контактного лица.")]
+    )
+    legal_address = StringField(
+        "Юридический адрес", validators=[Optional(), Length(max=128, message="Слишком длинный юридический адрес.")]
+    )
+    shipping_address = StringField(
+        "Адрес доставки", validators=[Optional(), Length(max=128, message="Слишком длинный адрес доставки.")]
+    )
+    note = TextAreaField("Заметка")
     enabled = BooleanField("Включить клиент")
     submit = SubmitField("Изменить")
 

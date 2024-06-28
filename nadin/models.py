@@ -425,6 +425,13 @@ class Project(db.Model):
             "id": self.id,
             "name": self.name,
             "uid": self.uid,
+            "tin": self.tin,
+            "phone": self.phone,
+            "email": self.email,
+            "contact": self.contact,
+            "note": self.note,
+            "legal_address": self.legal_address,
+            "shipping_address": self.shipping_address,
             "enabled": self.enabled,
         }
         return data
