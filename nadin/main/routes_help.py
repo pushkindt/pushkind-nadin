@@ -51,7 +51,7 @@ def ShowHelp():
     stats.rename(
         {
             "status": "Статус",
-            "project_name": "Проект",
+            "project_name": "Клиент",
             "category_name": "Категория",
             "price": "Сумма",
             "cnt": "Кол-во",

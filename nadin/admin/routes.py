@@ -170,9 +170,9 @@ def AddProject():
             project = Project(name=project_name, uid=uid, hub_id=current_user.hub_id)
             db.session.add(project)
             db.session.commit()
-            flash(f"Проект {project_name} добавлен.")
+            flash(f"Клиент {project_name} добавлен.")
         else:
-            flash(f"Проект {project_name} уже существует.")
+            flash(f"Клиент {project_name} уже существует.")
     else:
         for error in form.project_name.errors + form.uid.errors:
             flash(error)
@@ -187,9 +187,9 @@ def RemoveProject(project_id):
     if project is not None:
         db.session.delete(project)
         db.session.commit()
-        flash(f"Проект {project.name} удален.")
+        flash(f"Клиент {project.name} удален.")
     else:
-        flash("Такого проекта не существует.")
+        flash("Такого клиента не существует.")
     return redirect(url_for("admin.ShowAdminPage"))
 
 
@@ -208,11 +208,11 @@ def EditProject():
                 project.uid = form.uid.data.strip() if form.uid.data is not None else None
                 project.enabled = form.enabled.data
                 db.session.commit()
-                flash(f"Проект {project_name} изменён.")
+                flash(f"Клиент {project_name} изменён.")
             else:
-                flash(f"Проект {project_name} уже существует.")
+                flash(f"Клиент {project_name} уже существует.")
         else:
-            flash("Такого проекта не существует.")
+            flash("Такого клиента не существует.")
     else:
         for error in form.project_id.errors + form.project_name.errors + form.uid.errors:
             flash(error)

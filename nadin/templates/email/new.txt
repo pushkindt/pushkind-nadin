@@ -1,4 +1,4 @@
-Инициатор {{ order.initiative.name }} создал заявку #{{ order.number }} для проекта "{{ order.project.name or 'Проект не указан!' }}".
+Инициатор {{ order.initiative.name }} создал заявку #{{ order.number }} для клиента "{{ order.project.name or 'Клиент не указан!' }}".
 
 {% if order.parents %}
 	Заявка была получена из заявок &sum;

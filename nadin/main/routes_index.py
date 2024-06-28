@@ -156,7 +156,7 @@ def MergeOrders():
                 or order.income_statement != orders[0].income_statement
                 or order.cashflow_statement != orders[0].cashflow_statement
             ):
-                flash("Нельзя объединять заявки с разными проектами, БДДР или БДДС.")
+                flash("Нельзя объединять заявки с разными клиентами, БДДР или БДДС.")
                 return redirect(url_for("main.ShowIndex"))
 
         products = {}
@@ -272,7 +272,7 @@ def SaveOrders():
 
         ws["A1"] = "Номер"
         ws["B1"] = "Дата"
-        ws["C1"] = "Проект"
+        ws["C1"] = "Клиент"
         ws["D1"] = ""
         ws["E1"] = "Сумма"
         ws["F1"] = "Позиций"

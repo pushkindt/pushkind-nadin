@@ -55,8 +55,8 @@ class JSONField(StringField):
 
 class InitiativeForm(FlaskForm):
     project = SelectField(
-        "Проект",
-        validators=[DataRequired(message="Название проекта - обязательное поле.")],
+        "Клиент",
+        validators=[DataRequired(message="Название клиента - обязательное поле.")],
         coerce=int,
     )
     categories = SelectMultipleField(
@@ -186,7 +186,7 @@ class UserSettings(Form):
     )
     phone = StringField("Телефон", validators=[Length(max=128, message="Слишком длинный телефон.")])
     categories = SelectMultipleField("Мои категории ↓", coerce=int)
-    projects = SelectMultipleField("Мои проекты ↓", coerce=int)
+    projects = SelectMultipleField("Мои клиенты ↓", coerce=int)
     position = StringField(
         "Роль",
         validators=[
@@ -267,7 +267,7 @@ class AddProjectForm(FlaskForm):
     project_name = StringField(
         "Название",
         validators=[
-            DataRequired(message="Название проекта - обязательное поле."),
+            DataRequired(message="Название клиента - обязательное поле."),
             Length(max=128, message="Слишком длинное название."),
         ],
     )
@@ -277,18 +277,18 @@ class AddProjectForm(FlaskForm):
 
 class EditProjectForm(FlaskForm):
     project_id = IntegerField(
-        "ID проекта",
-        validators=[DataRequired(message="ID проекта - обязательное поле.")],
+        "ID клиента",
+        validators=[DataRequired(message="ID клиента - обязательное поле.")],
     )
     project_name = StringField(
         "Название",
         validators=[
-            DataRequired(message="Название проекта - обязательное поле."),
+            DataRequired(message="Название клиента - обязательное поле."),
             Length(max=128, message="Слишком длинное название."),
         ],
     )
     uid = StringField("Код", validators=[Optional(), Length(max=128, message="Слишком длинный код.")])
-    enabled = BooleanField("Включить проект")
+    enabled = BooleanField("Включить клиент")
     submit = SubmitField("Изменить")
 
 
@@ -411,8 +411,8 @@ class AddLimitForm(FlaskForm):
     )
     value = DecimalField("Лимит", validators=[DataRequired(message="Лимит - обязательное поле.")])
     project = SelectField(
-        "Проект",
-        validators=[DataRequired(message="Проект - обязательное поле.")],
+        "Клиент",
+        validators=[DataRequired(message="Клиент - обязательное поле.")],
         coerce=int,
     )
     cashflow = SelectField(
@@ -449,8 +449,8 @@ class CartItemForm(Form):
 
 class CreateOrderForm(FlaskForm):
     project_id = IntegerField(
-        "ID проекта",
-        validators=[DataRequired(message="ID проекта - обязательное поле.")],
+        "ID клиента",
+        validators=[DataRequired(message="ID клиента - обязательное поле.")],
         render_kw={"hidden": ""},
     )
     comment = TextAreaField("Комментарий", render_kw={"placeholder": "Адрес и комментарий"})

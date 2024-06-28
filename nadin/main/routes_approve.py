@@ -121,7 +121,7 @@ def ShowOrder(order_id):
 
     initiative_form.project.choices = [(p.id, p.name) for p in projects]
     if order.project is None:
-        initiative_form.project.choices.append((0, "Выберите проект..."))
+        initiative_form.project.choices.append((0, "Выберите клиента..."))
         initiative_form.project.default = 0
     else:
         initiative_form.project.default = order.project_id
@@ -464,7 +464,7 @@ def GetExcelReport2(order_id):
     wb = load_workbook(filename=os.path.join("app", "static", "upload", "template2.xlsx"))
     ws = wb.active
 
-    ws.title = order.project.name if order.project is not None else "Проект не указан"
+    ws.title = order.project.name if order.project is not None else "Клиент не указан"
 
     i = starting_row
     for product in order_products:
@@ -913,7 +913,7 @@ def SaveParameters(order_id):
     if form.validate_on_submit() is True:
         new_project = Project.query.filter_by(id=form.project.data, hub_id=current_user.hub_id).first()
         if new_project is not None and (order.project is None or order.project_id != new_project.id):
-            message = f'Проект изменён «{order.project.name if order.project else ""}» на «{new_project.name}»'
+            message = f'Клиент изменён «{order.project.name if order.project else ""}» на «{new_project.name}»'
             event = OrderEvent(
                 user_id=current_user.id,
                 order_id=order_id,

@@ -82,7 +82,7 @@ def shop_cart():
                 return render_template("shop_cart.html", form=form)
             project = Project.query.filter_by(id=form.project_id.data).first()
             if project is None:
-                flash("Такого проекта не существует.")
+                flash("Такого клиента не существует.")
                 return redirect(url_for("main.shop_cart"))
             order_products = []
             order_vendors = []

@@ -79,14 +79,14 @@
 		<div class="col">
 			{% if current_user.role.name in ['admin', 'initiative', 'validator', 'purchaser'] %}
 				{% if order.project %}
-					<span class="fw-bold">Проект:</span>
+					<span class="fw-bold">Клиент:</span>
 					<a href="#initiativeSettingsModal" data-bs-toggle="modal">{{ order.project.name }}</a><br>
 				{% else %}
-					<span class="fw-bold">Проект:</span>
+					<span class="fw-bold">Клиент:</span>
 					<a href="#initiativeSettingsModal" data-bs-toggle="modal">указать</a><br>
 				{% endif %}
 			{% else %}
-				<span class="fw-bold">Проект:</span>
+				<span class="fw-bold">Клиент:</span>
 				{{ order.project.name or 'не указан' }}<br>
 			{% endif %}
 		</div>
@@ -379,7 +379,7 @@
 				</form>
 				<div class="form-text text-danger">
 					{%if order.project is sameas none %}
-						<span>Проект не указан.</span>
+						<span>Клиент не указан.</span>
 					{%endif%}
 					{%if order.income_statement is sameas none %}
 						<span>Статья БДР не указана.</span>
@@ -425,7 +425,7 @@
 				</form>
 				<div class="form-text text-danger">
 					{%if order.project is sameas none %}
-						<span>Проект не указан.</span>
+						<span>Клиент не указан.</span>
 					{%endif%}
 					{%if order.income_statement is sameas none %}
 						<span>Статья БДР не указана.</span>
