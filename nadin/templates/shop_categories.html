@@ -170,7 +170,7 @@
 
         SetInCartText();
 
-        let projectModal = new bootstrap.Modal(document.getElementById('projectModal'), { 'backdrop': 'static' });
+        let projectModal = new bootstrap.Modal(document.getElementById('projectModal'), { 'backdrop': 'static', keyboard: false });
 
         const projects = [{% for project in projects %}{{ project | safe }}, {% endfor %}];
 
