@@ -17,16 +17,13 @@
 
 <div class="container bg-white border rounded my-2">
     <div class="row d-none d-sm-flex fw-bold">
-        <div class="col overflow-hidden">
+        <div class="col-2 overflow-hidden">
             Название
         </div>
-        <div class="col overflow-hidden">
-            Код
+        <div class="col-2 overflow-hidden">
+            Код/ИНН
         </div>
-        <div class="col overflow-hidden">
-            ИНН
-        </div>
-        <div class="col overflow-hidden">
+        <div class="col-3 overflow-hidden">
             Контакт
         </div>
         <div class="col overflow-hidden">
@@ -36,31 +33,47 @@
     <div id="projectList">
         {% for project in projects %}
         <div class="row my-1 py-1 border-bottom project">
-            <div class="col-sm">
+            <div class="col-sm-2">
                 <span class="d-sm-none fw-bold">Название:</span>
                 <a class="editProjectButton {%if not project.enabled%}link-secondary{%endif%}" href="#" data-bs-toggle="modal"
                     data-bs-target="#editProjectModal" data-id="{{ project.id }}">{{ project.name }}</a>
             </div>
-            <div class="col-sm">
-                <span class="d-sm-none fw-bold">Код:</span>
+            <div class="col-sm-2">
+                <span class="d-sm-none fw-bold">Код/ИНН:</span>
                 {{ project.uid or '' }}
-            </div>
-            <div class="col-sm">
-                <span class="d-sm-none fw-bold">ИНН:</span>
+                <br>
                 {{ project.tin or '' }}
             </div>
-            <div class="col-sm">
+            <div class="col-sm-3">
                 <span class="d-sm-none fw-bold">Контакт:</span>
                 {{ project.contact or '' }}
                 {{ project.email or '' }}
                 {{ project.phone or '' }}
             </div>
             <div class="col-sm">
-                <span class="d-sm-none fw-bold">Адреса:</span>
-                <br>
-                Юридический: {{ project.legal_address or '' }}
-                <hr>
-                Доставки: {{ project.shipping_address or '' }}
+                <div class="row">
+                    <div class="col-4">
+                        <span class="d-sm-none fw-bold">Адреса:</span>
+                    </div>
+                    <div class="col">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <span class="d-sm-none fw-bold">&boxur;</span> <strong>Юридический</strong>
+                    </div>
+                    <div class="col">
+                        {{ project.legal_address or '' }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <span class="d-sm-none fw-bold">&boxur;</span> <strong>Доставки</strong>
+                    </div>
+                    <div class="col">
+                        {{ project.shipping_address or '' }}
+                    </div>
+                </div>
             </div>
         </div>
         {% endfor %}

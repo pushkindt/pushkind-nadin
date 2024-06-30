@@ -119,41 +119,57 @@
                         </button>
                     </div>
                 </div>
-                <div class="alert alert-warning my-1 d-none" role="alert" id="limitAlert">
-                    Внимание! Для выбранного клиента сумма ранее полученных заявок
-                    по некоторым статьям бюджета превысила 95% от лимита.
-                    Вы можете продолжить создание заявки, но учтите риск её
-                    отклонения на этапе согласования. Возможно необходимо инициировать
-                    увеличение бюджета.
-                </div>
-                <div class="d-none" id="limits">
+                <div class="d-none" id="projectInfo">
                     <div class="row d-none d-sm-flex fw-bold">
+                        <div class="col-2">
+                            Код/ИНН
+                        </div>
+                        <div class="col-3">
+                            Контакт
+                        </div>
                         <div class="col">
+                            Адреса
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2">
+                            <span class="d-sm-none fw-bold">Код/ИНН:</span>
+                            <span id="projectInfoUid"></span>
+                            <br>
+                            <span id="projectInfoTin"></span>
+                        </div>
+                        <div class="col-sm-3">
+                            <span class="d-sm-none fw-bold">Контакт:</span>
+                            <span id="projectInfoContact"></span>
+                            <span id="projectInfoEmail"></span>
+                            <span id="projectInfoPhone"></span>
+                        </div>
+                        <div class="col-sm">
                             <div class="row">
-                                <div class="col overflow-hidden">
-                                    Клиент
+                                <div class="col-4">
+                                    <span class="d-sm-none fw-bold">Адреса:</span>
                                 </div>
-                                <div class="col overflow-hidden">
-                                    БДДС
+                                <div class="col">
                                 </div>
-                                <div class="col overflow-hidden">
-                                    Интервал
+                            </div>
+                            <div class="row">
+                                <div class="col-4">
+                                    <span class="d-sm-none fw-bold">&boxur;</span> <strong>Юридический</strong>
                                 </div>
-                                <div class="col overflow-hidden">
-                                    Лимит
+                                <div class="col">
+                                    <span id="projectInfoLegalAddress"></span>
                                 </div>
-                                <div class="col overflow-hidden">
-                                    Сумма
+                            </div>
+                            <div class="row">
+                                <div class="col-4">
+                                    <span class="d-sm-none fw-bold">&boxur;</span> <strong>Доставки</strong>
                                 </div>
-                                <div class="col overflow-hidden">
-                                    Остаток
+                                <div class="col">
+                                    <span id="projectInfoShippingAddress"></span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {% for limit in limits %}
-                        {% include '_limit.html' %}
-                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -188,8 +204,14 @@
 
         const projectName = document.getElementById("projectName");
 
-        const limits = document.getElementById("limits");
-        const limitAlert = document.getElementById("limitAlert");
+        const projectInfo = document.getElementById("projectInfo");
+        const projectInfoUid = document.getElementById("projectInfoUid");
+        const projectInfoTin = document.getElementById("projectInfoTin");
+        const projectInfoContact = document.getElementById("projectInfoContact");
+        const projectInfoEmail = document.getElementById("projectInfoEmail");
+        const projectInfoPhone = document.getElementById("projectInfoPhone");
+        const projectInfoLegalAddress = document.getElementById("projectInfoLegalAddress");
+        const projectInfoShippingAddress = document.getElementById("projectInfoShippingAddress");
         const projectDismiss = document.getElementById("projectDismiss");
 
         projectSelect.on("change", function () {
@@ -202,33 +224,27 @@
                 projectName.textContent = name;
 
                 projectSelect.removeClass("border-danger");
+                projectInfo.classList.remove("d-none");
                 projectDismiss.disabled = false;
                 projectDismiss.classList.remove("btn-secondary");
                 projectDismiss.classList.add("btn-primary");
 
-                let show_limit_alert = false;
                 const project = projects.find(obj => obj.id === id);
 
-                limits.classList.remove("d-none");
-                const limitElements = document.querySelectorAll(".limit");
-                limitElements.forEach((element) => {
-                    let show = Number(element.dataset.project) == id;
-                    element.style.display = show ? "block" : "none";
-                    if (show)
-                        show_limit_alert |= element.dataset.overlimit;
-                });
-                if (show_limit_alert)
-                    limitAlert.classList.remove("d-none");
-                else {
-                    limitAlert.classList.add("d-none");
-                    limits.classList.add("d-none");
-                }
+                projectInfoUid.textContent = project.uid;
+                projectInfoTin.textContent = project.tin;
+                projectInfoContact.textContent = project.info;
+                projectInfoEmail.textContent = project.email;
+                projectInfoPhone.textContent = project.phone;
+                projectInfoLegalAddress.textContent = project.legal_address;
+                projectInfoShippingAddress.textContent = project.shipping_address;
 
             } else {
                 projectSelect.addClass("border-danger");
                 projectDismiss.disabled = true;
                 projectDismiss.classList.add("btn-secondary");
                 projectDismiss.classList.remove("btn-primary");
+                projectInfo.classList.remove("d-none");
             }
 
         });
