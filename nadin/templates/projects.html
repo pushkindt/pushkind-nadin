@@ -228,7 +228,7 @@
         const projectFilter = document.querySelector("#projectFilter");
         const projectList = document.querySelector("#projectList");
 
-        projectFilter.on("keyup", function () {
+        projectFilter.addEventListener("keyup", function () {
             const filterValue = projectFilter.value.toLowerCase();
             const projectRows = projectList.querySelectorAll(".project");
             if (filterValue.length > 0) {

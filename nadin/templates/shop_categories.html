@@ -99,12 +99,15 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-sm my-1">
-                        <select class="form-select border-danger" id="projectSelect">
+                        <select class="form-select border-danger" id="projectSelect" aria-describedby="projectSelectHelp">
                             <option value="" disabled selected>Выберите клиента...</option>
                             {% for project in projects %}
                                 <option value="{{ project.id }}">{{ project.name }}</option>
                             {% endfor %}
                         </select>
+                        <div id="projectSelectHelp" class="form-text">
+                            <a href="{{url_for('main.ShowProjects')}}">Добавить нового клиента</a>
+                        </div>
                     </div>
                     <div class="col-sm-auto my-1">
                         <button type="button"
@@ -175,47 +178,58 @@
             projectModal.show();
         });
 
-        const projectSelect = document.getElementById("projectSelect");
+        const projectSelect = $("#projectSelect");
+
+        projectSelect.selectize(
+            {
+                maxItems:1
+            }
+        );
+
         const projectName = document.getElementById("projectName");
 
         const limits = document.getElementById("limits");
         const limitAlert = document.getElementById("limitAlert");
         const projectDismiss = document.getElementById("projectDismiss");
 
-        projectSelect.addEventListener("change", function () {
-            const id = Number(projectSelect.value);
-            const name = projectSelect.options[projectSelect.selectedIndex].text;
-            sessionStorage.setItem("project_id", id);
-            sessionStorage.setItem("project_name", name);
+        projectSelect.on("change", function () {
+            const id = Number(projectSelect.val());
+            if (id){
+                const name = $("#projectSelect option:selected").text();
+                sessionStorage.setItem("project_id", id);
+                sessionStorage.setItem("project_name", name);
 
-            projectName.textContent = name;
+                projectName.textContent = name;
 
-            projectSelect.classList.remove("border-danger");
-            projectDismiss.disabled = true;
-            projectDismiss.classList.add("btn-secondary");
-            projectDismiss.classList.remove("btn-primary");
+                projectSelect.removeClass("border-danger");
+                projectDismiss.disabled = false;
+                projectDismiss.classList.remove("btn-secondary");
+                projectDismiss.classList.add("btn-primary");
 
-            let show_limit_alert = false;
-            const project = projects.find(obj => obj.id === id);
+                let show_limit_alert = false;
+                const project = projects.find(obj => obj.id === id);
 
-            limits.classList.remove("d-none");
-            const limitElements = document.querySelectorAll(".limit");
-            limitElements.forEach((element) => {
-                let show = Number(element.dataset.project) == id;
-                element.style.display = show ? "block" : "none";
-                if (show)
-                    show_limit_alert |= element.dataset.overlimit;
-            });
-            if (show_limit_alert)
-                limitAlert.classList.remove("d-none");
-            else {
-                limitAlert.classList.add("d-none");
-                limits.classList.add("d-none");
+                limits.classList.remove("d-none");
+                const limitElements = document.querySelectorAll(".limit");
+                limitElements.forEach((element) => {
+                    let show = Number(element.dataset.project) == id;
+                    element.style.display = show ? "block" : "none";
+                    if (show)
+                        show_limit_alert |= element.dataset.overlimit;
+                });
+                if (show_limit_alert)
+                    limitAlert.classList.remove("d-none");
+                else {
+                    limitAlert.classList.add("d-none");
+                    limits.classList.add("d-none");
+                }
+
+            } else {
+                projectSelect.addClass("border-danger");
+                projectDismiss.disabled = true;
+                projectDismiss.classList.add("btn-secondary");
+                projectDismiss.classList.remove("btn-primary");
             }
-
-            projectDismiss.disabled = false;
-            projectDismiss.classList.remove("btn-secondary");
-            projectDismiss.classList.add("btn-primary");
 
         });
 
