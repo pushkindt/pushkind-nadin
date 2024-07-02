@@ -1,4 +1,4 @@
-from flask import flash, redirect, render_template, url_for
+from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from nadin.extensions import db
@@ -16,7 +16,7 @@ def ShowProjects():
     projects = Project.query.filter_by(hub_id=current_user.hub_id)
     if current_user.role != UserRoles.admin:
         projects = projects.filter_by(enabled=True)
-    projects = projects.order_by(Project.name).all()
+    projects = db.paginate(projects.order_by(Project.name))
 
     forms = {"add_project": AddProjectForm(), "edit_project": EditProjectForm()}
 

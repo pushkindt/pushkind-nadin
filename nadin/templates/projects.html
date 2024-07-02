@@ -80,6 +80,26 @@
     </div>
     <nav aria-label="Projects pagination">
         <ul class="pagination justify-content-center flex-wrap" id="projectPagination">
+            {% for page in projects.iter_pages() %}
+                <li class="page-item">
+                    {% if page %}
+                        {% if page != projects.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('main.ShowProjects', page=page) }}">
+                                    {{ page }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item active" aria-current="page">
+                                <a class="page-link" href="#">{{ page }}</a>
+                            <li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item">
+                            <span class="ellipsis">…</span>
+                        </li>
+                    {% endif %}
+            {% endfor %}
         </ul>
     </nav>
 </div>
@@ -215,7 +235,7 @@
 
         var projects = [{% for project in projects %}{{ project| safe }}, {% endfor %}];
 
-        InstantiatePagination("projectList", "project", "projectPagination", 100, 'projectFilter');
+        //InstantiatePagination("projectList", "project", "projectPagination", 100, 'projectFilter');
 
         $(".editProjectButton").click(function () {
             let projectId = Number($(this).data("id"));
