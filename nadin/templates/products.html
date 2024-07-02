@@ -26,6 +26,16 @@
             </select>
         </div>
         {% endif %}
+        <div class="col-md-3 mb-1">
+            <select class="form-select" aria-label="Category select" id="categorySelect">
+                <option value="" selected>Все категории</option>
+                {% for c in categories %}
+                    <option {% if c.id==category_id %}selected{% endif %} value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="row gx-1 justify-content-center">
         <div class="col-auto">
             <a class="btn btn-primary text-white" href="{{url_for('main.DownloadProducts', vendor_id=vendor_id)}}">
                 <i class="bi bi-cloud-download"></i>
@@ -62,22 +72,6 @@
                     <i class="bi bi-x-lg"></i>
                 </button>
             </form>
-        </div>
-    </div>
-    <div class="row justify-content-center">
-        <div class="col">
-            {% for category in categories %}
-            {% if "/" not in category.name %}
-            |
-            {% endif %}
-            {%if category_id == category.id%}
-            <a href="{{url_for('main.ShowProducts', vendor_id=vendor_id)}}"
-                class="text-decoration-none badge bg-success">{{category.short_name}}</a>
-            {%else%}
-            <a href="{{url_for('main.ShowProducts', vendor_id=vendor_id, category_id=category.id)}}"
-                class="text-decoration-none badge bg-primary">{{category.short_name}}</a>
-            {%endif%}
-            {% endfor %}
         </div>
     </div>
     <div class="row justify-content-center">
@@ -207,6 +201,25 @@
     </div>
     <nav aria-label="Products pagination">
         <ul class="pagination justify-content-center flex-wrap" id="productPagination">
+            {% for page in products.iter_pages() %}
+                {% if page %}
+                    {% if page != products.page %}
+                        <li class="page-item">
+                        <a class="page-link" href="{{ url_for('main.ShowProducts', page=page, vendor_id=vendor_id, category_id=category_id) }}">
+                                {{ page }}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item active" aria-current="page">
+                            <a class="page-link" href="#">{{ page }}</a>
+                        <li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item">
+                        <span class="ellipsis">…</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
         </ul>
     </nav>
 </div>
@@ -218,13 +231,16 @@
 <script>
     $(document).ready(function () {
 
-        InstantiatePagination("productList", "product", "productPagination", 10, 'productFilter');
+        // InstantiatePagination("productList", "product", "productPagination", 10, 'productFilter');
 
         $('#uploadProductsButton').on('change', () => {
             $('#uploadProductsForm').submit();
         });
         $('#vendorSelect').change(() => {
-            window.location = "{{url_for('main.ShowProducts', vendor_id=0)}}".replace('0', $('#vendorSelect').val());
+            window.location = "{{url_for('main.ShowProducts', vendor_id=-1)}}".replace('-1', $('#vendorSelect').val());
+        });
+        $('#categorySelect').change(() => {
+            window.location = "{{url_for('main.ShowProducts', category_id=-1)}}".replace('-1', $('#categorySelect').val());
         });
         $('#uploadImagesButton').on('change', () => {
             $('#uploadImagesForm').submit();

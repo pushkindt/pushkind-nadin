@@ -131,7 +131,7 @@ def ShowProducts():
     products = Product.query.filter_by(vendor_id=vendor_id)
     if category_id:
         products = products.filter_by(cat_id=category_id)
-    products = products.order_by(Product.name).all()
+    products = db.paginate(products.order_by(Product.name))
     return render_template(
         "products.html",
         vendors=vendors,
