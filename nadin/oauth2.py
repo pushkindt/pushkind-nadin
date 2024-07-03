@@ -9,7 +9,6 @@ from authlib.integrations.sqla_oauth2 import (
 from authlib.oauth2.rfc6749.grants import AuthorizationCodeGrant as _AuthorizationCodeGrant
 from authlib.oidc.core import UserInfo
 from authlib.oidc.core.grants import OpenIDCode as _OpenIDCode
-from werkzeug.security import gen_salt
 
 from nadin.extensions import db
 from nadin.models import OAuth2AuthorizationCode, OAuth2Client, OAuth2Token, User
@@ -17,7 +16,7 @@ from nadin.models import OAuth2AuthorizationCode, OAuth2Client, OAuth2Token, Use
 private_key_path = Path("private.pem")
 JWT_CONFIG = {
     "alg": "RS256",
-    "iss": "https://authlib.org",
+    "iss": "http://127.0.0.1:5000/oauth/",
     "exp": 3600,
     "key": private_key_path.read_text(),
 }
@@ -34,25 +33,7 @@ def generate_user_info(user, scope):
         user_info["name"] = user.name
     if "email" in scope:
         user_info["email"] = user.email
-    return UserInfo(sub=str(user.id), name=user.name)
-
-
-def create_authorization_code(client, grant_user, request):
-    code = gen_salt(48)
-    nonce = request.data.get("nonce")
-    if not nonce:
-        nonce = gen_salt(48)
-    item = OAuth2AuthorizationCode(
-        code=code,
-        client_id=client.client_id,
-        redirect_uri=request.redirect_uri,
-        scope=request.scope,
-        user_id=grant_user.id,
-        nonce=nonce,
-    )
-    db.session.add(item)
-    db.session.commit()
-    return code
+    return user_info
 
 
 class AuthorizationCodeGrant(_AuthorizationCodeGrant):
@@ -62,6 +43,7 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
     def save_authorization_code(self, code, request):
         code_challenge = request.data.get("code_challenge")
         code_challenge_method = request.data.get("code_challenge_method")
+        nonce = request.data.get("nonce")
         auth_code = OAuth2AuthorizationCode(
             code=code,
             client_id=request.client.client_id,
@@ -70,6 +52,7 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
             user_id=request.user.id,
             code_challenge=code_challenge,
             code_challenge_method=code_challenge_method,
+            nonce=nonce,
         )
         db.session.add(auth_code)
         db.session.commit()
@@ -112,7 +95,7 @@ def config_oauth(app):
     authorization.register_grant(
         AuthorizationCodeGrant,
         [
-            OpenIDCode(require_nonce=False),
+            OpenIDCode(require_nonce=True),
         ],
     )
 
