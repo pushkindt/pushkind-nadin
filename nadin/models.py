@@ -416,6 +416,12 @@ class Project(db.Model):
         cascade="all, delete",
         passive_deletes=True,
     )
+    order_history = db.relationship(
+        "ProjectOrderHistory",
+        back_populates="project",
+        cascade="all, delete",
+        passive_deletes=True,
+    )
 
     def __repr__(self):
         return json.dumps(self.to_dict(), ensure_ascii=False)
@@ -841,3 +847,14 @@ class OAuth2Token(db.Model, OAuth2TokenMixin):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
     user = db.relationship("User")
+
+
+class ProjectOrderHistory(db.Model):
+    __tablename__ = "project_order_history"
+    id = db.Column(db.Integer, primary_key=True, nullable=False)
+    project_id = db.Column(db.Integer, db.ForeignKey("project.id", ondelete="CASCADE"), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    active_months = db.Column(db.Integer, nullable=False)
+    total = db.Column(db.Float, nullable=False)
+
+    project = db.relationship("Project", back_populates="order_history")

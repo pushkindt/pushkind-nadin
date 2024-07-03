@@ -36,7 +36,10 @@
             <div class="col-sm-2">
                 <span class="d-sm-none fw-bold">Название:</span>
                 <a class="editProjectButton {%if not project.enabled%}link-secondary{%endif%}" href="#" data-bs-toggle="modal"
-                    data-bs-target="#editProjectModal" data-id="{{ project.id }}">{{ project.name }}</a>
+                    data-bs-target="#editProjectModal" data-id="{{ project.id }}">{{ project.name }}</a><br>
+                <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#projectStatCollaps{{project.id}}" aria-expanded="false" aria-controls="projectStatCollaps{{project.id}}">
+                    <i class="bi bi-bar-chart"></i>
+                </button>
             </div>
             <div class="col-sm-2">
                 <span class="d-sm-none fw-bold">Код/ИНН:</span>
@@ -74,6 +77,28 @@
                         {{ project.shipping_address or '' }}
                     </div>
                 </div>
+            </div>
+        </div>
+        <div class="collapse" id="projectStatCollaps{{project.id}}">
+            <div class="card card-body">
+                <table class="table">
+                  <thead>
+                    <tr>
+                        <th scope="col">Год</th>
+                        <th scope="col">Сумма</th>
+                        <th scope="col">Активные месяцы</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for oh in project.order_history %}
+                    <tr>
+                        <th scope="row">{{oh.year}}</th>
+                        <td>{{oh.total}}</td>
+                        <td>{{oh.active_months}}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                </table>
             </div>
         </div>
         {% endfor %}
