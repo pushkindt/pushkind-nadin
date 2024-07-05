@@ -427,6 +427,7 @@ class Project(db.Model):
         return json.dumps(self.to_dict(), ensure_ascii=False)
 
     def to_dict(self):
+
         data = {
             "id": self.id,
             "name": self.name,
@@ -439,6 +440,10 @@ class Project(db.Model):
             "legal_address": self.legal_address,
             "shipping_address": self.shipping_address,
             "enabled": self.enabled,
+            "order_history": {
+                "year": [h.year for h in self.order_history],
+                "total": [h.total for h in self.order_history],
+            },
         }
         return data
 
@@ -858,3 +863,12 @@ class ProjectOrderHistory(db.Model):
     total = db.Column(db.Float, nullable=False)
 
     project = db.relationship("Project", back_populates="order_history")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "project": self.project.name,
+            "year": self.year,
+            "active_months": self.active_months,
+            "total": self.total,
+        }

@@ -35,11 +35,7 @@
         <div class="row my-1 py-1 border-bottom project">
             <div class="col-sm-2">
                 <span class="d-sm-none fw-bold">Название:</span>
-                <a class="editProjectButton {%if not project.enabled%}link-secondary{%endif%}" href="#" data-bs-toggle="modal"
-                    data-bs-target="#editProjectModal" data-id="{{ project.id }}">{{ project.name }}</a><br>
-                <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#projectStatCollaps{{project.id}}" aria-expanded="false" aria-controls="projectStatCollaps{{project.id}}">
-                    <i class="bi bi-bar-chart"></i>
-                </button>
+                <a class="editProjectButton {%if not project.enabled%}link-secondary{%endif%}" href="#" data-bs-toggle="collapse" data-bs-target="#projectStatCollaps{{project.id}}" aria-expanded="false" aria-controls="projectStatCollaps{{project.id}}">{{ project.name }}</a><br>
             </div>
             <div class="col-sm-2">
                 <span class="d-sm-none fw-bold">Код/ИНН:</span>
@@ -80,25 +76,33 @@
             </div>
         </div>
         <div class="collapse" id="projectStatCollaps{{project.id}}">
-            <div class="card card-body">
-                <table class="table">
-                  <thead>
-                    <tr>
-                        <th scope="col">Год</th>
-                        <th scope="col">Сумма</th>
-                        <th scope="col">Активные месяцы</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for oh in project.order_history %}
-                    <tr>
-                        <th scope="row">{{oh.year}}</th>
-                        <td>{{oh.total}}</td>
-                        <td>{{oh.active_months}}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-                </table>
+            <div class="card card-body bg-yellow">
+                <a class="editProjectButton {%if not project.enabled%}link-secondary{%endif%}" href="#" data-bs-toggle="modal" data-bs-target="#editProjectModal" data-id="{{ project.id }}">Редактировать</a><br>
+                <div class="row">
+                    <div class="col-sm">
+                        <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Год</th>
+                                <th scope="col">Сумма (тыс. руб.)</th>
+                                <th scope="col">Активные месяцы</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for oh in project.order_history %}
+                            <tr>
+                                <th scope="row">{{oh.year}}</th>
+                                <td>{{'{:,.2f}'.format(oh.total/1000)}}</td>
+                                <td>{{oh.active_months}}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                        </table>
+                    </div>
+                    <div class="col-sm">
+                        <canvas id="projectStatChart{{project.id}}"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
         {% endfor %}
@@ -259,6 +263,26 @@
 
         var projects = [{% for project in projects %}{{ project| safe }}, {% endfor %}];
 
+        projects.forEach(function(project){
+            const data = {
+                labels: project.order_history.year,
+                datasets: [{
+                    label: 'Продажи',
+                    backgroundColor: 'rgb(255, 99, 132)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    data: project.order_history.total,
+                }]
+            };
+            const config = {
+                type: 'bar',
+                data: data,
+            };
+            const myChart = new Chart(
+                document.getElementById("projectStatChart" + project.id),
+                config
+            );
+        });
+
         // InstantiatePagination("projectList", "project", "projectPagination", 100, 'projectFilter');
 
         $(".editProjectButton").click(function () {
@@ -304,5 +328,7 @@
         });
     });
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 {% endblock %}
