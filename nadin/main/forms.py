@@ -322,6 +322,17 @@ class EditProjectForm(FlaskForm):
     submit = SubmitField("Изменить")
 
 
+class UploadProjectsForm(FlaskForm):
+    projects = FileField(
+        label="Клиенты",
+        validators=[
+            FileRequired("Разрешены только XLSX."),
+            FileAllowed(["xlsx"], "Разрешены только XLSX."),
+        ],
+    )
+    submit = SubmitField("Загрузить")
+
+
 class AddCategoryForm(FlaskForm):
     category_name = StringField(
         "Название",

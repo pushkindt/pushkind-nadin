@@ -11,6 +11,18 @@
             <a class="btn btn-primary text-white" href="#" role="button" data-bs-toggle="modal"
                 data-bs-target="#addProjectModal"><i class="bi bi-plus-square"></i></a>
         </div>
+        <div class="col-auto">
+            <form method="POST" enctype="multipart/form-data" id="uploadProjectsForm"
+                action="{{url_for('main.UploadProjects')}}">
+                {{ forms["upload_projects"].csrf_token(id=False) }}
+                <label for="uploadProjectsButton">
+                    <span class="btn btn-warning mb-1 text-white">
+                        <i class="bi bi-cloud-upload"></i>
+                    </span>
+                </label>
+                <input id="uploadProjectsButton" type="file" name="projects" class="d-none" accept=".xlsx">
+            </form>
+        </div>
     </div>
 </div>
 
@@ -92,7 +104,7 @@
                         {% for oh in project.order_history %}
                             <tr>
                                 <th scope="row">{{oh.year}}</th>
-                                <td>{{'{:,.2f}'.format(oh.total/1000)}}</td>
+                                <td>{{'{:,.0f}'.format(oh.total/1000)}}</td>
                                 <td>{{oh.active_months}}</td>
                             </tr>
                         {% endfor %}
@@ -334,6 +346,10 @@
                 addProjectModal= new bootstrap.Modal(modalElement, {});
             addProjectModal.show();
         {% endif %}
+
+        $('#uploadProjectsButton').on('change', () => {
+            $('#uploadProjectsForm').submit();
+        });
 
     });
 </script>
