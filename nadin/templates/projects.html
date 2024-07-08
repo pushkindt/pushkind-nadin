@@ -326,6 +326,15 @@
                 page.click();
             }
         });
+
+        {% if show_add_project %}
+            const modalElement = document.getElementById('addProjectModal');
+            let addProjectModal = bootstrap.Modal.getInstance(modalElement);
+            if (!addProjectModal)
+                addProjectModal= new bootstrap.Modal(modalElement, {});
+            addProjectModal.show();
+        {% endif %}
+
     });
 </script>
 

@@ -1,4 +1,4 @@
-from flask import flash, redirect, render_template, url_for
+from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from nadin.extensions import db
@@ -13,6 +13,9 @@ from nadin.models import Project, UserRoles
 @login_required
 @role_forbidden([UserRoles.default, UserRoles.vendor])
 def ShowProjects():
+
+    show_add_project = request.args.get("add_project", default=False, type=bool)
+
     projects = Project.query.filter_by(hub_id=current_user.hub_id)
     if current_user.role != UserRoles.admin:
         projects = projects.filter_by(enabled=True)
@@ -20,7 +23,7 @@ def ShowProjects():
 
     forms = {"add_project": AddProjectForm(), "edit_project": EditProjectForm()}
 
-    return render_template("projects.html", projects=projects, forms=forms)
+    return render_template("projects.html", projects=projects, forms=forms, show_add_project=show_add_project)
 
 
 @bp.route("/project/add", methods=["POST"])
