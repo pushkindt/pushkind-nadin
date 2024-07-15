@@ -1,16 +1,18 @@
+version: "3"
 services:
   search:
     image: docker.io/library/elasticsearch:8.14.3
     ports:
       - "127.0.0.1:9200:9200"
       - "127.0.0.1:9300:9300"
-    resources:
-      limits:
-        memory: 2GB
+    deploy:
+      resources:
+        limits:
+          memory: 2GB
     environment:
       discovery.type: single-node
-      xpack.security.enabled: false
-    restart: always
+      xpack.security.enabled: "false"
+    restart: unless-stopped
     volumes:
       - esdata1:/usr/share/elasticsearch/data:rw
 
