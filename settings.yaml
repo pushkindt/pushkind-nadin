@@ -8,6 +8,8 @@ default:
   mail_sendername: Administrator
   import_products_conf_sheet: "Настройка импорта"
   oauth2_refresh_token_generator: true
+  elasticsearch_url: http://localhost:9200
+  max_per_page: 20
 
 development:
   debug: true

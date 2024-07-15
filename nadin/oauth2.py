@@ -18,7 +18,7 @@ JWT_CONFIG = {
     "alg": "RS256",
     "iss": "http://127.0.0.1:5000/oauth/",
     "exp": 3600,
-    "key": private_key_path.read_text(),
+    "key": private_key_path.read_text(encoding="ASCII"),
 }
 
 

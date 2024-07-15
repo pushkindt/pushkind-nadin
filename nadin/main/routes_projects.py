@@ -98,6 +98,10 @@ def projects_excel_to_df(excel_file) -> tuple[pd.DataFrame, pd.DataFrame]:
     return projects, projects_order_history
 
 
+def test():
+    return []
+
+
 @bp.route("/projects/", methods=["GET"])
 @bp.route("/projects/show", methods=["GET"])
 @login_required
@@ -105,11 +109,23 @@ def projects_excel_to_df(excel_file) -> tuple[pd.DataFrame, pd.DataFrame]:
 def ShowProjects():
 
     show_add_project = request.args.get("add_project", default=False, type=bool)
+    search_key = request.args.get("search", type=str)
+    page = request.args.get("page", type=int, default=1)
 
-    projects = Project.query.filter_by(hub_id=current_user.hub_id)
-    if current_user.role != UserRoles.admin:
-        projects = projects.filter_by(enabled=True)
-    projects = db.paginate(projects.order_by(Project.name))
+    if search_key:
+
+        projects, total = Project.search(search_key, page, current_app.config["MAX_PER_PAGE"])
+        projects = db.paginate(projects, page=1)
+        if search_key:
+            projects.total = total
+            projects.page = page
+            projects.max_per_page = current_app.config["MAX_PER_PAGE"]
+    else:
+        projects = Project.query
+        projects = projects.filter_by(hub_id=current_user.hub_id)
+        if current_user.role != UserRoles.admin:
+            projects = projects.filter_by(enabled=True).order_by(Project.name)
+        projects = db.paginate(projects, max_per_page=current_app.config["MAX_PER_PAGE"])
 
     forms = {
         "add_project": AddProjectForm(),
@@ -117,7 +133,9 @@ def ShowProjects():
         "upload_projects": UploadProjectsForm(),
     }
 
-    return render_template("projects.html", projects=projects, forms=forms, show_add_project=show_add_project)
+    return render_template(
+        "projects.html", projects=projects, forms=forms, show_add_project=show_add_project, search_key=search_key
+    )
 
 
 @bp.route("/project/add", methods=["POST"])

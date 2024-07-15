@@ -5,12 +5,14 @@ from hashlib import md5
 from time import time
 
 import jwt
+import sqlalchemy as sa
 from authlib.integrations.sqla_oauth2 import OAuth2AuthorizationCodeMixin, OAuth2ClientMixin, OAuth2TokenMixin
 from flask import current_app
 from flask_login import UserMixin
 from sqlalchemy.sql import expression, func
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from nadin import search
 from nadin.extensions import db, login_manager
 from nadin.utils import get_filter_timestamps
 
@@ -18,6 +20,47 @@ from nadin.utils import get_filter_timestamps
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+class SearchableMixin:
+    __searchable__: list = []
+
+    @classmethod
+    def search(cls, expr: str, page: int, per_page: int):
+        ids, total = search.query_index(cls.__tablename__, expr, page, per_page)
+        query = sa.select(cls).where(cls.id.in_(ids))
+        if total > 0:
+            when = []
+            for i, val in enumerate(ids):
+                when.append((val, i))
+            query = query.order_by(db.case(*when, value=cls.id))
+        return query, total
+
+    @classmethod
+    def before_commit(cls, session):
+        session._changes = {"add": list(session.new), "update": list(session.dirty), "delete": list(session.deleted)}
+
+    @classmethod
+    def after_commit(cls, session):
+        for obj in session._changes["add"]:
+            if isinstance(obj, SearchableMixin):
+                search.add_to_index(obj.__tablename__, obj)
+        for obj in session._changes["update"]:
+            if isinstance(obj, SearchableMixin):
+                search.add_to_index(obj.__tablename__, obj)
+        for obj in session._changes["delete"]:
+            if isinstance(obj, SearchableMixin):
+                search.remove_from_index(obj.__tablename__, obj)
+        session._changes = None
+
+    @classmethod
+    def reindex(cls):
+        for obj in db.session.scalars(sa.select(cls)):
+            search.add_to_index(cls.__tablename__, obj)
+
+
+db.event.listen(db.session, "before_commit", SearchableMixin.before_commit)
+db.event.listen(db.session, "after_commit", SearchableMixin.after_commit)
 
 
 class EventType(enum.IntEnum):
@@ -388,7 +431,10 @@ class OrderEvent(db.Model):
     order = db.relationship("Order", back_populates="events")
 
 
-class Project(db.Model):
+class Project(SearchableMixin, db.Model):
+
+    __searchable__ = ["name", "uid", "tin", "phone", "email", "contact", "note", "legal_address", "shipping_address"]
+
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     name = db.Column(db.String(128), nullable=False, index=True)
     hub_id = db.Column(db.Integer, db.ForeignKey("vendor.id", ondelete="CASCADE"), nullable=False)

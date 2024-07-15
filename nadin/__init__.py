@@ -4,6 +4,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 from dynaconf import FlaskDynaconf
+from elasticsearch import Elasticsearch
 from flask import Flask, render_template, request
 
 from nadin import admin, api, auth, oauth
@@ -33,6 +34,10 @@ def register_extensions(app):
     mail.init_app(app)
     moment.init_app(app)
     config_oauth(app)
+    if app.config["ELASTICSEARCH_URL"]:
+        app.elasticsearch = Elasticsearch([app.config["ELASTICSEARCH_URL"]])
+    else:
+        app.elasticsearch = None
 
 
 def register_blueprints(app):

@@ -1,0 +1,19 @@
+services:
+  search:
+    image: docker.io/library/elasticsearch:8.14.3
+    ports:
+      - "127.0.0.1:9200:9200"
+      - "127.0.0.1:9300:9300"
+    resources:
+      limits:
+        memory: 2GB
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: false
+    restart: always
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data:rw
+
+volumes:
+  esdata1:
+    driver: local
