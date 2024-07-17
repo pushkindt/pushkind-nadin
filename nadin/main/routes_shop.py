@@ -27,14 +27,14 @@ from nadin.models import (
 @login_required
 @role_required([UserRoles.initiative, UserRoles.purchaser, UserRoles.admin])
 def shop_categories():
-    projects = Project.query
-    if current_user.role != UserRoles.admin:
-        projects = projects.filter_by(enabled=True)
-    projects = projects.filter_by(hub_id=current_user.hub_id)
-    projects = projects.order_by(Project.name).all()
+    # projects = Project.query
+    # if current_user.role != UserRoles.admin:
+    #     projects = projects.filter_by(enabled=True)
+    # projects = projects.filter_by(hub_id=current_user.hub_id)
+    # projects = projects.order_by(Project.name).all()
     limits = OrderLimit.query.filter_by(hub_id=current_user.hub_id).all()
     categories = Category.query.filter(Category.hub_id == current_user.hub_id, not_(Category.name.like("%/%"))).all()
-    return render_template("shop_categories.html", projects=projects, limits=limits, categories=categories)
+    return render_template("shop_categories.html", limits=limits, categories=categories)
 
 
 @bp.route("/shop/<int:cat_id>", defaults={"vendor_id": None})

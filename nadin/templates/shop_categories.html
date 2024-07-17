@@ -99,7 +99,7 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-sm my-1">
-                        <select class="form-select border-danger" id="projectSelect" aria-describedby="projectSelectHelp">
+                        <select id="projectSelect" aria-describedby="projectSelectHelp">
                             <option value="" disabled selected>Выберите клиента...</option>
                             {% for project in projects %}
                                 <option value="{{ project.id }}">{{ project.name }}</option>
@@ -188,19 +188,9 @@
 
         let projectModal = new bootstrap.Modal(document.getElementById('projectModal'), { 'backdrop': 'static', keyboard: false });
 
-        const projects = [{% for project in projects %}{{ project | safe }}, {% endfor %}];
-
         CheckProject(() => {
             projectModal.show();
         });
-
-        const projectSelect = $("#projectSelect");
-
-        projectSelect.selectize(
-            {
-                maxItems:1
-            }
-        );
 
         const projectName = document.getElementById("projectName");
 
@@ -213,41 +203,6 @@
         const projectInfoLegalAddress = document.getElementById("projectInfoLegalAddress");
         const projectInfoShippingAddress = document.getElementById("projectInfoShippingAddress");
         const projectDismiss = document.getElementById("projectDismiss");
-
-        projectSelect.on("change", function () {
-            const id = Number(projectSelect.val());
-            if (id){
-                const name = $("#projectSelect option:selected").text();
-                sessionStorage.setItem("project_id", id);
-                sessionStorage.setItem("project_name", name);
-
-                projectName.textContent = name;
-
-                projectSelect.removeClass("border-danger");
-                projectInfo.classList.remove("d-none");
-                projectDismiss.disabled = false;
-                projectDismiss.classList.remove("btn-secondary");
-                projectDismiss.classList.add("btn-primary");
-
-                const project = projects.find(obj => obj.id === id);
-
-                projectInfoUid.textContent = project.uid;
-                projectInfoTin.textContent = project.tin;
-                projectInfoContact.textContent = project.info;
-                projectInfoEmail.textContent = project.email;
-                projectInfoPhone.textContent = project.phone;
-                projectInfoLegalAddress.textContent = project.legal_address;
-                projectInfoShippingAddress.textContent = project.shipping_address;
-
-            } else {
-                projectSelect.addClass("border-danger");
-                projectDismiss.disabled = true;
-                projectDismiss.classList.add("btn-secondary");
-                projectDismiss.classList.remove("btn-primary");
-                projectInfo.classList.remove("d-none");
-            }
-
-        });
 
         const selectables = document.querySelectorAll(".selectable");
 
@@ -271,6 +226,82 @@
                 card.style.display = show ? "flex" : "none";
             });
         });
+
+        const projectSelect = $("#projectSelect");
+
+        projectSelect.selectize({
+            maxItems:1,
+            valueField: 'id',
+            labelField: 'name',
+            searchField: 'name',
+            options: [],
+            create: false,
+            load: function(query, callback) {
+                if (!query.length) return callback();
+                $.ajax({
+                    url: '{{url_for("api.search_projects", q="0")}}'.replace('0', encodeURIComponent(query)),
+                    type: 'GET',
+                    error: function() {
+                        callback();
+                    },
+                    success: function(res) {
+                        callback(res.slice(0, 20));
+                    }
+                });
+            },
+            render: {
+                option: function(item, escape) {
+                    return '<div class="item" '+
+                    'data-value="'+escape(item.id)+'"'+
+                    'data-uid="'+escape(item.uid)+'"'+
+                    'data-tin="'+escape(item.tin)+'"'+
+                    'data-contact="'+escape(item.contact)+'"'+
+                    'data-email="'+escape(item.email)+'"'+
+                    'data-phone="'+escape(item.phone)+'"'+
+                    'data-legaladdress="'+escape(item.legal_address)+'"'+
+                    'data-shippingaddress="'+escape(item.shipping_address)+'"'+
+                    '>'+
+                    escape(item.name)+
+                    '</div>';
+                }
+            },
+        });
+        projectSelect.on("change", function () {
+            const id = Number(projectSelect.val());
+            if (id){
+                const selectedOption = projectSelect[0].selectize.getOption(id);
+
+                const name = selectedOption.text();
+                sessionStorage.setItem("project_id", id);
+                sessionStorage.setItem("project_name", name);
+                projectName.textContent = name;
+
+                // projectSelect.removeClass("border-danger");
+                projectInfo.classList.remove("d-none");
+                projectDismiss.disabled = false;
+                projectDismiss.classList.remove("btn-secondary");
+                projectDismiss.classList.add("btn-primary");
+
+
+                projectInfoUid.textContent = selectedOption.data("uid");
+                projectInfoTin.textContent = selectedOption.data("tin");
+                projectInfoContact.textContent = selectedOption.data("contact");
+                projectInfoEmail.textContent = selectedOption.data("email");
+                projectInfoPhone.textContent = selectedOption.data("phone");
+                projectInfoLegalAddress.textContent = selectedOption.data("legaladdress");
+                projectInfoShippingAddress.textContent = selectedOption.data("shippingaddress");
+
+            } else {
+                // projectSelect.addClass("border-danger");
+                projectDismiss.disabled = true;
+                projectDismiss.classList.add("btn-secondary");
+                projectDismiss.classList.remove("btn-primary");
+                projectInfo.classList.remove("d-none");
+            }
+
+        });
+
+
     });
 
 </script>
