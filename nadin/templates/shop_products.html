@@ -31,18 +31,18 @@
             {% for vendor in vendors %}
                 {% if vendor_id == vendor.id %}
                     {% set _ = glob.update({'vendor_name':vendor.name}) %}
-                    <a href="{{ url_for('main.shop_products', vendor_id=vendor.id, cat_id=category.id) }}"
+                    <a href="{{ url_for(request.endpoint, vendor_id=vendor.id, cat_id=category.id) }}"
                         class="text-decoration-none badge bg-primary">
                         {{ vendor.name }}
                     </a>
                 {% else %}
-                    <a href="{{ url_for('main.shop_products', vendor_id=vendor.id, cat_id=category.id) }}"
+                    <a href="{{ url_for(request.endpoint, vendor_id=vendor.id, cat_id=category.id) }}"
                         class="text-decoration-none badge bg-white fw-normal text-secondary border">
                         {{ vendor.name }}
                     </a>
                 {% endif %}
             {% endfor %}
-            <a href="{{ url_for('main.shop_products', cat_id=category.id) }}"
+            <a href="{{ url_for(request.endpoint, cat_id=category.id) }}"
                 class="text-decoration-none badge {% if vendor_id is none %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}">
                 все
             </a>
@@ -92,9 +92,15 @@
                 <a href="{{url_for('main.shop_categories')}}">Категории</a>
             </li>
             <li class="breadcrumb-item">
-                <a href="{{url_for('main.shop_products', cat_id=category.id)}}">
-                    {{category.name}}
-                </a>
+                {% if search_key %}
+                    <a href="{{url_for(request.endpoint, search=search_key)}}">
+                        {{category.name}}
+                    </a>
+                {% else %}
+                    <a href="{{url_for(request.endpoint, cat_id=category.id)}}">
+                        {{category.name}}
+                    </a>
+                {% endif %}
             </li>
             {% if 'vendor_name' in glob %}
                 <li class="breadcrumb-item active" aria-current="page">{{glob['vendor_name']}}</li>
@@ -327,7 +333,7 @@
                 {% if page %}
                     {% if page != products.page %}
                         <li class="page-item">
-                            <a class="page-link" href="{{ url_for('main.shop_products', page=page, cat_id=category.id, vendor_id=vendor_id) }}">
+                            <a class="page-link" href="{{ url_for(request.endpoint, page=page, cat_id=category.id, vendor_id=vendor_id, search=search_key) }}">
                                 {{ page }}
                             </a>
                         </li>
@@ -389,7 +395,7 @@
         selectables.forEach(function (selectable) {
             selectable.addEventListener("click", function (event) {
                 const categoryId = selectable.dataset.id;
-                const url = "{{ url_for('main.shop_products', cat_id=0) }}".replace("0", categoryId);
+                const url = "{{ url_for(request.endpoint, cat_id=0) }}".replace("0", categoryId);
                 window.location.href = url;
             });
         });

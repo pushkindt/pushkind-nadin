@@ -839,7 +839,10 @@ class OrderLimit(db.Model):
         db.session.commit()
 
 
-class Product(db.Model):
+class Product(SearchableMixin, db.Model):
+
+    __searchable__ = ["name", "sku", "description"]
+
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     vendor_id = db.Column(db.Integer, db.ForeignKey("vendor.id", ondelete="CASCADE"), nullable=False)
     name = db.Column(db.String(128), nullable=False, index=True)

@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
-from flask import current_app, flash, redirect, render_template, url_for
+from flask import current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
-from sqlalchemy import not_
+from sqlalchemy import not_, or_
 
 from nadin.extensions import db
 from nadin.main.forms import CreateOrderForm
@@ -27,7 +27,39 @@ from nadin.models import (
 @login_required
 @role_required([UserRoles.initiative, UserRoles.purchaser, UserRoles.admin])
 def shop_search():
-    return redirect(url_for("main.shop_categories"))
+    search_key = request.args.get("search", type=str)
+    vendor_id = request.args.get("vendor_id", type=int)
+
+    if not search_key:
+        return redirect(url_for("main.shop_categories"))
+
+    page = request.args.get("page", type=int, default=1)
+    category = {
+        "id": 0,
+        "name": f"Поиск: {search_key}",
+    }
+
+    products, total = Product.search(search_key, page, current_app.config["MAX_PER_PAGE"])
+    if vendor_id is not None:
+        products = products.filter_by(vendor_id=vendor_id)
+    products = products.join(Vendor, Product.vendor_id == Vendor.id).filter(
+        or_(Vendor.hub_id == current_user.hub_id, Product.vendor_id == current_user.hub_id)
+    )
+    products = db.paginate(products, page=1, max_per_page=current_app.config["MAX_PER_PAGE"])
+    products.total = total
+    products.page = page
+    categories = set(product.category for product in products)
+    vendors = set(product.vendor for product in products)
+
+    return render_template(
+        "shop_products.html",
+        search_key=search_key,
+        category=category,
+        categories=categories,
+        vendors=vendors,
+        products=products,
+        vendor_id=vendor_id,
+    )
 
 
 @bp.route("/shop/")
