@@ -25,17 +25,16 @@ def search_projects():
     search_key = request.args.get("q", type=str)
 
     if search_key:
-        projects, total = Project.search(search_key, page=1, per_page=current_app.config["MAX_PER_PAGE"])
-        projects = db.paginate(projects, page=1)
-        if search_key:
-            projects.total = total
-            projects.page = 1
-            projects.max_per_page = current_app.config["MAX_PER_PAGE"]
+        projects, _ = Project.search(search_key, page=1, per_page=current_app.config["MAX_PER_PAGE"])
     else:
         projects = Project.query
-        projects = projects.filter_by(hub_id=current_user.hub_id)
-        if current_user.role != UserRoles.admin:
-            projects = projects.filter_by(enabled=True).order_by(Project.name)
-        projects = db.paginate(projects, page=1, max_per_page=current_app.config["MAX_PER_PAGE"])
+
+    projects = projects.filter_by(hub_id=current_user.hub_id)
+    if current_user.role != UserRoles.admin:
+        projects = projects.filter_by(enabled=True)
+    if not search_key:
+        projects = projects.order_by(Project.name)
+
+    projects = db.paginate(projects, page=1, max_per_page=current_app.config["MAX_PER_PAGE"])
     projects = [p.to_dict() for p in projects]
     return jsonify(projects)

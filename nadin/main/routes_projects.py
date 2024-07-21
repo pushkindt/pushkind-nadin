@@ -113,19 +113,20 @@ def ShowProjects():
     page = request.args.get("page", type=int, default=1)
 
     if search_key:
-
         projects, total = Project.search(search_key, page, current_app.config["MAX_PER_PAGE"])
-        projects = db.paginate(projects, page=1)
-        if search_key:
-            projects.total = total
-            projects.page = page
-            projects.max_per_page = current_app.config["MAX_PER_PAGE"]
     else:
         projects = Project.query
-        projects = projects.filter_by(hub_id=current_user.hub_id)
-        if current_user.role != UserRoles.admin:
-            projects = projects.filter_by(enabled=True).order_by(Project.name)
-        projects = db.paginate(projects, max_per_page=current_app.config["MAX_PER_PAGE"])
+
+    projects = projects.filter_by(hub_id=current_user.hub_id)
+    if current_user.role != UserRoles.admin:
+        projects = projects.filter_by(enabled=True)
+    if search_key:
+        projects = db.paginate(projects, page=1, max_per_page=current_app.config["MAX_PER_PAGE"])
+        projects.total = total
+        projects.page = page
+    else:
+        projects = projects.order_by(Project.name)
+        projects = db.paginate(projects, page=page, max_per_page=current_app.config["MAX_PER_PAGE"])
 
     forms = {
         "add_project": AddProjectForm(),
