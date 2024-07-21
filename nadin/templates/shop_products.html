@@ -19,7 +19,9 @@
 
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <input class="form-control" id="productFilter" type="text" placeholder="Фильтр...">
+            <form method="GET" action="{{url_for('main.shop_search')}}">
+                <input class="form-control" name="search" id="searchInput" type="search" placeholder="Поиск.." value={{search_key or ''}}>
+            </form>
         </div>
     </div>
 
@@ -321,6 +323,25 @@
 
     <nav aria-label="Products pagination">
         <ul class="pagination justify-content-center flex-wrap" id="productPagination">
+            {% for page in products.iter_pages() %}
+                {% if page %}
+                    {% if page != products.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.shop_products', page=page, cat_id=category.id, vendor_id=vendor_id) }}">
+                                {{ page }}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item active" aria-current="page">
+                            <a class="page-link" href="#">{{ page }}</a>
+                        <li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item">
+                        <span class="ellipsis">…</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
         </ul>
     </nav>
 
@@ -334,34 +355,10 @@
 <script>
     document.addEventListener("DOMContentLoaded", () => {
 
-        const productFilter = document.querySelector("#productFilter");
-        const productList = document.querySelector("#productList");
-        const categoryList = document.querySelector("#categoryList");
-
-        InstantiatePagination("productList", "selectable", "productPagination", 10, 'productFilter');
-
         PopulateProductQuantities();
         SetInCartText();
         CheckProject(() => {
             window.location = "{{ url_for('main.shop_categories') }}";
-        });
-
-        productFilter.addEventListener("keyup", () => {
-            const filterValue = productFilter.value.toLowerCase();
-            const productRows = productList.querySelectorAll(".selectable");
-            if (filterValue.length > 0){
-                productRows.forEach(row => {
-                    const rowText = row.textContent.toLowerCase();
-                    const showRow = rowText.indexOf(filterValue) > -1;
-                    if (showRow)
-                        row.classList.remove("d-none")
-                    else
-                        row.classList.add("d-none");
-                });
-            } else {
-                const page = document.querySelector("#productPagination li.active");
-                page.click();
-            }
         });
 
         const addToCartButtons = document.querySelectorAll(".addToCart");

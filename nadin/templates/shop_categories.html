@@ -16,7 +16,9 @@
 
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <input class="form-control" id="categoryFilter" type="text" placeholder="Фильтр...">
+            <form method="GET" action="{{url_for('main.shop_search')}}">
+                <input class="form-control" name="search" id="searchInput" type="search" placeholder="Поиск.." value={{search_key or ''}}>
+            </form>
         </div>
     </div>
 
@@ -214,19 +216,6 @@
             });
         });
 
-        const categoryFilter = document.getElementById("categoryFilter");
-        const categoryList = document.getElementById("categoryList");
-
-        categoryFilter.addEventListener("input", () => {
-            const value = categoryFilter.value.toLowerCase();
-            const cards = categoryList.querySelectorAll(".card");
-            cards.forEach(function (card) {
-                const cardText = card.textContent.toLowerCase();
-                const show = cardText.indexOf(value) > -1;
-                card.style.display = show ? "flex" : "none";
-            });
-        });
-
         const projectSelect = $("#projectSelect");
 
         projectSelect.selectize({
@@ -261,7 +250,7 @@
                     'data-legaladdress="'+escape(item.legal_address)+'"'+
                     'data-shippingaddress="'+escape(item.shipping_address)+'"'+
                     '>'+
-                    escape(item.name)+' ('+escape(item.uid)+')'+
+                    escape(item.name)+' ('+escape(item.legal_address)+')'+
                     '</div>';
                 }
             },

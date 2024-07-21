@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from flask import flash, redirect, render_template, url_for
+from flask import current_app, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import not_
 
@@ -21,6 +21,13 @@ from nadin.models import (
     UserRoles,
     Vendor,
 )
+
+
+@bp.route("/shop/search")
+@login_required
+@role_required([UserRoles.initiative, UserRoles.purchaser, UserRoles.admin])
+def shop_search():
+    return redirect(url_for("main.shop_categories"))
 
 
 @bp.route("/shop/")
@@ -55,7 +62,7 @@ def shop_products(cat_id, vendor_id):
     if vendor_id is not None:
         products = products.filter_by(vendor_id=vendor_id)
     products = products.join(Vendor).filter_by(enabled=True)
-    products = products.order_by(Product.name).all()
+    products = db.paginate(products.order_by(Product.name), max_per_page=current_app.config["MAX_PER_PAGE"])
     vendor_ids = {p.vendor_id for p in products}
     vendors = Vendor.query.filter(Vendor.id.in_(vendor_ids)).all()
     return render_template(
