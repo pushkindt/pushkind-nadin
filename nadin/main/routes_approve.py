@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta, timezone
 from flask import Response, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from openpyxl import load_workbook
+from sqlalchemy import or_
 from sqlalchemy.orm.attributes import flag_modified
 
 from nadin.extensions import db
@@ -33,6 +34,7 @@ from nadin.models import (
     OrderPosition,
     OrderStatus,
     OrderVendor,
+    Product,
     Project,
     User,
     UserRoles,
@@ -316,12 +318,24 @@ def SaveQuantity(order_id):
     form = ChangeQuantityForm()
     if form.validate_on_submit():
         product = {}
-        for _, product in enumerate(order.products):
+        for idx, product in enumerate(order.products):
             if form.product_id.data == product["id"]:
                 break
         else:
-            flash("Указанный товар не найден в заявке.")
-            return redirect(url_for("main.ShowOrder", order_id=order_id))
+            idx = None
+            product = (
+                Product.query.filter_by(id=form.product_id.data)
+                .join(Vendor, Product.vendor_id == Vendor.id)
+                .filter(or_(Vendor.hub_id == current_user.hub_id, Product.vendor_id == current_user.hub_id))
+                .first()
+            )
+            if not product:
+                flash("Указанный товар не найден.")
+                return redirect(url_for("main.ShowOrder", order_id=order_id))
+            product = product.to_dict()
+            product["quantity"] = 0
+            product["selectedOptions"] = [{"name": "Единицы", "value": product["measurement"]}]
+            order.products.append(product)
 
         if product["quantity"] != form.product_quantity.data:
             message = f"{product['sku']} количество было {product['quantity']} " f"стало {form.product_quantity.data}"
@@ -346,6 +360,8 @@ def SaveQuantity(order_id):
         order.total = sum(p["quantity"] * p["price"] for p in order.products)
         order.status = OrderStatus.modified
 
+        if idx in range(len(order.products)) and form.product_quantity.data == 0:
+            order.products.pop(idx)
         flag_modified(order, "products")
 
         db.session.commit()
