@@ -1,10 +1,11 @@
 from flask import Blueprint, current_app, g, jsonify, request
 from flask_login import current_user, login_required
+from sqlalchemy import or_
 
 from nadin.api.auth import basic_auth
 from nadin.api.errors import error_response
 from nadin.extensions import db
-from nadin.models import OrderLimit, Project, User, UserRoles
+from nadin.models import OrderLimit, Product, Project, User, UserRoles, Vendor
 
 bp = Blueprint("api", __name__)
 
@@ -38,3 +39,24 @@ def search_projects():
     projects = db.paginate(projects, page=1, max_per_page=current_app.config["MAX_PER_PAGE"])
     projects = [p.to_dict() for p in projects]
     return jsonify(projects)
+
+
+@bp.route("/products/search", methods=["GET"])
+@login_required
+def search_products():
+    search_key = request.args.get("q", type=str)
+
+    if search_key:
+        products, _ = Product.search(search_key, page=1, per_page=current_app.config["MAX_PER_PAGE"])
+    else:
+        products = Product.query
+
+    products = products.join(Vendor, Product.vendor_id == Vendor.id).filter(
+        or_(Vendor.hub_id == current_user.hub_id, Product.vendor_id == current_user.hub_id)
+    )
+    if not search_key:
+        products = products.order_by(Product.name)
+
+    products = db.paginate(products, page=1, max_per_page=current_app.config["MAX_PER_PAGE"])
+    products = [p.to_dict() for p in products]
+    return jsonify(products)
