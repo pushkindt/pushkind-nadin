@@ -91,12 +91,6 @@ def ShowOrder(order_id):
     cashflows = CashflowStatement.query.filter(CashflowStatement.hub_id == current_user.hub_id)
     cashflows = cashflows.order_by(CashflowStatement.name).all()
 
-    projects = Project.query
-    if current_user.role != UserRoles.admin:
-        projects = projects.filter_by(enabled=True)
-    projects = projects.filter_by(hub_id=current_user.hub_id)
-    projects = projects.order_by(Project.name).all()
-
     categories = Category.query.filter(Category.hub_id == current_user.hub_id).all()
 
     initiative_form.categories.choices = [(c.id, c.name) for c in categories]
@@ -119,20 +113,16 @@ def ShowOrder(order_id):
 
     approver_form.process()
 
-    initiative_form.project.choices = [(p.id, p.name) for p in projects]
-    if order.project is None:
-        initiative_form.project.choices.append((0, "Выберите клиента..."))
-        initiative_form.project.default = 0
-    else:
+    if order.project:
+        initiative_form.project.choices = [(order.project_id, order.project.name)]
         initiative_form.project.default = order.project_id
-    initiative_form.process()
+        initiative_form.process()
 
     split_form = SplitOrderForm()
 
     return render_template(
         "approve.html",
         order=order,
-        projects=projects,
         comment_form=comment_form,
         approval_form=approval_form,
         quantity_form=quantity_form,

@@ -502,8 +502,6 @@
 <script>
 	$(document).ready(function () {
 
-		var projects = [{% for project in projects %}{{ project| safe }},{% endfor %}];
-
 		$("#project option[value='0']").prop("disabled", true);
 
 		$("#income_statement option[value='0']").prop("disabled", true);
