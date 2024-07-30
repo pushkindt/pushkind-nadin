@@ -629,7 +629,10 @@
                 if (focusOutTimer != null)
                     clearTimeout(focusOutTimer);
                 focusOutTimer = setTimeout(() =>
-                    $(this).closest("form").submit(),
+                    {
+                        if ($(this).val())
+                            $(this).closest("form").submit()
+                    },
                     1500
                 );
             });
