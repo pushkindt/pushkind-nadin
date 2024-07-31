@@ -26,6 +26,13 @@
             </form>
         </div>
     </div>
+    <div class="row justify-content-center">
+        <div class="col-md-8 mb-1">
+            {% for fs in fast_search %}
+                <a href="{{ url_for('main.ShowProjects', search=fs, field=["legal_address", "shipping_address"]) }}" class="text-decoration-none badge {% if search_key == fs %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}"">{{ fs }}</a>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 
 

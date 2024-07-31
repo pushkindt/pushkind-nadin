@@ -23,12 +23,14 @@ def remove_from_index(index: str, model: SearchableModel):
     current_app.elasticsearch.delete(index=index, id=model.id)
 
 
-def query_index(index: str, query: str, page: int, per_page: int) -> tuple[list, int]:
+def query_index(index: str, query: str, page: int, per_page: int, fields: list = None) -> tuple[list, int]:
     if not current_app.elasticsearch:
         return [], 0
+    if not fields:
+        fields = ["*"]
     search = current_app.elasticsearch.search(
         index=index,
-        query={"multi_match": {"query": query, "fields": ["*"]}},
+        query={"multi_match": {"query": query, "fields": fields}},
         from_=(page - 1) * per_page,
         size=per_page,
     )

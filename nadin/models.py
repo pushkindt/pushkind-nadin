@@ -26,8 +26,8 @@ class SearchableMixin:
     __searchable__: list = []
 
     @classmethod
-    def search(cls, expr: str, page: int, per_page: int):
-        ids, total = search.query_index(cls.__tablename__, expr, page, per_page)
+    def search(cls, expr: str, page: int, per_page: int, fields: list = None):
+        ids, total = search.query_index(cls.__tablename__, expr, page, per_page, fields=fields)
         query = sa.select(cls).where(cls.id.in_(ids))
         if total > 0:
             when = []

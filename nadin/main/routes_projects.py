@@ -110,10 +110,30 @@ def ShowProjects():
 
     show_add_project = request.args.get("add_project", default=False, type=bool)
     search_key = request.args.get("search", type=str)
+    search_fields = request.args.getlist("field", type=str)
     page = request.args.get("page", type=int, default=1)
 
+    fast_search = [
+        "Москва",
+        "Санкт-Петербург",
+        "Саратов",
+        "Пермь",
+        "Уфа",
+        "Воронеж",
+        "Новосибирск",
+        "Люберцы",
+        "Челябинск",
+        "Владивосток",
+        "Казань",
+        "Якутск",
+        "Томск",
+        "Нижний Новгород",
+        "Екатеринбург",
+        "Тверь",
+    ]
+
     if search_key:
-        projects, total = Project.search(search_key, page, current_app.config["MAX_PER_PAGE"])
+        projects, total = Project.search(search_key, page, current_app.config["MAX_PER_PAGE"], fields=search_fields)
     else:
         projects = Project.query
 
@@ -135,7 +155,12 @@ def ShowProjects():
     }
 
     return render_template(
-        "projects.html", projects=projects, forms=forms, show_add_project=show_add_project, search_key=search_key
+        "projects.html",
+        projects=projects,
+        forms=forms,
+        show_add_project=show_add_project,
+        search_key=search_key,
+        fast_search=fast_search,
     )
 
 
