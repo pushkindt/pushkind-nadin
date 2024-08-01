@@ -139,6 +139,8 @@
                             <span id="projectInfoUid"></span>
                             <br>
                             <span id="projectInfoTin"></span>
+                            <br>
+                            <small class="text-secondary">Цены: <span id="projectInfoPriceLevel"></span></small>
                         </div>
                         <div class="col-sm-3">
                             <span class="d-sm-none fw-bold">Контакт:</span>
@@ -204,6 +206,7 @@
         const projectInfoPhone = document.getElementById("projectInfoPhone");
         const projectInfoLegalAddress = document.getElementById("projectInfoLegalAddress");
         const projectInfoShippingAddress = document.getElementById("projectInfoShippingAddress");
+        const projectInfoPriceLevel = document.getElementById("projectInfoPriceLevel");
         const projectDismiss = document.getElementById("projectDismiss");
 
         const selectables = document.querySelectorAll(".selectable");
@@ -249,6 +252,7 @@
                     'data-phone="'+escape(item.phone)+'"'+
                     'data-legaladdress="'+escape(item.legal_address)+'"'+
                     'data-shippingaddress="'+escape(item.shipping_address)+'"'+
+                    'data-pricelevelpretty="'+escape(item.price_level_pretty)+'"'+
                     '>'+
                     escape(item.name)+' ('+escape(item.legal_address)+')'+
                     '</div>';
@@ -279,6 +283,7 @@
                 projectInfoPhone.textContent = selectedOption.data("phone");
                 projectInfoLegalAddress.textContent = selectedOption.data("legaladdress");
                 projectInfoShippingAddress.textContent = selectedOption.data("shippingaddress");
+                projectInfoPriceLevel.textContent = selectedOption.data("pricelevelpretty");
 
             } else {
                 // projectSelect.addClass("border-danger");

@@ -23,7 +23,7 @@ from wtforms.validators import DataRequired, Email, InputRequired, Length, Optio
 
 from nadin.extensions import db
 from nadin.main.utils import SendEmailNotification
-from nadin.models import EventType, OrderEvent, OrderLimitsIntervals, UserRoles
+from nadin.models import EventType, OrderEvent, OrderLimitsIntervals, ProjectPriceLevel, UserRoles
 
 
 class JSONField(StringField):
@@ -287,6 +287,12 @@ class AddProjectForm(FlaskForm):
         "Адрес доставки", validators=[Optional(), Length(max=128, message="Слишком длинный адрес доставки.")]
     )
     note = TextAreaField("Заметка")
+    price_level = SelectField(
+        "Уровень цен",
+        validators=[InputRequired(message="Необходимо указать уровень цен.")],
+        coerce=int,
+        choices=[(int(level), str(level)) for level in ProjectPriceLevel],
+    )
     submit = SubmitField("Добавить")
 
 
@@ -319,6 +325,12 @@ class EditProjectForm(FlaskForm):
     )
     note = TextAreaField("Заметка")
     enabled = BooleanField("Включить клиент")
+    price_level = SelectField(
+        "Уровень цен",
+        validators=[InputRequired(message="Необходимо указать уровень цен.")],
+        coerce=int,
+        choices=[(int(level), str(level)) for level in ProjectPriceLevel],
+    )
     submit = SubmitField("Изменить")
 
 

@@ -63,6 +63,30 @@ db.event.listen(db.session, "before_commit", SearchableMixin.before_commit)
 db.event.listen(db.session, "after_commit", SearchableMixin.after_commit)
 
 
+class ProjectPriceLevel(enum.IntEnum):
+    online_store = 0
+    marketplace = 1
+    small_wholesale = 2
+    large_wholesale = 3
+    distributor = 4
+    exclusive = 5
+    retail = 6
+    retail_promo = 7
+
+    def __str__(self):
+        pretty = [
+            "Интернет магазин",
+            "Маркетплейс",
+            "Мелкий опт",
+            "Крупный опт",
+            "Дистрибьютор",
+            "Эксклюзив",
+            "Сети",
+            "Сети промо",
+        ]
+        return pretty[self.value]
+
+
 class EventType(enum.IntEnum):
     commented = 0
     approved = 1
@@ -453,6 +477,12 @@ class Project(SearchableMixin, db.Model):
     note = db.Column(db.Text, nullable=True)
     legal_address = db.Column(db.Text, nullable=True)
     shipping_address = db.Column(db.Text, nullable=True)
+    price_level = db.Column(
+        db.Enum(ProjectPriceLevel),
+        nullable=False,
+        default=ProjectPriceLevel.online_store,
+        server_default="online_store",
+    )
     hub = db.relationship("Vendor", back_populates="projects")
     orders = db.relationship("Order", back_populates="project")
 
@@ -486,6 +516,9 @@ class Project(SearchableMixin, db.Model):
             "legal_address": self.legal_address,
             "shipping_address": self.shipping_address,
             "enabled": self.enabled,
+            "price_level": self.price_level.name,
+            "price_level_pretty": str(self.price_level),
+            "price_level_id": int(self.price_level),
             "order_history": {
                 "year": [h.year for h in self.order_history],
                 "total": [h.total for h in self.order_history],

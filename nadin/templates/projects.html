@@ -57,6 +57,8 @@
             <div class="col-sm-2">
                 <span class="d-sm-none fw-bold">Название:</span>
                 <a class="editProjectButton {%if not project.enabled%}link-secondary{%endif%}" href="#" data-bs-toggle="collapse" data-bs-target="#projectStatCollaps{{project.id}}" aria-expanded="false" aria-controls="projectStatCollaps{{project.id}}">{{ project.name }}</a><br>
+                <br>
+                <small class="text-secondary">Цены: {{ project.price_level }}</small>
             </div>
             <div class="col-sm-2">
                 <span class="d-sm-none fw-bold">Код/ИНН:</span>
@@ -200,6 +202,10 @@
                         {{ forms['add_project'].note.label(id=False, class_='form-label', for='addProjectNote') }}
                         {{ forms['add_project'].note(id='addProjectNote',class_='form-control') }}
                     </div>
+                    <div class="mb-3">
+                        {{ forms['add_project'].price_level.label(id=False, class_='form-label', for='addProjectPriceLevel') }}
+                        {{ forms['add_project'].price_level(id='addProjectPriceLevel',class_='form-select') }}
+                    </div>
                 </div>
                 <div class="modal-footer">
                     {{ forms['add_project'].submit(id=False, class_='btn btn-primary text-white') }}
@@ -257,6 +263,10 @@
                     <div class="mb-3">
                         {{ forms['edit_project'].note.label(id=False, class_='form-label', for='editProjectNote') }}
                         {{ forms['edit_project'].note(id='editProjectNote',class_='form-control') }}
+                    </div>
+                    <div class="mb-3">
+                        {{ forms['edit_project'].price_level.label(id=False, class_='form-label', for='editProjectPriceLevel') }}
+                        {{ forms['edit_project'].price_level(id='editProjectPriceLevel',class_='form-select') }}
                     </div>
                     <div class="mb-3 form-check">
                         {{ forms['edit_project'].enabled(id='editProjectEnabled',class_='form-check-input') }}
@@ -319,6 +329,7 @@
                     $("#editProjectLegalAddress").val(project["legal_address"]);
                     $("#editProjectShippingAddress").val(project["shipping_address"]);
                     $("#editProjectNote").val(project["note"]);
+                    $("#editProjectPriceLevel").val(project["price_level_id"]);
                     $("#editProjectEnabled").prop('checked', project["enabled"]);
                     return true;
                 }
