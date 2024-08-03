@@ -5,32 +5,66 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8 mb-1">
-            <form method="GET">
-                <input class="form-control" name="search" id="searchInput" type="search" placeholder="Поиск.." value={{search_key or ''}}>
-            </form>
-        </div>
-        <div class="col-auto">
-            <a class="btn btn-primary text-white" href="#" role="button" data-bs-toggle="modal"
-                data-bs-target="#addProjectModal"><i class="bi bi-plus-square"></i></a>
-        </div>
-        <div class="col-auto">
-            <form method="POST" enctype="multipart/form-data" id="uploadProjectsForm"
-                action="{{url_for('main.UploadProjects')}}">
-                {{ forms["upload_projects"].csrf_token(id=False) }}
-                <label for="uploadProjectsButton">
-                    <span class="btn btn-warning mb-1 text-white">
-                        <i class="bi bi-cloud-upload"></i>
-                    </span>
-                </label>
-                <input id="uploadProjectsButton" type="file" name="projects" class="d-none" accept=".xlsx">
-            </form>
+            <div class="row">
+                <div class="col">
+                    <form method="GET">
+                        <input class="form-control" name="search" id="searchInput" type="search" placeholder="Поиск.." value={{search_key or ''}}>
+                    </form>
+                </div>
+                <div class="col-1">
+                    <a class="btn btn-primary text-white" href="#" role="button" data-bs-toggle="modal"
+                        data-bs-target="#addProjectModal"><i class="bi bi-plus-square"></i></a>
+                </div>
+                <div class="col-1">
+                    <form method="POST" enctype="multipart/form-data" id="uploadProjectsForm"
+                        action="{{url_for('main.UploadProjects')}}">
+                        {{ forms["upload_projects"].csrf_token(id=False) }}
+                        <label for="uploadProjectsButton">
+                            <span class="btn btn-warning mb-1 text-white">
+                                <i class="bi bi-cloud-upload"></i>
+                            </span>
+                        </label>
+                        <input id="uploadProjectsButton" type="file" name="projects" class="d-none" accept=".xlsx">
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
     <div class="row justify-content-center">
         <div class="col-md-8 mb-1">
-            {% for fs in fast_search %}
-                <a href="{{ url_for('main.ShowProjects', search=fs, field=["legal_address", "shipping_address"]) }}" class="text-decoration-none badge {% if search_key == fs %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}"">{{ fs }}</a>
-            {% endfor %}
+            <div class="row">
+                <div class="col">
+                    {% for fs in fast_search %}
+                        <a href="{{ url_for('main.ShowProjects', search=fs, field=["legal_address", "shipping_address"]) }}" class="text-decoration-none badge {% if search_key == fs %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}"">{{ fs }}</a>
+                    {% endfor %}
+                </div>
+                <div class="col-3">
+                    <form method="GET">
+                        <div class="row mb-1">
+                            <div class="col">
+                                <select class="form-select form-select-sm" name="price_level" id="priceLevelFilter">
+                                    <option value="">Канал</option>
+                                    {% for pl in price_levels %}
+                                        <option value="{{pl.name}}" {%if pl == price_level%}selected{%endif%}>{{pl}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <select class="form-select form-select-sm" name="last_order_date" id="lastOrderDateFilter">
+                                    <option value="">Не заказывали</option>
+                                    <option value="1" {%if last_order_date == 1%}selected{%endif%}>1 месяц</option>
+                                    <option value="6"{%if last_order_date == 6%}selected{%endif%}>6 месяцев</option>
+                                    <option value="12"{%if last_order_date == 12%}selected{%endif%}>12 месяцев</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-2">
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -335,7 +369,15 @@
             if (!e.currentTarget.value) {
                 e.currentTarget.form.submit();
             }
-        })
+        });
+
+        document.getElementById("priceLevelFilter").addEventListener("change", (e) => {
+            e.currentTarget.form.submit();
+        });
+
+        document.getElementById("lastOrderDateFilter").addEventListener("change", (e) => {
+            e.currentTarget.form.submit();
+        });
 
     });
 </script>

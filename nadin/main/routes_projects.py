@@ -114,6 +114,16 @@ def ShowProjects():
     search_key = request.args.get("search", type=str)
     search_fields = request.args.getlist("field", type=str)
     page = request.args.get("page", type=int, default=1)
+    price_level = request.args.get("price_level", type=str)
+    last_order_date = request.args.get("last_order_date", type=int)
+
+    if price_level in price_level in ProjectPriceLevel.__members__:
+        price_level = ProjectPriceLevel[price_level]
+    else:
+        price_level = None
+
+    if last_order_date not in [1, 6, 12]:
+        last_order_date = None
 
     fast_search = [
         "Москва",
@@ -140,6 +150,15 @@ def ShowProjects():
         projects = Project.query
 
     projects = projects.filter_by(hub_id=current_user.hub_id)
+
+    if price_level is not None:
+        projects = projects.filter_by(price_level=price_level)
+
+    if last_order_date is not None:
+        projects = projects.filter(
+            Project.last_order_date <= datetime.now().date() - pd.DateOffset(months=last_order_date)
+        )
+
     if current_user.role != UserRoles.admin:
         projects = projects.filter_by(enabled=True)
     if search_key:
@@ -163,6 +182,9 @@ def ShowProjects():
         show_add_project=show_add_project,
         search_key=search_key,
         fast_search=fast_search,
+        price_level=price_level,
+        price_levels=ProjectPriceLevel,
+        last_order_date=last_order_date,
     )
 
 
