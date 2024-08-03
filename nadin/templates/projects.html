@@ -48,7 +48,10 @@
             Контакт
         </div>
         <div class="col overflow-hidden">
-            Адреса
+            Город
+        </div>
+        <div class="col overflow-hidden">
+            Дата последнего заказа
         </div>
     </div>
     <div id="projectList">
@@ -56,7 +59,7 @@
         <div class="row my-1 py-1 border-top project">
             <div class="col-sm-2">
                 <span class="d-sm-none fw-bold">Название:</span>
-                <a class="editProjectButton {%if not project.enabled%}link-secondary{%endif%}" href="#" data-bs-toggle="collapse" data-bs-target="#projectStatCollaps{{project.id}}" aria-expanded="false" aria-controls="projectStatCollaps{{project.id}}">{{ project.name }}</a><br>
+                <a class="editProjectButton {%if not project.enabled%}link-secondary{%endif%}" href="#" data-bs-toggle="collapse" data-bs-target="#projectStatCollaps{{project.id}}" aria-expanded="false" aria-controls="projectStatCollaps{{project.id}}">{{ project.name }}</a>
                 <br>
                 <small class="text-secondary">Цены: {{ project.price_level }}</small>
             </div>
@@ -73,29 +76,9 @@
                 {{ project.phone or '' }}
             </div>
             <div class="col-sm">
-                <div class="row">
-                    <div class="col-4">
-                        <span class="d-sm-none fw-bold">Адреса:</span>
-                    </div>
-                    <div class="col">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-4">
-                        <span class="d-sm-none fw-bold">&boxur;</span> <strong>Юридический</strong>
-                    </div>
-                    <div class="col">
-                        {{ project.legal_address or '' }}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-4">
-                        <span class="d-sm-none fw-bold">&boxur;</span> <strong>Доставки</strong>
-                    </div>
-                    <div class="col">
-                        {{ project.shipping_address or '' }}
-                    </div>
-                </div>
+            </div>
+            <div class="col-sm">
+                {{ project.last_order_date or '' }}
             </div>
         </div>
         <div class="collapse" id="projectStatCollaps{{project.id}}">

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pandas as pd
 from flask import current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -7,7 +9,7 @@ from nadin.extensions import db
 from nadin.main.forms import AddProjectForm, EditProjectForm, UploadProjectsForm
 from nadin.main.routes import bp
 from nadin.main.utils import role_forbidden
-from nadin.models import Project, ProjectOrderHistory, UserRoles
+from nadin.models import Project, ProjectOrderHistory, ProjectPriceLevel, UserRoles
 
 
 def projects_excel_to_df(excel_file) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -31,6 +33,7 @@ def projects_excel_to_df(excel_file) -> tuple[pd.DataFrame, pd.DataFrame]:
         "note": header.index("Комментарий"),
         "legal_address": header.index("Адрес (сцеп)"),
         "shipping_address": header.index("Адрес доставки"),
+        "price_level": header.index("Канал"),
         "last_order_date": 19,
         "2019": header.index(2019),
         "2020": header.index(2020),
@@ -63,9 +66,12 @@ def projects_excel_to_df(excel_file) -> tuple[pd.DataFrame, pd.DataFrame]:
             "shipping_address": (
                 str(row[header_indexes["shipping_address"]]) if row[header_indexes["shipping_address"]] else None
             ),
-            # "last_order_date": (
-            #     str(row[header_indexes["last_order_date"]]) if row[header_indexes["last_order_date"]] else None
-            # ),
+            "last_order_date": (
+                datetime.strptime(str(row[header_indexes["last_order_date"]]), "%m.%Y").date().isoformat()
+                if row[header_indexes["last_order_date"]]
+                else None
+            ),
+            "price_level": ProjectPriceLevel.from_pretty(str(row[header_indexes["price_level"]]).strip()).name,
         }
         project_order_history[project["uid"]] = {
             "year": [2019, 2020, 2021, 2022, 2023, 2024],
@@ -96,10 +102,6 @@ def projects_excel_to_df(excel_file) -> tuple[pd.DataFrame, pd.DataFrame]:
         .rename(columns={"index": "uid"})
     )
     return projects, projects_order_history
-
-
-def test():
-    return []
 
 
 @bp.route("/projects/", methods=["GET"])

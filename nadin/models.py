@@ -73,17 +73,27 @@ class ProjectPriceLevel(enum.IntEnum):
     retail = 6
     retail_promo = 7
 
+    @staticmethod
+    def pretty_names() -> dict[str, "ProjectPriceLevel"]:
+        pretty = {
+            "ИНТЕРНЕТ": ProjectPriceLevel.online_store,
+            "МАРКЕТ": ProjectPriceLevel.marketplace,
+            "МЕЛКИЙ ОПТ": ProjectPriceLevel.small_wholesale,
+            "КРУПНЫЙ ОПТ": ProjectPriceLevel.large_wholesale,
+            "ДИСТРИБЬЮТОР": ProjectPriceLevel.distributor,
+            "ЭКСКЛЮЗИВ": ProjectPriceLevel.exclusive,
+            "СЕТИ": ProjectPriceLevel.retail,
+            "СЕТИ ПРОМО": ProjectPriceLevel.retail_promo,
+        }
+        return pretty
+
+    @staticmethod
+    def from_pretty(value: str) -> "ProjectPriceLevel":
+        pretty = ProjectPriceLevel.pretty_names()
+        return pretty.get(value.upper(), ProjectPriceLevel.online_store)
+
     def __str__(self):
-        pretty = [
-            "Интернет магазин",
-            "Маркетплейс",
-            "Мелкий опт",
-            "Крупный опт",
-            "Дистрибьютор",
-            "Эксклюзив",
-            "Сети",
-            "Сети промо",
-        ]
+        pretty = list(ProjectPriceLevel.pretty_names().keys())
         return pretty[self.value]
 
 
@@ -520,6 +530,7 @@ class Project(SearchableMixin, db.Model):
             "price_level": self.price_level.name,
             "price_level_pretty": str(self.price_level),
             "price_level_id": int(self.price_level),
+            "last_order_date": self.last_order_date.isoformat() if self.last_order_date is not None else "",
             "order_history": {
                 "year": [h.year for h in self.order_history],
                 "total": [h.total for h in self.order_history],
