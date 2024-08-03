@@ -483,6 +483,7 @@ class Project(SearchableMixin, db.Model):
         default=ProjectPriceLevel.online_store,
         server_default="online_store",
     )
+    last_order_date = db.Column(db.Date, nullable=True)
     hub = db.relationship("Vendor", back_populates="projects")
     orders = db.relationship("Order", back_populates="project")
 
