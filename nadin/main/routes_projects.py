@@ -117,7 +117,7 @@ def ShowProjects():
     price_level = request.args.get("price_level", type=str)
     last_order_date = request.args.get("last_order_date", type=int)
 
-    if price_level in price_level in ProjectPriceLevel.__members__:
+    if price_level in ProjectPriceLevel.__members__:
         price_level = ProjectPriceLevel[price_level]
     else:
         price_level = None
