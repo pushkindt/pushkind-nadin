@@ -108,6 +108,10 @@ def products_excel_to_df(df: pd.DataFrame, vendor_id: int, categories: "dict[str
 @login_required
 @role_forbidden([UserRoles.default, UserRoles.initiative, UserRoles.supervisor])
 def ShowProducts():
+
+    search_key = request.args.get("search", type=str)
+    page = request.args.get("page", type=int, default=1)
+
     products_form = UploadProductsForm()
     images_form = UploadImagesForm()
     product_image_form = UploadProductImageForm()
@@ -128,10 +132,23 @@ def ShowProducts():
     categories = Category.query.filter_by(hub_id=current_user.hub_id)
     categories = categories.order_by(Category.name).all()
 
-    products = Product.query.filter_by(vendor_id=vendor_id)
+    if search_key:
+        products, total = Product.search(search_key, page, current_app.config["MAX_PER_PAGE"])
+    else:
+        products = Product.query
+
+    products = products.filter_by(vendor_id=vendor_id)
     if category_id:
         products = products.filter_by(cat_id=category_id)
-    products = db.paginate(products.order_by(Product.name))
+
+    if search_key:
+        products = db.paginate(products, page=1, max_per_page=current_app.config["MAX_PER_PAGE"])
+        products.total = total
+        products.page = page
+    else:
+        products = products.order_by(Product.name)
+        products = db.paginate(products, page=page, max_per_page=current_app.config["MAX_PER_PAGE"])
+
     return render_template(
         "products.html",
         vendors=vendors,
@@ -142,6 +159,7 @@ def ShowProducts():
         images_form=images_form,
         product_image_form=product_image_form,
         category_id=category_id,
+        search_key=search_key,
     )
 
 
