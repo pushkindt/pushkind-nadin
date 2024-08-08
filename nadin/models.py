@@ -892,7 +892,8 @@ class Product(SearchableMixin, db.Model):
     vendor_id = db.Column(db.Integer, db.ForeignKey("vendor.id", ondelete="CASCADE"), nullable=False)
     name = db.Column(db.String(128), nullable=False, index=True)
     sku = db.Column(db.String(128), nullable=False, index=True)
-    price = db.Column(db.Float, nullable=False)
+    price = db.Column(db.Float, nullable=False)  # online_price
+    prices = db.Column(db.JSON(), nullable=True)  # the rest of the price levels
     image = db.Column(db.String(128), nullable=True)
     measurement = db.Column(db.String(128), nullable=True)
     cat_id = db.Column(db.Integer, db.ForeignKey("category.id", ondelete="CASCADE"), nullable=False)
@@ -901,6 +902,11 @@ class Product(SearchableMixin, db.Model):
     vendor = db.relationship("Vendor", back_populates="products")
     category = db.relationship("Category", back_populates="products")
     tags = db.relationship("ProductTag", backref="product", cascade="all, delete-orphan")
+
+    def get_price(self, price_level: ProjectPriceLevel) -> float:
+        if self.prices is not None and price_level.name in self.prices:
+            return self.prices[price_level.name]
+        return self.price
 
     def to_dict(self):
         return {
@@ -913,6 +919,7 @@ class Product(SearchableMixin, db.Model):
             "description": self.description,
             "sku": self.sku,
             "price": self.price,
+            "prices": self.prices,
             "measurement": self.measurement,
             "tags": [tag.tag for tag in self.tags],
         }

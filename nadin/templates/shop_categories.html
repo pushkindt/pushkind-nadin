@@ -267,6 +267,7 @@
                 const name = selectedOption.text();
                 sessionStorage.setItem("project_id", id);
                 sessionStorage.setItem("project_name", name);
+                document.cookie = "project_id=" + id;
                 projectName.textContent = name;
 
                 // projectSelect.removeClass("border-danger");

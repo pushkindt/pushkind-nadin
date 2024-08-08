@@ -66,11 +66,6 @@ def shop_search():
 @login_required
 @role_required([UserRoles.initiative, UserRoles.purchaser, UserRoles.admin])
 def shop_categories():
-    # projects = Project.query
-    # if current_user.role != UserRoles.admin:
-    #     projects = projects.filter_by(enabled=True)
-    # projects = projects.filter_by(hub_id=current_user.hub_id)
-    # projects = projects.order_by(Project.name).all()
     limits = OrderLimit.query.filter_by(hub_id=current_user.hub_id).all()
     categories = Category.query.filter(Category.hub_id == current_user.hub_id, not_(Category.name.like("%/%"))).all()
     return render_template("shop_categories.html", limits=limits, categories=categories)
@@ -81,6 +76,14 @@ def shop_categories():
 @login_required
 @role_required([UserRoles.initiative, UserRoles.purchaser, UserRoles.admin])
 def shop_products(cat_id, vendor_id):
+
+    project_id = request.cookies.get("project_id", type=int)
+
+    project = Project.query.filter_by(id=project_id, hub_id=current_user.hub_id).first()
+    if not project:
+        flash("Выберите клиента.")
+        return redirect(url_for("main.shop_categories"))
+
     category = Category.query.filter_by(id=cat_id, hub_id=current_user.hub_id).first()
     if category is None:
         return redirect(url_for("main.shop_categories"))
@@ -104,6 +107,7 @@ def shop_products(cat_id, vendor_id):
         vendors=vendors,
         products=products,
         vendor_id=vendor_id,
+        project=project,
     )
 
 
