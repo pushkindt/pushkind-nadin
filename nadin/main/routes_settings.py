@@ -66,7 +66,7 @@ def ShowSettings():
     else:
         user_form = UserSettingsForm()
 
-    if current_user.role in [UserRoles.admin, UserRoles.purchaser, UserRoles.validator]:
+    if current_user.role in [UserRoles.admin, UserRoles.purchaser, UserRoles.validator, UserRoles.initiative]:
         user_form.about_user.categories.choices = [(c.id, c.name) for c in categories]
         user_form.about_user.projects.choices = [(p.id, p.name) for p in projects]
     else:
@@ -100,7 +100,7 @@ def ShowSettings():
             else:
                 user.position = None
 
-            if user.role in [UserRoles.purchaser, UserRoles.validator]:
+            if user.role in [UserRoles.purchaser, UserRoles.validator, UserRoles.initiative]:
                 if user_form.about_user.categories.data is not None and len(user_form.about_user.categories.data) > 0:
                     user.categories = Category.query.filter(Category.id.in_(user_form.about_user.categories.data)).all()
                 else:

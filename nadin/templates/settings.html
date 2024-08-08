@@ -83,16 +83,16 @@
 <script>
 	$(document).ready(function () {
 		//Scripts
-		{% if current_user.role.name in ['validator', 'admin', 'purchaser'] %}
+		{% if current_user.role.name in ['validator', 'admin', 'purchaser', 'initiative'] %}
 			var categoriesData = $("#about_user-categories");
 			var projectsData = $("#about_user-projects");
 		{% endif %}
-		{% if current_user.role.name in ['validator', 'purchaser'] %}
+		{% if current_user.role.name in ['validator', 'purchaser', 'initiative'] %}
 			categoriesData.val({{ current_user.categories_list }});
 			projectsData.val({{ current_user.projects_list }});
 		{% endif %}
 		
-		{% if current_user.role.name in ['validator', 'admin', 'purchaser'] %}
+		{% if current_user.role.name in ['validator', 'admin', 'purchaser', 'initiative'] %}
 			categoriesData.selectize({});
 			projectsData.selectize({});
 			selectizeCategories = categoriesData[0].selectize;
@@ -171,7 +171,7 @@
 						$("#birthday").val(user["birthday"]);
 						$("#dashboard_url").val(user["dashboard_url"]);
 						$("#removeUserButton").attr("href", "{{ url_for('main.RemoveUser', user_id='0') }}".replace("0", user_id));
-						if (user["role"] == "validator" || user["role"] == "purchaser") {
+						if (user["role"] == "validator" || user["role"] == "purchaser" || user["role"] == "initiative") {
 							$("#userDataWrapper").show();
 							selectizeCategories.setValue(user["categories"]);
 							selectizeProjects.setValue(user["projects"])
