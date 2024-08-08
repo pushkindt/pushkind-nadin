@@ -31,6 +31,10 @@ def search_projects():
         projects = Project.query
 
     projects = projects.filter_by(hub_id=current_user.hub_id)
+
+    if current_user.role != UserRoles.admin and current_user.projects:
+        projects = projects.filter(Project.id.in_(p.id for p in current_user.projects))
+
     if current_user.role != UserRoles.admin:
         projects = projects.filter_by(enabled=True)
     if not search_key:
