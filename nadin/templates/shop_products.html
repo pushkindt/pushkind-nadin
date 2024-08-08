@@ -157,7 +157,7 @@
                     </div>
                 </div>
                 <div class="col overflow-hidden pt-sm-4 pt-2">
-                    <strong>{{ '{:,.2f}'.format(product.price) }}</strong>
+                    <strong>{{ '{:,.2f}'.format(product.get_price(project.price_level)) }}</strong>
                     ₽/{{ product.measurement }}
                 </div>
                 <div class="col overflow-hidden pt-sm-3 mb-1">
@@ -174,7 +174,7 @@
                 data-id="{{product.id}}"
                 data-name="{{product.name}}"
                 data-sku="{{product.sku}}"
-                data-price="{{product.price}}"
+                data-price="{{product.get_price(project.price_level)}}"
                 data-vendor="{{product.vendor.name}}"
                 data-image="{{product.image or ''}}"
                 data-measurement="{{product.measurement}}"

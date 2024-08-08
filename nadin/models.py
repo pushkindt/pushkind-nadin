@@ -905,7 +905,12 @@ class Product(SearchableMixin, db.Model):
 
     def get_price(self, price_level: ProjectPriceLevel) -> float:
         if self.prices is not None and price_level.name in self.prices:
-            return self.prices[price_level.name]
+            try:
+                level_price = float(self.prices[price_level.name])
+            except ValueError:
+                level_price = 0.0
+            if level_price > 0.0:
+                return level_price
         return self.price
 
     def to_dict(self):
