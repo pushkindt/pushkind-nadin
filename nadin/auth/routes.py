@@ -8,6 +8,7 @@ from nadin.auth.email import send_password_reset_email, send_user_registered_ema
 from nadin.auth.forms import LoginForm, RegistrationForm, ResetPasswordForm, ResetPasswordRequestForm
 from nadin.extensions import db
 from nadin.models import User, UserRoles
+from nadin.utils import flash_errors
 
 bp = Blueprint("auth", __name__)
 
@@ -32,8 +33,8 @@ def login():
         current_app.logger.info("%s logged", user.email)
         db.session.commit()
         return redirect(next_page)
-    for error in form.email.errors + form.password.errors + form.remember_me.errors:
-        flash(error)
+
+    flash_errors(form)
     return render_template("auth/login.html", form=form)
 
 
@@ -74,8 +75,8 @@ def signup():
         if current_user.is_authenticated and current_user.role == UserRoles.admin:
             return redirect(url_for("main.ShowSettings"))
         return redirect(url_for("auth.login"))
-    for error in form.email.errors + form.password.errors + form.password2.errors:
-        flash(error)
+
+    flash_errors(form)
     return render_template("auth/register.html", form=form)
 
 
@@ -99,8 +100,7 @@ def request_password_reset():
             return redirect(url_for("auth.login"))
         flash("Такой пользователь не обнаружен.")
     else:
-        for error in form.email.errors:
-            flash(error)
+        flash_errors(form)
     return render_template("auth/request.html", form=form)
 
 
@@ -117,6 +117,6 @@ def reset_password(token):
         db.session.commit()
         flash("Ваш пароль был изменён.")
         return redirect(url_for("auth.login"))
-    for error in form.password.errors + form.password2.errors:
-        flash(error)
+
+    flash_errors(form)
     return render_template("auth/reset.html", form=form)

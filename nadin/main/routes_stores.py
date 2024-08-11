@@ -8,6 +8,7 @@ from nadin.main.forms import AddStoreForm
 from nadin.main.routes import bp
 from nadin.main.utils import role_forbidden, role_required
 from nadin.models import User, UserRoles, Vendor
+from nadin.utils import flash_errors
 
 ################################################################################
 # Stores page
@@ -47,9 +48,7 @@ def AddStore():
         db.session.commit()
         flash("Магазин успешно добавлен.")
     else:
-        errors = form.name.errors + form.email.errors + form.password.errors
-        for error in errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("main.ShowStores"))
 
 

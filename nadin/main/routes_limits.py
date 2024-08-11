@@ -6,6 +6,7 @@ from nadin.main.forms import AddLimitForm
 from nadin.main.routes import bp
 from nadin.main.utils import role_forbidden
 from nadin.models import CashflowStatement, OrderLimit, OrderLimitsIntervals, Project, UserRoles
+from nadin.utils import flash_errors
 
 
 @bp.route("/limits/", methods=["GET"])
@@ -72,8 +73,7 @@ def AddLimit():
         db.session.commit()
         flash("Лимит успешно добавлен.")
     else:
-        for error in form.interval.errors + form.value.errors + form.project.errors + form.cashflow.errors:
-            flash(error)
+        flash_errors(form)
     OrderLimit.update_current(current_user.hub_id, form.project.data, form.cashflow.data)
     return redirect(url_for("main.ShowLimits"))
 

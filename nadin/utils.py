@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from datetime import datetime, timedelta, timezone
-from typing import Any
+from typing import Any, Optional
 
 from flask import flash
 
@@ -24,7 +24,7 @@ def get_filter_timestamps():
     return dates
 
 
-def first(items: Iterable) -> Any:
+def first(items: Optional[Iterable]) -> Any:
     return next(iter(items or []), None)
 
 

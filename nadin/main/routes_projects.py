@@ -10,6 +10,7 @@ from nadin.main.forms import AddProjectForm, EditProjectForm, UploadProjectsForm
 from nadin.main.routes import bp
 from nadin.main.utils import role_forbidden
 from nadin.models import Project, ProjectOrderHistory, ProjectPriceLevel, UserRoles
+from nadin.utils import flash_errors
 
 
 def projects_excel_to_df(excel_file) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -220,8 +221,7 @@ def AddProject():
         else:
             flash(f"Клиент {project_name} уже существует.")
     else:
-        for _, error in form.errors.items():
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("main.ShowProjects"))
 
 
@@ -268,8 +268,7 @@ def EditProject():
         else:
             flash("Такого клиента не существует.")
     else:
-        for _, error in form.errors.items():
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("main.ShowProjects"))
 
 
@@ -323,6 +322,5 @@ def UploadProjects():
 
         flash("Список клиентов успешно загружен.")
     else:
-        for _, error in form.errors.items():
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("main.ShowProjects"))

@@ -10,7 +10,6 @@ bp = Blueprint("main", __name__)
 
 @bp.before_app_request
 def before_request():
-    pass
-    # if current_user.is_authenticated:
-    #     current_user.last_seen = datetime.now(timezone.utc)
-    #     db.session.commit()
+    if current_user.is_authenticated:
+        current_user.last_seen = datetime.now(timezone.utc)
+        db.session.commit()

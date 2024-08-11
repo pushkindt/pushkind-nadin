@@ -40,6 +40,7 @@ from nadin.models import (
     UserRoles,
     Vendor,
 )
+from nadin.utils import flash_errors
 
 ################################################################################
 # Approve page
@@ -231,8 +232,7 @@ def SplitOrder(order_id):
         flash(message_flash)
 
     else:
-        for error in form.products.errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("main.ShowIndex"))
 
 
@@ -376,9 +376,7 @@ def SaveQuantity(order_id):
         flash(f"Позиция {product['sku']} была изменена.")
 
     else:
-        errors = form.product_id.errors + form.product_quantity.errors
-        for error in errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("main.ShowOrder", order_id=order_id))
 
 
@@ -531,8 +529,7 @@ def SetDealDone(order_id):
         flash("Заявка законтрактована.")
         db.session.commit()
     else:
-        for error in form.comment.errors + form.notify_reviewers.errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("main.ShowOrder", order_id=order_id))
 
 
@@ -819,8 +816,7 @@ def SaveApproval(order_id):
                 SendEmailNotification("disapproved", order)
 
     else:
-        for error in form.product_id.errors + form.comment.errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("main.ShowOrder", order_id=order_id))
 
 
@@ -890,8 +886,7 @@ def SaveStatements(order_id):
         flash("Статьи БДДР и БДДС успешно сохранены.")
 
     else:
-        for error in form.income_statement.errors + form.cashflow_statement.errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("main.ShowOrder", order_id=order_id))
 
 
@@ -945,8 +940,7 @@ def SaveParameters(order_id):
             )
         flash("Параметры заявки успешно сохранены.")
     else:
-        for _, error in form.errors.items():
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("main.ShowOrder", order_id=order_id))
 
 
@@ -964,8 +958,7 @@ def LeaveComment(order_id):
         form.comment_and_send_email(order, EventType.commented)
         db.session.commit()
     else:
-        for error in form.comment.errors + form.notify_reviewers.errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("main.ShowOrder", order_id=order_id))
 
 
@@ -1023,6 +1016,5 @@ def CancelOrder(order_id):
         db.session.commit()
         flash("Заявка аннулирована.")
     else:
-        for error in form.comment.errors + form.notify_reviewers.errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("main.ShowOrder", order_id=order_id))

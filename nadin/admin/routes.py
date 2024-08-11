@@ -16,6 +16,7 @@ from nadin.main.forms import (
 )
 from nadin.main.utils import role_required
 from nadin.models import AppSettings, CashflowStatement, Category, IncomeStatement, UserRoles
+from nadin.utils import flash_errors
 
 bp = Blueprint("admin", __name__)
 
@@ -94,16 +95,7 @@ def SaveAppSettings():
         db.session.commit()
         flash("Настройки рассылки 1С успешно сохранены.")
     else:
-        errors = (
-            form.email.errors
-            + form.enable.errors
-            + form.order_id_bias.errors
-            + form.image.errors
-            + form.single_category_orders.errors
-            + form.alert.errors
-        )
-        for error in errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("admin.ShowAdminPage"))
 
 
@@ -137,17 +129,7 @@ def SaveCategoryResponsibility():
             db.session.commit()
             flash("Категория успешно отредактирована.")
     else:
-        errors = (
-            form.category_id.errors
-            + form.responsible.errors
-            + form.functional_budget.errors
-            + form.income_statement.errors
-            + form.cashflow_statement.errors
-            + form.image.errors
-            + form.code.errors
-        )
-        for error in errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("admin.ShowAdminPage"))
 
 
@@ -167,8 +149,7 @@ def AddIncome():
         else:
             flash(f'БДР "{income_name}" уже существует.')
     else:
-        for error in form.income_name.errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("admin.ShowAdminPage"))
 
 
@@ -188,8 +169,7 @@ def AddCashflow():
         else:
             flash(f'БДДС "{cashflow_name}" уже существует.')
     else:
-        for error in form.cashflow_name.errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("admin.ShowAdminPage"))
 
 
@@ -240,8 +220,7 @@ def EditIncome():
         else:
             flash("Такой БДР не существует.")
     else:
-        for error in form.income_id.errors + form.income_name.errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("admin.ShowAdminPage"))
 
 
@@ -264,8 +243,7 @@ def EditCashflow():
         else:
             flash("Такой БДДС не существует.")
     else:
-        for _, error in form.errors.items():
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("admin.ShowAdminPage"))
 
 
@@ -297,8 +275,7 @@ def AddCategory():
         else:
             flash(f"Категория {category_name} уже существует.")
     else:
-        for _, error in form.errors.items():
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("admin.ShowAdminPage"))
 
 

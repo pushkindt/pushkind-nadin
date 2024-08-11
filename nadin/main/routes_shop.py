@@ -22,6 +22,7 @@ from nadin.models import (
     UserRoles,
     Vendor,
 )
+from nadin.utils import flash_errors
 
 
 @bp.route("/shop/search")
@@ -178,7 +179,7 @@ def shop_cart():
                 hub_id=current_user.hub_id,
                 products=order_products,
                 vendors=list(set(order_vendors)),
-                total=sum([p["quantity"] * p["price"] for p in order_products]),
+                total=sum(p["quantity"] * p["price"] for p in order_products),
                 status=OrderStatus.new,
                 cashflow_id=cashflow_id,
                 income_id=income_id,
@@ -200,8 +201,6 @@ def shop_cart():
             flash("Заявка успешно создана.")
             SendEmailNotification("new", order)
             return redirect(url_for("main.ShowIndex"))
-        else:
-            for _, errorMessages in form.errors.items():
-                for err in errorMessages:
-                    flash(err)
+
+        flash_errors(form)
     return render_template("shop_cart.html", form=form)

@@ -22,6 +22,7 @@ from nadin.models import (
     UserRoles,
     Vendor,
 )
+from nadin.utils import flash_errors
 
 ################################################################################
 # Settings page
@@ -126,7 +127,7 @@ def ShowSettings():
             if old_position != user.position:
                 RemoveExcessivePosition()
 
-            if user.role == UserRoles.validator or old_role == UserRoles.validator:
+            if UserRoles.validator in (user.role, old_role):
                 for order in Order.query.filter(
                     Order.hub_id == current_user.hub_id,
                     Order.status != OrderStatus.approved,
@@ -135,28 +136,9 @@ def ShowSettings():
 
             flash("Данные успешно сохранены.")
         else:
-            errors = (
-                user_form.about_user.full_name.errors
-                + user_form.about_user.phone.errors
-                + user_form.about_user.categories.errors
-                + user_form.about_user.projects.errors
-                + user_form.about_user.position.errors
-                + user_form.about_user.location.errors
-                + user_form.about_user.email_new.errors
-                + user_form.about_user.email_modified.errors
-                + user_form.about_user.email_approved.errors
-                + user_form.about_user.email_disapproved.errors
-            )
+            flash_errors(user_form.about_user)
             if isinstance(user_form, UserRolesForm):
-                errors += (
-                    user_form.user_id.errors
-                    + user_form.role.errors
-                    + user_form.note.errors
-                    + user_form.birthday.errors
-                    + user_form.dashboard_url.errors
-                )
-            for error in errors:
-                flash(error)
+                flash_errors(user_form)
         return redirect(url_for("main.ShowSettings"))
 
     if current_user.role == UserRoles.admin:

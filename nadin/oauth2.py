@@ -62,6 +62,7 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
         auth_code = OAuth2AuthorizationCode.query.filter_by(code=code, client_id=client.client_id).first()
         if auth_code and not auth_code.is_expired():
             return auth_code
+        return None
 
     def delete_authorization_code(self, authorization_code):
         db.session.delete(authorization_code)

@@ -24,7 +24,7 @@ from nadin.models import (
     UserRoles,
     Vendor,
 )
-from nadin.utils import get_filter_timestamps
+from nadin.utils import flash_errors, get_filter_timestamps
 
 ################################################################################
 # Index page
@@ -242,8 +242,7 @@ def MergeOrders():
 
         SendEmailNotification("new", order)
     else:
-        for error in form.orders.errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("main.ShowIndex"))
 
 
@@ -329,8 +328,7 @@ def SaveOrders():
             headers={"Content-Disposition": "attachment;filename=export.xlsx"},
         )
 
-    for error in form.orders.errors:
-        flash(error)
+    flash_errors(form)
     return redirect(url_for("main.ShowIndex"))
 
 

@@ -13,7 +13,7 @@ from nadin.main.forms import UploadImagesForm, UploadProductImageForm, UploadPro
 from nadin.main.routes import bp
 from nadin.main.utils import role_forbidden
 from nadin.models import Category, Product, ProductTag, UserRoles, Vendor
-from nadin.utils import first
+from nadin.utils import first, flash_errors
 
 ################################################################################
 # Vendor products page
@@ -202,8 +202,7 @@ def UploadProducts():
         db.session.commit()
         flash("Список товаров успешно обновлён.")
     else:
-        for error in form.products.errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("main.ShowProducts", vendor_id=vendor.id, category_id=category_id))
 
 
@@ -238,8 +237,7 @@ def UploadImages():
                 db.session.commit()
         flash("Изображения товаров успешно загружены.")
     else:
-        for error in form.images.errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("main.ShowProducts", vendor_id=vendor.id))
 
 
@@ -321,6 +319,5 @@ def UploadProductImage(product_id):
         db.session.commit()
         flash("Изображение товара успешно загружено.")
     else:
-        for error in form.image.errors:
-            flash(error)
+        flash_errors(form)
     return redirect(url_for("main.ShowProducts", vendor_id=vendor.id))
