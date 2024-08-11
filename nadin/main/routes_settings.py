@@ -71,7 +71,7 @@ def ShowSettings():
         user_form.about_user.categories.choices = [(c.id, c.name) for c in categories]
     else:
         user_form.about_user.categories.choices = []
-    user_form.about_user.projects.choices = []
+    user_form.about_user.projects.choices = [(p.id, p.name) for p in current_user.projects]
 
     if user_form.submit.data:
         user_form.about_user.projects.choices = [(p.id, p.name) for p in projects]
