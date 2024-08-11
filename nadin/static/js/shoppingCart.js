@@ -438,8 +438,20 @@ function ShowCartModal(event) {
 }
 
 function CheckProject(selectProjectCallback) {
-    const projectId = Number(sessionStorage.getItem("project_id"));
-    const projectName = sessionStorage.getItem("project_name");
+
+
+    const projectId = Number(
+        document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("project_id="))
+            ?.split("=")[1]
+    );
+
+    const projectName = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("project_name="))
+        ?.split("=")[1];
+
     const projectSelect = document.querySelector(".projectSelect");
     if (!projectId || !projectName)
         selectProjectCallback();
@@ -447,8 +459,8 @@ function CheckProject(selectProjectCallback) {
         document.querySelector("#projectName").textContent = projectName;
     }
     projectSelect.addEventListener("click", function () {
-        sessionStorage.removeItem("project_id");
-        sessionStorage.removeItem("project_name");
+        document.cookie = "project_id=;";
+        document.cookie = "project_name=;";
         selectProjectCallback();
     });
     return [projectId, projectName];
