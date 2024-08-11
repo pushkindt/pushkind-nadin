@@ -447,10 +447,12 @@ function CheckProject(selectProjectCallback) {
             ?.split("=")[1]
     );
 
-    const projectName = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("project_name="))
-        ?.split("=")[1];
+    const projectName = decodeURIComponent(
+        document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("project_name="))
+            ?.split("=")[1]
+    );
 
     const projectSelect = document.querySelector(".projectSelect");
     if (!projectId || !projectName)
@@ -459,8 +461,8 @@ function CheckProject(selectProjectCallback) {
         document.querySelector("#projectName").textContent = projectName;
     }
     projectSelect.addEventListener("click", function () {
-        document.cookie = "project_id=;";
-        document.cookie = "project_name=;";
+        document.cookie = "project_id=;path=/";
+        document.cookie = "project_name=;path=/";
         selectProjectCallback();
     });
     return [projectId, projectName];

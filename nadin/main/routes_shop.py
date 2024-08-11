@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
+from urllib.parse import quote
 
-from flask import current_app, flash, redirect, render_template, request, url_for
+from flask import current_app, flash, make_response, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import not_, or_
 
@@ -66,9 +67,14 @@ def shop_search():
 @login_required
 @role_required([UserRoles.initiative, UserRoles.purchaser, UserRoles.admin])
 def shop_categories():
+
     limits = OrderLimit.query.filter_by(hub_id=current_user.hub_id).all()
     categories = Category.query.filter(Category.hub_id == current_user.hub_id, not_(Category.name.like("%/%"))).all()
-    return render_template("shop_categories.html", limits=limits, categories=categories)
+    response = make_response(render_template("shop_categories.html", limits=limits, categories=categories))
+    if len(current_user.projects) == 1:
+        response.set_cookie("project_id", str(current_user.projects[0].id))
+        response.set_cookie("project_name", quote(current_user.projects[0].name))
+    return response
 
 
 @bp.route("/shop/<int:cat_id>", defaults={"vendor_id": None})

@@ -266,8 +266,8 @@
                 const selectedOption = projectSelect[0].selectize.getOption(id);
 
                 const name = selectedOption.text();
-                document.cookie = `project_id=${id};`;
-                document.cookie = `project_name=${name};`;
+                document.cookie = `project_id=${id};path=/`;
+                document.cookie = `project_name=${encodeURIComponent(name)};path=/`;
                 projectName.textContent = name;
 
                 // projectSelect.removeClass("border-danger");
