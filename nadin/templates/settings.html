@@ -94,7 +94,26 @@
 		
 		{% if current_user.role.name in ['validator', 'admin', 'purchaser', 'initiative'] %}
 			categoriesData.selectize({});
-			projectsData.selectize({});
+			projectsData.selectize({
+				valueField: 'id',
+				labelField: 'name',
+				searchField: 'name',
+				options: [],
+				create: false,
+				load: function(query, callback) {
+					if (!query.length) return callback();
+					$.ajax({
+						url: '{{url_for("api.search_projects", q="0")}}'.replace('0', encodeURIComponent(query)),
+						type: 'GET',
+						error: function() {
+							callback();
+						},
+						success: function(res) {
+							callback(res.slice(0, 20));
+						}
+					});
+				},
+			});
 			selectizeCategories = categoriesData[0].selectize;
 			selectizeProjects = projectsData[0].selectize;
 
@@ -126,8 +145,6 @@
 		
 		{% if current_user.role.name == 'admin' %}
 			var users = [{% for user in users %}{{ user | safe }},{% endfor %}];
-
-			var projects = [{% for project in projects %}{{ project | safe }},{% endfor %}];
 
 			function HideUserData() {
 				selectizeCategories.clear(false);
@@ -174,7 +191,10 @@
 						if (user["role"] == "validator" || user["role"] == "purchaser" || user["role"] == "initiative") {
 							$("#userDataWrapper").show();
 							selectizeCategories.setValue(user["categories"]);
-							selectizeProjects.setValue(user["projects"])
+							user["projects"].forEach(function (p) {
+								selectizeProjects.registerOption(p);
+							});
+							selectizeProjects.setValue(user["project_ids"]);
 						}
 						else {
 							HideUserData();

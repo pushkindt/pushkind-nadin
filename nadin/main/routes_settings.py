@@ -69,12 +69,12 @@ def ShowSettings():
 
     if current_user.role in [UserRoles.admin, UserRoles.purchaser, UserRoles.validator, UserRoles.initiative]:
         user_form.about_user.categories.choices = [(c.id, c.name) for c in categories]
-        user_form.about_user.projects.choices = [(p.id, p.name) for p in projects]
     else:
         user_form.about_user.categories.choices = []
-        user_form.about_user.projects.choices = []
+    user_form.about_user.projects.choices = []
 
     if user_form.submit.data:
+        user_form.about_user.projects.choices = [(p.id, p.name) for p in projects]
         if user_form.validate_on_submit():
             if current_user.role == UserRoles.admin:
                 user = User.query.filter(User.id == user_form.user_id.data).first()

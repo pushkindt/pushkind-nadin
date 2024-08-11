@@ -329,7 +329,8 @@ class User(UserMixin, db.Model):
             "email_disapproved": self.email_disapproved,
             "email_approved": self.email_approved,
             "email_comment": self.email_comment,
-            "projects": self.projects_list,
+            "projects": [p.to_dict() for p in self.projects],
+            "project_ids": self.projects_list,
             "categories": self.categories_list,
             "dashboard_url": self.dashboard_url,
         }
