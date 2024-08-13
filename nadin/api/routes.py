@@ -33,7 +33,9 @@ def get_category(category_id: int):
     else:
         category = Category.query.get_or_404(category_id).to_dict()
         category["children"] = [(c.id, c.name) for c in Category.query.filter(Category.id.in_(category["children"]))]
-    return jsonify(category)
+    response = jsonify(category)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 
 @bp.route("/category/<int:category_id>/products", methods=["GET"])
@@ -46,7 +48,9 @@ def get_category_products(category_id: int):
         products = Product.query.order_by(func.random()).limit(current_app.config["MAX_PER_PAGE"]).all()
 
     products = [p.to_dict() for p in products]
-    return jsonify(products)
+    response = jsonify(products)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 
 @bp.route("/projects/search", methods=["GET"])
