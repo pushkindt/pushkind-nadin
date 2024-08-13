@@ -20,6 +20,7 @@ def daily_update_limits_current():
     OrderLimit.update_current(hub_id=user.hub_id)
     return "", 200
 
+
 @bp.route("/category/<int:category_id>", methods=["GET"])
 def get_category(category_id: int):
     if category_id == 0:
