@@ -1,11 +1,12 @@
 from flask import Blueprint, current_app, g, jsonify, request
 from flask_login import current_user, login_required
-from sqlalchemy import or_
+from sqlalchemy import not_, or_
+from sqlalchemy.sql.expression import func
 
 from nadin.api.auth import basic_auth
 from nadin.api.errors import error_response
 from nadin.extensions import db
-from nadin.models import OrderLimit, Product, Project, User, UserRoles, Vendor
+from nadin.models import Category, OrderLimit, Product, Project, User, UserRoles, Vendor
 
 bp = Blueprint("api", __name__)
 
@@ -18,6 +19,33 @@ def daily_update_limits_current():
         return error_response(403)
     OrderLimit.update_current(hub_id=user.hub_id)
     return "", 200
+
+
+@bp.route("/category/", methods=["GET"], defaults={"category_id": 0})
+@bp.route("/category/<int:category_id>", methods=["GET"])
+def get_category(category_id: int):
+    if category_id == 0:
+        category = {
+            "name": "",
+            "id": category_id,
+            "children": [c.id for c in Category.query.filter(not_(Category.name.like("%/%"))).all()],
+        }
+    else:
+        category = Category.query.get_or_404(category_id).to_dict()
+    return jsonify(category)
+
+
+@bp.route("/category/<int:category_id>/products", methods=["GET"])
+def get_category_products(category_id: int):
+    if category_id != 0:
+        category = Category.query.get_or_404(category_id)
+        products = Product.query.filter_by(cat_id=category.id)
+        products = db.paginate(products, max_per_page=current_app.config["MAX_PER_PAGE"])
+    else:
+        products = Product.query.order_by(func.random()).limit(current_app.config["MAX_PER_PAGE"]).all()
+
+    products = [p.to_dict() for p in products]
+    return jsonify(products)
 
 
 @bp.route("/projects/search", methods=["GET"])
