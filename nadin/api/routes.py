@@ -28,10 +28,11 @@ def get_category(category_id: int):
         category = {
             "name": "",
             "id": category_id,
-            "children": [c.id for c in Category.query.filter(not_(Category.name.like("%/%"))).all()],
+            "children": [(c.id, c.name) for c in Category.query.filter(not_(Category.name.like("%/%"))).all()],
         }
     else:
         category = Category.query.get_or_404(category_id).to_dict()
+        category["children"] = [(c.id, c.name) for c in Category.query.filter(Category.id.in_(category["children"]))]
     return jsonify(category)
 
 
