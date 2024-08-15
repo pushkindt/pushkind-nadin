@@ -1,12 +1,12 @@
 from flask import Blueprint, current_app, g, jsonify, request
 from flask_login import current_user, login_required
-from sqlalchemy import not_, or_
+from sqlalchemy import not_
 from sqlalchemy.sql.expression import func
 
 from nadin.api.auth import basic_auth
 from nadin.api.errors import error_response
 from nadin.extensions import db
-from nadin.models import Category, OrderLimit, Product, Project, User, UserRoles, Vendor
+from nadin.models import Category, OrderLimit, Product, Project, User, UserRoles
 
 bp = Blueprint("api", __name__)
 
@@ -40,13 +40,23 @@ def get_category(category_id: int):
 @bp.route("/category/<int:category_id>/products", methods=["GET"])
 def get_category_products(category_id: int):
     if category_id != 0:
+        page = request.args.get("page", default=1, type=int)
         category = Category.query.get_or_404(category_id)
-        products = Product.query.filter_by(cat_id=category.id)
-        products = db.paginate(products, max_per_page=current_app.config["MAX_PER_PAGE"])
+        products = (
+            Product.query.join(Category, onclause=Category.id == Product.cat_id)
+            .filter(Category.name.startswith(category.name))
+            .order_by(Category.name, Product.name)
+        )
+        products = db.paginate(products, page=page, max_per_page=current_app.config["MAX_PER_PAGE"])
+        pages = products.pages
+        total = products.total
     else:
-        products = Product.query.order_by(func.random()).limit(current_app.config["MAX_PER_PAGE"]).all()
+        page = 1
+        pages = 1
+        total = current_app.config["MAX_PER_PAGE"]
+        products = Product.query.order_by(func.random()).limit(total).all()
 
-    products = [p.to_dict() for p in products]
+    products = {"total": total, "page": page, "pages": pages, "products": [p.to_dict() for p in products]}
     response = jsonify(products)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
@@ -78,21 +88,20 @@ def search_projects():
 
 
 @bp.route("/products/search", methods=["GET"])
-@login_required
 def search_products():
-    search_key = request.args.get("q", type=str)
+    search_key = request.args.get("q", type=str, default="~")
+    page = request.args.get("page", default=1, type=int)
 
-    if search_key:
-        products, _ = Product.search(search_key, page=1, per_page=current_app.config["MAX_PER_PAGE"])
-    else:
-        products = Product.query
+    products, total = Product.search(search_key, page=page, per_page=current_app.config["MAX_PER_PAGE"])
 
-    products = products.join(Vendor, Product.vendor_id == Vendor.id).filter(
-        or_(Vendor.hub_id == current_user.hub_id, Product.vendor_id == current_user.hub_id)
-    )
-    if not search_key:
-        products = products.order_by(Product.name)
+    products = db.session.scalars(products).all()
 
-    products = db.paginate(products, page=1, max_per_page=current_app.config["MAX_PER_PAGE"])
-    products = [p.to_dict() for p in products]
-    return jsonify(products)
+    products = {
+        "total": total,
+        "page": page,
+        "pages": total // current_app.config["MAX_PER_PAGE"],
+        "products": [p.to_dict() for p in products],
+    }
+    response = jsonify(products)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
