@@ -70,7 +70,7 @@ def shop_search():
 def shop_categories():
 
     categories = Category.query.filter(Category.hub_id == current_user.hub_id, not_(Category.name.like("%/%"))).all()
-    response = make_response(render_template("shop_products.html", categories=categories))
+    response = make_response(render_template("shop_categories.html", categories=categories))
     if len(current_user.projects) == 1:
         response.set_cookie("project_id", str(current_user.projects[0].id))
         response.set_cookie("project_name", quote(current_user.projects[0].name))
