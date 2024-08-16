@@ -1,6 +1,6 @@
 import math
 
-from flask import Blueprint, current_app, g, jsonify, request
+from flask import Blueprint, abort, current_app, g, jsonify, request
 from flask_login import current_user, login_required
 from sqlalchemy import not_
 from sqlalchemy.sql.expression import func
@@ -96,12 +96,15 @@ def search_products():
 
     products, total = Product.search(search_key, page=page, per_page=current_app.config["MAX_PER_PAGE"])
 
-    products = db.session.scalars(products).all()
+    total_pages = math.ceil(total / current_app.config["MAX_PER_PAGE"])
 
+    if page > total_pages:
+        abort(404)
+    products = db.session.scalars(products).all()
     products = {
         "total": total,
         "page": page,
-        "pages": math.ceil(total / current_app.config["MAX_PER_PAGE"]),
+        "pages": total_pages,
         "products": [p.to_dict() for p in products],
     }
     response = jsonify(products)
