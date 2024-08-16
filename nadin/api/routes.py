@@ -1,3 +1,5 @@
+import math
+
 from flask import Blueprint, current_app, g, jsonify, request
 from flask_login import current_user, login_required
 from sqlalchemy import not_
@@ -99,7 +101,7 @@ def search_products():
     products = {
         "total": total,
         "page": page,
-        "pages": total // current_app.config["MAX_PER_PAGE"],
+        "pages": math.ceil(total / current_app.config["MAX_PER_PAGE"]),
         "products": [p.to_dict() for p in products],
     }
     response = jsonify(products)
