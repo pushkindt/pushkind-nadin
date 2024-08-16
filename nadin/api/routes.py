@@ -99,8 +99,9 @@ def search_products():
     total_pages = math.ceil(total / current_app.config["MAX_PER_PAGE"])
 
     if page > total_pages:
-        abort(404)
-    products = db.session.scalars(products).all()
+        products = []
+    else:
+        products = db.session.scalars(products).all()
     products = {
         "total": total,
         "page": page,
