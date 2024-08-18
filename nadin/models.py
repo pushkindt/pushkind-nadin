@@ -921,6 +921,7 @@ class Product(SearchableMixin, db.Model):
             "image": self.image,
             "name": self.name,
             "options": self.options,
+            "cat_id": self.cat_id,
             "category": self.category.name,
             "description": self.description,
             "sku": self.sku,
