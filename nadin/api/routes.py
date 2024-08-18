@@ -1,14 +1,16 @@
 import math
 
-from flask import Blueprint, abort, current_app, g, jsonify, request
+from flask import Blueprint, current_app, g, jsonify, request
 from flask_login import current_user, login_required
 from sqlalchemy import not_
-from sqlalchemy.sql.expression import func
 
 from nadin.api.auth import basic_auth
 from nadin.api.errors import error_response
 from nadin.extensions import db
 from nadin.models import Category, OrderLimit, Product, Project, User, UserRoles
+
+# from sqlalchemy.sql.expression import func
+
 
 bp = Blueprint("api", __name__)
 
@@ -56,7 +58,7 @@ def get_category_products(category_id: int):
         page = 1
         pages = 1
         total = current_app.config["MAX_PER_PAGE"]
-        products = Product.query.order_by(func.random()).limit(total).all()
+        products = Product.query.order_by(Product.id).limit(total).all()
 
     products = {"total": total, "page": page, "pages": pages, "products": [p.to_dict() for p in products]}
     response = jsonify(products)
