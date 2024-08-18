@@ -113,3 +113,11 @@ def search_products():
     response = jsonify(products)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
+
+
+@bp.route("/product/<int:product_id>", methods=["GET"])
+def get_product(product_id: int):
+    product = Product.query.get_or_404(product_id).to_dict()
+    response = jsonify(product)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
