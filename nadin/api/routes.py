@@ -2,7 +2,7 @@ import math
 
 from flask import Blueprint, current_app, g, jsonify, request
 from flask_login import current_user, login_required
-from sqlalchemy import not_
+from sqlalchemy import not_, text
 
 from nadin.api.auth import basic_auth
 from nadin.api.errors import error_response
@@ -51,14 +51,26 @@ def get_category(category_id: int):
 
 @bp.route("/category/<int:category_id>/products", methods=["GET"])
 def get_category_products(category_id: int):
-    if category_id != 0:
+
+    tag = request.args.get("tag", type=str)
+
+    if tag or category_id != 0:
         page = request.args.get("page", default=1, type=int)
-        category = Category.query.get_or_404(category_id)
-        products = (
-            Product.query.join(Category, onclause=Category.id == Product.cat_id)
-            .filter(Category.name.startswith(category.name))
-            .order_by(Category.name, Product.name)
-        )
+        if category_id == 0:
+            products = Product.query
+        else:
+            category = Category.query.get_or_404(category_id)
+            products = Product.query.join(Category, onclause=Category.id == Product.cat_id).filter(
+                Category.name.startswith(category.name)
+            )
+        if tag:
+            products = products.join(ProductTag, onclause=ProductTag.product_id == Product.id).filter(
+                ProductTag.tag == tag
+            )
+        if category_id != 0:
+            products = products.order_by(Category.name, Product.name)
+        else:
+            products = products.order_by(Product.name)
         products = db.paginate(products, page=page, max_per_page=current_app.config["MAX_PER_PAGE"])
         pages = products.pages
         total = products.total
