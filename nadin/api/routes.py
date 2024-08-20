@@ -7,7 +7,7 @@ from sqlalchemy import not_
 from nadin.api.auth import basic_auth
 from nadin.api.errors import error_response
 from nadin.extensions import db
-from nadin.models import Category, OrderLimit, Product, Project, User, UserRoles
+from nadin.models import Category, OrderLimit, Product, ProductTag, Project, User, UserRoles
 
 # from sqlalchemy.sql.expression import func
 
@@ -23,6 +23,14 @@ def daily_update_limits_current():
         return error_response(403)
     OrderLimit.update_current(hub_id=user.hub_id)
     return "", 200
+
+
+@bp.route("/tags", methods=["GET"])
+def get_tags():
+    tags = set(tag.tag for tag in ProductTag.query.all() if tag.tag)
+    response = jsonify(list(tags))
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 
 @bp.route("/category/<int:category_id>", methods=["GET"])
