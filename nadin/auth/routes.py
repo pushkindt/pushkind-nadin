@@ -7,7 +7,7 @@ from flask_login import current_user, login_user, logout_user
 from nadin.auth.email import send_password_reset_email, send_user_registered_email
 from nadin.auth.forms import LoginForm, RegistrationForm, ResetPasswordForm, ResetPasswordRequestForm
 from nadin.extensions import db
-from nadin.models import User, UserRoles
+from nadin.models import User, UserRoles, Vendor
 from nadin.utils import flash_errors
 
 bp = Blueprint("auth", __name__)
@@ -154,6 +154,7 @@ def callback_oauth(authenticator: str):
     user = User.query.filter_by(email=profile["email"]).first()
     if not user:
         user = User(email=profile["email"], role=UserRoles.initiative, password="")
+        user.hub = Vendor.query.first()
         db.session.add(user)
     user.name = profile["name"]
     db.session.commit()
