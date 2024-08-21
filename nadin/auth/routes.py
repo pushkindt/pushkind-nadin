@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from urllib.parse import urlparse as url_parse
 
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_user, logout_user
 
 from nadin.auth.email import send_password_reset_email, send_user_registered_email
@@ -120,3 +120,38 @@ def reset_password(token):
 
     flash_errors(form)
     return render_template("auth/reset.html", form=form)
+
+
+@bp.route("/login/<authenticator>")
+def login_oauth(authenticator: str):
+    if current_user.is_authenticated:
+        return redirect(url_for("main.ShowIndex"))
+    oauth_ext = current_app.extensions["authlib.integrations.flask_client"]
+    oauth_client = oauth_ext.create_client(authenticator)
+    if not oauth_client:
+        abort(404)
+    redirect_uri = url_for("auth.callback_oauth", authenticator=authenticator, _external=True)
+    return oauth_client.authorize_redirect(redirect_uri)
+
+
+@bp.route("/callback/<authenticator>")
+def callback_oauth(authenticator: str):
+    if current_user.is_authenticated:
+        return redirect(url_for("main.ShowIndex"))
+    oauth_ext = current_app.extensions["authlib.integrations.flask_client"]
+    oauth_client = oauth_ext.create_client(authenticator)
+    if not oauth_client:
+        abort(404)
+    token = oauth_client.authorize_access_token()
+    user_info = oauth_client.userinfo(token=token)
+    profile = oauth_client.map_profile(user_info)
+    if not profile["email"]:
+        abort(400)
+    user = User.query.filter_by(email=profile["email"]).first()
+    if not user:
+        user = User(email=profile["email"], role=UserRoles.initiative, password="")
+        db.session.add(user)
+    user.name = profile["name"]
+    db.session.commit()
+    login_user(user)
+    return redirect(url_for("main.ShowIndex"))
