@@ -142,7 +142,11 @@ def callback_oauth(authenticator: str):
     oauth_client = oauth_ext.create_client(authenticator)
     if not oauth_client:
         abort(404)
-    token = oauth_client.authorize_access_token()
+    try:
+        token = oauth_client.authorize_access_token()
+    except:
+        flash("Не удалось авторизоваться. Попробуйте позже.")
+        return redirect(url_for("auth.login"))
     user_info = oauth_client.userinfo(token=token)
     profile = oauth_client.map_profile(user_info)
     if not profile["email"]:
