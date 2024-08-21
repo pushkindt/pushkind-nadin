@@ -148,6 +148,7 @@ def callback_oauth(authenticator: str):
         flash("Не удалось авторизоваться. Попробуйте позже.")
         return redirect(url_for("auth.login"))
     user_info = oauth_client.userinfo(token=token)
+    print(user_info)
     profile = oauth_client.map_profile(user_info)
     if not profile["email"]:
         abort(400)
@@ -157,6 +158,7 @@ def callback_oauth(authenticator: str):
         user.hub = Vendor.query.first()
         db.session.add(user)
     user.name = profile["name"]
+    user.phone = profile["phone_number"]
     db.session.commit()
     login_user(user)
     return redirect(url_for("main.ShowIndex"))
