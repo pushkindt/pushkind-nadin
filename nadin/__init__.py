@@ -7,9 +7,10 @@ from dynaconf import FlaskDynaconf
 from elasticsearch import Elasticsearch
 from flask import Flask, render_template, request
 
-from nadin import admin, api, auth
+from nadin import admin, api, auth, oauth
 from nadin.extensions import db, login_manager, mail, migrate, moment, oauth_client
 from nadin.main import routes as main_routes
+from nadin.oauth.server import config_oauth_server
 from nadin.oauth.yandex import YandexOauth2Config
 
 
@@ -32,7 +33,7 @@ def register_extensions(app):
         client_cls=YandexOauth2Config,
     )
     oauth_client.init_app(app)
-
+    config_oauth_server(app)
     login_manager.login_view = "auth.login"
     login_manager.login_message = app.config["LOGIN_MESSAGE"]
     login_manager.init_app(app)
@@ -52,6 +53,7 @@ def register_blueprints(app):
     app.register_blueprint(auth.routes.bp, url_prefix="/auth")
     app.register_blueprint(api.routes.bp, url_prefix="/api")
     app.register_blueprint(main_routes.bp, url_prefix="/")
+    app.register_blueprint(oauth.routes.bp, url_prefix="/oauth")
 
 
 def register_errorhandlers(app):
