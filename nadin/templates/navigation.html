@@ -5,10 +5,16 @@
 			href="{{ url_for('main.ShowIndex') }}">Главная</a>
 	</li>
 	{% endif %}
-	{% if current_user.role.name in ['admin', 'initiative', 'purchaser'] %}
+	{% if current_user.role.name in ['admin', 'purchaser'] %}
 	<li class="nav-item">
 		<a class="nav-link {% if request.endpoint in ('main.shop_categories', 'main.ShopVendors', 'main.shop_products', 'main.shop_cart') %} active {% endif %}"
 			href="{{ url_for('main.shop_categories') }}">Заказать</a>
+	</li>
+	{% endif %}
+	{% if current_user.role.name in ['initiative'] %}
+	<li class="nav-item">
+		<a class="nav-link"
+			href="https://map.pushkind.com/">Заказать</a>
 	</li>
 	{% endif %}
 	{% if current_user.role.name not in ['default', 'vendor'] %}
