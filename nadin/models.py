@@ -6,6 +6,7 @@ from time import time
 
 import jwt
 import sqlalchemy as sa
+from authlib.integrations.sqla_oauth2 import OAuth2AuthorizationCodeMixin, OAuth2ClientMixin, OAuth2TokenMixin
 from flask import current_app
 from flask_login import UserMixin
 from sqlalchemy.sql import expression, func
@@ -937,28 +938,28 @@ class ProductTag(db.Model):
     tag = db.Column(db.String(128), nullable=False, index=True, primary_key=True)
 
 
-# class OAuth2Client(db.Model, OAuth2ClientMixin):
-#     __tablename__ = "oauth2_client"
+class OAuth2Client(db.Model, OAuth2ClientMixin):
+    __tablename__ = "oauth2_client"
 
-#     id = db.Column(db.Integer, primary_key=True)
-#     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
-#     user = db.relationship("User")
-
-
-# class OAuth2AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
-#     __tablename__ = "oauth2_code"
-
-#     id = db.Column(db.Integer, primary_key=True)
-#     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
-#     user = db.relationship("User")
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
+    user = db.relationship("User")
 
 
-# class OAuth2Token(db.Model, OAuth2TokenMixin):
-#     __tablename__ = "oauth2_token"
+class OAuth2AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
+    __tablename__ = "oauth2_code"
 
-#     id = db.Column(db.Integer, primary_key=True)
-#     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
-#     user = db.relationship("User")
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
+    user = db.relationship("User")
+
+
+class OAuth2Token(db.Model, OAuth2TokenMixin):
+    __tablename__ = "oauth2_token"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
+    user = db.relationship("User")
 
 
 class ProjectOrderHistory(db.Model):
