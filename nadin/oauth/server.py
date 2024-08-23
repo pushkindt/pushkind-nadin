@@ -92,7 +92,7 @@ def config_oauth_server(app):
     authorization.register_grant(
         AuthorizationCodeGrant,
         [
-            OpenIDCode(require_nonce=True),
+            OpenIDCode(),
         ],
     )
 
