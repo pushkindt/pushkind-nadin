@@ -148,7 +148,6 @@ def callback_oauth(authenticator: str):
         flash("Не удалось авторизоваться. Попробуйте позже.")
         return redirect(url_for("auth.login"))
     user_info = oauth_client.userinfo(token=token)
-    print(user_info)
     profile = oauth_client.map_profile(user_info)
     if not profile["email"]:
         abort(400)

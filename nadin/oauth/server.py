@@ -15,15 +15,6 @@ from nadin.extensions import db
 from nadin.models import OAuth2AuthorizationCode, OAuth2Client, OAuth2Token, User
 
 
-def generate_user_info(user, scope):
-    user_info = UserInfo(sub=str(user.id))
-    if "profile" in scope:
-        user_info["name"] = user.name
-    if "email" in scope:
-        user_info["email"] = user.email
-    return user_info
-
-
 class AuthorizationCodeGrant(_AuthorizationCodeGrant):
 
     TOKEN_ENDPOINT_AUTH_METHODS = ["client_secret_basic", "client_secret_post", "none"]
@@ -76,7 +67,12 @@ class OpenIDCode(_OpenIDCode):
         return JWT_CONFIG
 
     def generate_user_info(self, user, scope):
-        return generate_user_info(user, scope)
+        user_info = UserInfo(sub=str(user.id))
+        if "profile" in scope:
+            user_info["name"] = user.name
+        if "email" in scope:
+            user_info["email"] = user.email
+        return user_info
 
 
 authorization = AuthorizationServer()

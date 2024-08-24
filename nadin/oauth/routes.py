@@ -1,7 +1,6 @@
 import time
 from pathlib import Path
 
-from authlib.integrations.flask_oauth2 import current_token
 from authlib.jose import JsonWebKey, KeySet
 from authlib.oauth2 import OAuth2Error
 from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
@@ -11,7 +10,7 @@ from werkzeug.security import gen_salt
 from nadin.extensions import db
 from nadin.main.utils import role_required
 from nadin.models import OAuth2Client, UserRoles
-from nadin.oauth.server import authorization, generate_user_info, require_oauth
+from nadin.oauth.server import authorization
 
 bp = Blueprint("oauth", __name__)
 
@@ -88,12 +87,6 @@ def issue_token():
     response = authorization.create_token_response()
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
-
-
-@bp.route("/userinfo")
-@require_oauth("profile")
-def userinfo():
-    return jsonify(generate_user_info(current_token.user, current_token.scope))
 
 
 @bp.route("/.well-known/openid-configuration")
