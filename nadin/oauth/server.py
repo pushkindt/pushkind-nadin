@@ -9,7 +9,7 @@ from authlib.integrations.sqla_oauth2 import (
 from authlib.oauth2.rfc6749.grants import AuthorizationCodeGrant as _AuthorizationCodeGrant
 from authlib.oidc.core import UserInfo
 from authlib.oidc.core.grants import OpenIDCode as _OpenIDCode
-from flask import current_app
+from flask import current_app, url_for
 
 from nadin.extensions import db
 from nadin.models import OAuth2AuthorizationCode, OAuth2Client, OAuth2Token, User
@@ -70,7 +70,7 @@ class OpenIDCode(_OpenIDCode):
         private_key_path = Path(current_app.config["OPENID_PRIVATE_KEY"])
         JWT_CONFIG = {
             "alg": "RS256",
-            "iss": current_app.config["OPENID_ISS"],
+            "iss": url_for("oauth.home", _external=True),
             "exp": 3600,
             "key": private_key_path.read_text(encoding="ASCII"),
         }

@@ -5,16 +5,15 @@
 <div class="container">
     <div class="row my-1">
         <div class="col">
-            <p>{{grant.client.client_name}} запрашивает авторизацию:
-                <strong>{{ grant.request.scope }}</strong>
-            </p>
+            {{grant.client.client_name}} запрашивает авторизацию:
+            <strong>{{ grant.request.scope }}</strong>
         </div>
     </div>
 
     <form action="" method="post">
         <div class="row">
             <div class="col">
-                <button type="submit">Подтвердить</button>
+                <button class="btn btn-primary" type="submit">Подтвердить</button>
             </div>
         </div>
     </form>

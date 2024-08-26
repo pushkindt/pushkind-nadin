@@ -946,6 +946,8 @@ class Product(SearchableMixin, db.Model):
         return self.price
 
     def to_dict(self):
+        prices = self.prices if self.prices is not None else {}
+        prices[ProjectPriceLevel.online_store.name] = self.price
         return {
             "id": self.id,
             "vendor": self.vendor.name,
@@ -957,7 +959,7 @@ class Product(SearchableMixin, db.Model):
             "description": self.description,
             "sku": self.sku,
             "price": self.price,
-            "prices": self.prices,
+            "prices": prices,
             "measurement": self.measurement,
             "tags": [tag.tag for tag in self.tags],
         }

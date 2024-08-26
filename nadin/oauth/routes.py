@@ -16,7 +16,7 @@ from nadin.oauth.server import authorization, generate_user_info, require_oauth
 bp = Blueprint("oauth", __name__)
 
 
-@bp.route("/", methods=("GET",))
+@bp.route("", methods=("GET",), strict_slashes=False)
 @login_required
 @role_required([UserRoles.admin])
 def home():
@@ -103,7 +103,7 @@ def well_known_openid_configuration():
             "jwks_uri": url_for("oauth.jwks", _external=True),
             "end_session_endpoint": url_for("oauth.logout", _external=True),
             "id_token_signing_alg_values_supported": ["RS256"],
-            "issuer": current_app.config["OPENID_ISS"],
+            "issuer": url_for("oauth.home", _external=True),
             "scopes_supported": [
                 "openid",
                 "profile",
