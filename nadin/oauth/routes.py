@@ -65,12 +65,8 @@ def authorize():
         except OAuth2Error as error:
             flash(error.description, category="error")
             return redirect(url_for("main.ShowIndex"))
-        return render_template("oauth/authorize.html", user=current_user, grant=grant)
-    if request.form["confirm"]:
-        grant_user = current_user
-    else:
-        grant_user = None
-    return authorization.create_authorization_response(grant_user=grant_user)
+        return render_template("oauth/authorize.html", grant=grant)
+    return authorization.create_authorization_response(grant_user=current_user)
 
 
 @bp.route("/remove_client/<int:client_id>", methods=("POST",))
@@ -155,4 +151,7 @@ def jwks():
 
 @bp.route("/logout")
 def logout():
-    return jsonify({"result": "ok"})
+    post_logout_redirect_uri = request.args.get("post_logout_redirect_uri")
+    if not post_logout_redirect_uri:
+        post_logout_redirect_uri = url_for("main.ShowIndex")
+    return redirect(post_logout_redirect_uri)

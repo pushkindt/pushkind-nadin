@@ -2,25 +2,22 @@
 
 {% block content %}
 
-
-<p>{{grant.client.client_name}} is requesting:
-    <strong>{{ grant.request.scope }}</strong>
-</p>
-
-<form action="" method="post">
-    <label>
-        <input type="checkbox" name="confirm">
-        <span>Consent?</span>
-    </label>
-    {% if not user %}
-    <p>You haven't logged in. Log in with:</p>
-    <div>
-        <input type="text" name="username">
+<div class="container">
+    <div class="row my-1">
+        <div class="col">
+            <p>{{grant.client.client_name}} запрашивает авторизацию:
+                <strong>{{ grant.request.scope }}</strong>
+            </p>
+        </div>
     </div>
-    {% endif %}
-    <br>
-    <button>Submit</button>
-</form>
 
+    <form action="" method="post">
+        <div class="row">
+            <div class="col">
+                <button type="submit">Подтвердить</button>
+            </div>
+        </div>
+    </form>
+</div>
 
 {% endblock %}
