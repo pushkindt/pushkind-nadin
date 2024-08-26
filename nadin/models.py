@@ -304,6 +304,22 @@ class User(UserMixin, db.Model):
         if project:
             self.projects = [project]
 
+    def price_level(self, project: "Project" = None):
+        if len(self.projects) == 0:
+            return ProjectPriceLevel.online_store
+        if len(self.projects) == 1:
+            return self.projects[0].price_level
+        if project:
+            project = (
+                Project.query.filter_by(id=project.id)
+                .join(UserProject, onclause=(Project.id == UserProject.project_id))
+                .filter(UserProject.user_id == self.id)
+                .first()
+            )
+            if project:
+                return project.price_level
+        return ProjectPriceLevel.online_store
+
     def __hash__(self):
         return self.id
 

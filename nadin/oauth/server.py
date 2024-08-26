@@ -19,6 +19,7 @@ def generate_user_info(user, scope):
     user_info = UserInfo(sub=str(user.id))
     if "profile" in scope:
         user_info["name"] = user.name
+        user_info["price_level"] = user.price_level().name
     if "email" in scope:
         user_info["email"] = user.email
     return user_info
