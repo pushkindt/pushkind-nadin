@@ -17,7 +17,7 @@ class YandexOauth2Config(FlaskOAuth2App):
             picture = tpl.format(user_info["default_avatar_id"])
         else:
             picture = None
-        user_info["email"] = user_info.get("default_email")
+        user_info["email"] = user_info.get("default_email", "").lower()
         user_info["name"] = user_info.get("real_name")
         user_info["picture"] = picture
         user_info["phone_number"] = user_info.get("default_phone", {}).get("number")

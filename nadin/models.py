@@ -289,6 +289,21 @@ class User(UserMixin, db.Model):
             return Vendor.query.filter_by(hub_id=None).all()
         return [self.hub]
 
+    def set_default_project(self):
+        """
+        Sets the user's project to be the one with the same email or phone
+        Should only be used for initiatives
+        """
+        if len(self.projects) > 0:
+            return
+        project = (
+            Project.query.filter_by(hub_id=self.hub_id)
+            .filter(sa.or_(Project.email == self.email, Project.phone == self.phone))
+            .first()
+        )
+        if project:
+            self.projects = [project]
+
     def __hash__(self):
         return self.id
 

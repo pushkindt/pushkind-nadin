@@ -29,9 +29,11 @@ def login():
         if user is None or not user.check_password(form.password.data):
             flash("Некорректный логин или пароль.")
             return redirect(url_for("auth.login"))
+        if user.role == UserRoles.initiative:
+            user.set_default_project()
+            db.session.commit()
         login_user(user, remember=form.remember_me.data)
         current_app.logger.info("%s logged", user.email)
-        db.session.commit()
         return redirect(next_page)
 
     flash_errors(form)
@@ -51,7 +53,7 @@ def login_token(token):
             flash("Некорректный токен авторизации.")
             return redirect(url_for("auth.login"))
 
-        login_user(user, remember=False)
+        login_user(user)
         current_app.logger.info("%s logged", user.email)
 
     return redirect(next_page)
@@ -158,6 +160,9 @@ def callback_oauth(authenticator: str):
         db.session.add(user)
     user.name = profile["name"]
     user.phone = profile["phone_number"]
+    if user.role == UserRoles.initiative:
+        user.set_default_project()
     db.session.commit()
     login_user(user)
+    current_app.logger.info("%s logged", user.email)
     return redirect(url_for("main.ShowIndex"))
