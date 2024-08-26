@@ -5,8 +5,8 @@ class YandexOauth2Config(FlaskOAuth2App):
     NAME = "yandex"
     OAUTH_APP_CONFIG = {
         "api_base_url": "https://login.yandex.ru/",
-        "access_token_url": "https://oauth.yandex.com/token",
-        "authorize_url": "https://oauth.yandex.com/authorize",
+        "access_token_url": "https://oauth.yandex.ru/token",
+        "authorize_url": "https://oauth.yandex.ru/authorize",
         "userinfo_endpoint": "info",
     }
 
