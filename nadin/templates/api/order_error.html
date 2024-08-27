@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <div class="alert alert-danger">
+                Произошла ошибка при создании заказа. Администратор <a href="mailto:{{ config['ADMIN_EMAIL'] }}">{{ config['ADMIN_EMAIL'] }}</a> был уведомлён об этом событии.
+                Вы можете <a href="{{return_url}}">вернуться</a> и попробовать ещё раз.
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

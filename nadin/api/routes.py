@@ -1,16 +1,16 @@
 import math
 
-from flask import Blueprint, current_app, g, jsonify, request
+from flask import Blueprint, current_app, flash, g, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
-from sqlalchemy import not_, text
+from sqlalchemy import not_
 
 from nadin.api.auth import basic_auth
 from nadin.api.errors import error_response
+from nadin.api.forms import OrderForm
 from nadin.extensions import db
-from nadin.models import Category, OrderLimit, Product, ProductTag, Project, User, UserRoles
-
-# from sqlalchemy.sql.expression import func
-
+from nadin.main.utils import GetNewOrderNumber
+from nadin.models import Category, Order, OrderLimit, Product, ProductTag, Project, User, UserRoles
+from nadin.utils import flash_errors
 
 bp = Blueprint("api", __name__)
 
@@ -141,3 +141,27 @@ def get_product(product_id: int):
     response = jsonify(product)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
+
+
+@bp.route("/order", methods=["POST"])
+def order():
+    form = OrderForm()
+    if form.validate_on_submit():
+
+        user = User.query.filter_by(email=form.email.data.lower()).first()
+
+        if not user:
+            flash("Пользователь не найден.")
+            return render_template("api/order_error.html", return_url=request.referrer)
+
+        order = Order.from_api_request(form.cart.data)
+        order.number = GetNewOrderNumber(user.hub_id)
+        order.hub_id = user.hub_id
+        order.initiative = user
+
+        db.session.add(order)
+        db.session.commit()
+        flash(f"Заказ #{order.number} успешно оформлен")
+        return redirect(url_for("main.ShowIndex"))
+    flash_errors(form)
+    return render_template("api/order_error.html", return_url=request.referrer)

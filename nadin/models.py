@@ -3,12 +3,14 @@ import json
 from datetime import datetime, timezone
 from hashlib import md5
 from time import time
+from typing import Optional
 
 import jwt
 import sqlalchemy as sa
 from authlib.integrations.sqla_oauth2 import OAuth2AuthorizationCodeMixin, OAuth2ClientMixin, OAuth2TokenMixin
 from flask import current_app
 from flask_login import UserMixin
+from pydantic import BaseModel, Field
 from sqlalchemy.sql import expression, func
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -20,6 +22,32 @@ from nadin.utils import get_filter_timestamps
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+class ApiProductModel(BaseModel):
+    id: int = Field(..., description="ID")
+    vendor: str = Field(..., description="Производитель")
+    name: str = Field(..., description="Название")
+    sku: str = Field(..., description="Артикул")
+    price: float = Field(..., description="Цена")
+    cat_id: int = Field(..., description="ID категории")
+    category: str = Field(..., description="Категория")
+    prices: Optional[dict[str, float]] = Field(..., description="Цены")
+    image: Optional[str] = Field(..., description="Изображение")
+    measurement: Optional[str] = Field(..., description="Единица измерения")
+    description: Optional[str] = Field(..., description="Описание")
+    options: Optional[dict[str, list[str]]] = Field(..., description="Теги")
+    tags: Optional[list[str]] = Field(..., description="Теги")
+
+
+class ApiOrderItemModel(BaseModel):
+    quantity: int = Field(..., description="Количество")
+    comment: Optional[str] = Field(..., description="Комментарий")
+    product: ApiProductModel = Field(..., description="Товар")
+
+
+class ApiShoppingCartModel(BaseModel):
+    items: dict[str, ApiOrderItemModel] = Field(..., description="Товары")
 
 
 class SearchableMixin:
@@ -770,6 +798,15 @@ class Order(db.Model):
     @create_date.setter
     def create_date(self, dt):
         self.create_timestamp = int(dt.timestamp())
+
+    @classmethod
+    def from_api_request(cls, data: ApiShoppingCartModel):
+        order = cls()
+        order.create_timestamp = datetime.timestamp(datetime.now(tz=timezone.utc))
+        order.status = OrderStatus.new
+        order.products = []
+        order.total = 0.0
+        return order
 
 
 class OrderCategory(db.Model):

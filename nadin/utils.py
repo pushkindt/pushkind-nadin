@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
 from flask import flash
+from flask_wtf import FlaskForm
 
 
 def get_filter_timestamps():
@@ -28,7 +29,7 @@ def first(items: Optional[Iterable]) -> Any:
     return next(iter(items or []), None)
 
 
-def flash_errors(form, category="warning"):
+def flash_errors(form: FlaskForm, category: str = "warning"):
     """Flash all errors for a form."""
     for field, errors in form.errors.items():
         for error in errors:

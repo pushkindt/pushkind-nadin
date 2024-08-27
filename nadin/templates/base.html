@@ -6,7 +6,7 @@
 	<meta charset="utf-8">
 	<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<title>{{ config['APPLICATION_TITLE'] }}</title>
+	<title>{{ config['TITLE'] }}</title>
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/pushkind.css') }}">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
 	<script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
@@ -88,7 +88,7 @@
 			<div class="row">
 				<div class="col text-center overflow-hidden">
 					<h3>
-						{{ config['APPLICATION_TITLE'] }}
+						{{ config['TITLE'] }}
 					</h3>
 				</div>
 			</div>

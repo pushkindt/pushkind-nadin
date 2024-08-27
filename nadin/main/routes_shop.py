@@ -15,7 +15,6 @@ from nadin.models import (
     EventType,
     Order,
     OrderEvent,
-    OrderLimit,
     OrderStatus,
     Product,
     Project,
