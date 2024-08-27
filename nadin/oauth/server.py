@@ -71,7 +71,7 @@ class OpenIDCode(_OpenIDCode):
         JWT_CONFIG = {
             "alg": "RS256",
             "iss": url_for("oauth.home", _external=True),
-            "exp": 3600,
+            "exp": 864000,
             "key": private_key_path.read_text(encoding="ASCII"),
         }
         return JWT_CONFIG
