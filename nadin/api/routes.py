@@ -161,12 +161,14 @@ def order():
         except ValueError as e:
             flash(str(e))
             return render_template("api/order_error.html", return_url=request.referrer)
-        comment = OrderEvent(data=form.comment.data, user_id=order.initiative_id)
 
         db.session.add(order)
-        comment.order_id = order.id
-        db.session.add(comment)
         db.session.commit()
+
+        if form.comment.data:
+            comment = OrderEvent(data=form.comment.data, user_id=order.initiative_id, order_id=order.id)
+            db.session.add(comment)
+            db.session.commit()
 
         flash(f"Заказ #{order.number} успешно оформлен")
         return redirect(url_for("main.ShowIndex"))
