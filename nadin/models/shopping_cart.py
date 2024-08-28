@@ -23,6 +23,7 @@ class ApiOrderItemModel(BaseModel):
     quantity: int = Field(..., description="Количество")
     comment: Optional[str] = Field(..., description="Комментарий")
     product: ApiProductModel = Field(..., description="Товар")
+    options: Optional[dict[str, str]] = Field(None, description="Выбранные опции")
 
 
 class ApiShoppingCartModel(BaseModel):

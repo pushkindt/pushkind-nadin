@@ -6,6 +6,7 @@ from sqlalchemy.sql import expression, func
 
 from nadin.extensions import db
 from nadin.models.hub import AppSettings, Position, User, UserCategory, UserProject, UserRoles
+from nadin.models.product import Category, Product
 from nadin.models.project import Project
 from nadin.models.shopping_cart import ApiShoppingCartModel
 from nadin.utils import get_filter_timestamps
@@ -337,11 +338,54 @@ class Order(db.Model):
 
     @classmethod
     def from_api_request(cls, email: str, data: ApiShoppingCartModel):
+
+        user = User.query.filter_by(email=email).filter(User.role != UserRoles.default).first()
+        if user is None:
+            raise ValueError("User not found")
+
         order = cls()
+        order.number = cls.new_order_number(user.hub_id)
+        order.initiative_id = user.id
+        order.hub_id = user.hub_id
         order.create_timestamp = datetime.timestamp(datetime.now(tz=timezone.utc))
         order.status = OrderStatus.new
+        if len(user.projects) == 1:
+            order.project = user.projects[0]
+
+        products = Product.query.filter(Product.id.in_(int(p_id) for p_id in data.items.keys())).all()
+        if not products:
+            raise ValueError("Products not found")
+
         order.products = []
-        order.total = 0.0
+        order_categories = set()
+        order_vendors = set()
+        for product in products:
+            order_categories.add(product.cat_id)
+            order_vendors.add(product.vendor_id)
+            cart_item = data.items[str(product.id)]
+            order_product = {
+                "id": product.id,
+                "quantity": cart_item.quantity,
+                "sku": product.sku,
+                "price": product.get_price(user.price_level()),
+                "name": product.name,
+                "imageUrl": product.image,
+                "categoryId": product.cat_id,
+                "vendor": product.vendor.name,
+                "category": product.category.name,
+                "selectedOptions": [
+                    {"name": "Единицы", "value": product.measurement},
+                ],
+            }
+            if cart_item.comment:
+                order_product["selectedOptions"].append({"value": cart_item.comment, "name": "Комментарий"})
+            if cart_item.options and product.options:
+                for opt, values in product.options.items():
+                    if opt in cart_item.options and cart_item.options[opt] in values:
+                        order_product["selectedOptions"].append({"value": cart_item.options[opt], "name": opt})
+            order.products.append(order_product)
+
+        order.total = sum(p["price"] * p["quantity"] for p in order.products)
         return order
 
 

@@ -156,10 +156,15 @@ def order():
             flash("Пользователь не найден.")
             return render_template("api/order_error.html", return_url=request.referrer)
 
-        order = Order.from_api_request(form.email.data, form.cart.data)
-        comment = OrderEvent(data=form.comment.data, user=order.initiative)
+        try:
+            order = Order.from_api_request(form.email.data, form.cart.data)
+        except ValueError as e:
+            flash(str(e))
+            return render_template("api/order_error.html", return_url=request.referrer)
+        comment = OrderEvent(data=form.comment.data, user_id=order.initiative_id)
 
         db.session.add(order)
+        comment.order_id = order.id
         db.session.add(comment)
         db.session.commit()
 

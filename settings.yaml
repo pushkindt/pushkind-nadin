@@ -8,13 +8,14 @@ default:
   mail_sendername: Administrator
   import_products_conf_sheet: "Настройка импорта"
   oauth2_refresh_token_generator: true
-  elasticsearch_url: http://127.0.0.1:9200
+  elasticsearch_url: null
   max_per_page: 20
   openid_private_key: private.pem
   openid_public_key: public.pem
 
 development:
   debug: true
+  elasticsearch_url: http://127.0.0.1:9200
 
 production:
   debug: false
