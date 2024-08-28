@@ -11,7 +11,7 @@
 			</div>
 		</div>
 		<div class="collapse" id="storeFormCollapse">
-			<form method="POST" action="{{url_for('main.AddStore')}}">
+			<form method="POST" action="{{url_for('main.add_vendor')}}">
 				{{ store_form.csrf_token(id=False) }}
 				<div class="row mb-3">
 					{{ store_form.name.label(class_='col-md-2 col-form-label') }}
@@ -58,7 +58,7 @@
 			</div>
 		</div>
 		{% for store in stores %}
-			{% include '_store.html' %}
+			{% include '_vendor.html' %}
 		{% endfor %}
 	</div>
 {% endif %}

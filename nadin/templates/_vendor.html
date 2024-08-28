@@ -5,7 +5,7 @@
 			{{ store.id }}
 			{% if current_user.role.name == 'admin' %}
 				<br>
-				<a href="{{ url_for('main.ActivateStore', store_id=store.id) }}">
+				<a href="{{ url_for('main.activate_vendor', store_id=store.id) }}">
 					{% if store.enabled %}
 						включен
 					{% else %}
@@ -24,7 +24,7 @@
 		</div>
 		<div class="col-sm overflow-hidden">
 			{% if current_user.role.name == 'admin' %}
-				<a href="{{ url_for('main.RemoveStore', store_id=store.id) }}" class="btn btn-danger text-white my-1" onclick="return confirm('Удалить поставщика?')">Удалить</a>
+				<a href="{{ url_for('main.remove_vendor', store_id=store.id) }}" class="btn btn-danger text-white my-1" onclick="return confirm('Удалить поставщика?')">Удалить</a>
 			{% endif %}
 		</div>
 	</div>

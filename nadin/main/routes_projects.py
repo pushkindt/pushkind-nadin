@@ -8,9 +8,9 @@ from openpyxl import load_workbook
 from nadin.extensions import db
 from nadin.main.forms import AddProjectForm, EditProjectForm, UploadProjectsForm
 from nadin.main.routes import bp
-from nadin.main.utils import role_forbidden
-from nadin.models import Project, ProjectOrderHistory, ProjectPriceLevel, UserRoles
-from nadin.utils import flash_errors
+from nadin.models.hub import UserRoles
+from nadin.models.project import Project, ProjectOrderHistory, ProjectPriceLevel
+from nadin.utils import flash_errors, role_forbidden
 
 
 def projects_excel_to_df(excel_file) -> tuple[pd.DataFrame, pd.DataFrame]:

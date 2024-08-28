@@ -14,9 +14,10 @@ from nadin.main.forms import (
     EditCashflowForm,
     EditIncomeForm,
 )
-from nadin.main.utils import role_required
-from nadin.models import AppSettings, CashflowStatement, Category, IncomeStatement, UserRoles
-from nadin.utils import flash_errors
+from nadin.models.hub import AppSettings, UserRoles
+from nadin.models.order import CashflowStatement, IncomeStatement
+from nadin.models.product import Category
+from nadin.utils import flash_errors, role_required
 
 bp = Blueprint("admin", __name__)
 

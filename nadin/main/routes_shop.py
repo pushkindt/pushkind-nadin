@@ -8,20 +8,11 @@ from sqlalchemy import not_, or_
 from nadin.extensions import db
 from nadin.main.forms import CreateOrderForm
 from nadin.main.routes import bp
-from nadin.main.utils import GetNewOrderNumber, SendEmailNotification, role_required
-from nadin.models import (
-    AppSettings,
-    Category,
-    EventType,
-    Order,
-    OrderEvent,
-    OrderStatus,
-    Product,
-    Project,
-    UserRoles,
-    Vendor,
-)
-from nadin.utils import flash_errors
+from nadin.models.hub import UserRoles, Vendor
+from nadin.models.order import AppSettings, EventType, Order, OrderEvent, OrderStatus
+from nadin.models.product import Category, Product
+from nadin.models.project import Project
+from nadin.utils import SendEmailNotification, flash_errors, role_required
 
 
 @bp.route("/shop/search")
@@ -165,7 +156,7 @@ def shop_cart():
             if settings.single_category_orders and len(categories) > 1:
                 flash("Заявки с более чем одной категорией не разрешены.")
                 return redirect(url_for("main.shop_categories"))
-            order_number = GetNewOrderNumber()
+            order_number = Order.new_order_number(current_user.hub_id)
             now = datetime.now(tz=timezone.utc)
             categories = Category.query.filter(Category.id.in_(categories)).all()
             cashflow_id, income_id = max((c.cashflow_id, c.income_id) for c in categories)

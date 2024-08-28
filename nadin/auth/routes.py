@@ -7,7 +7,7 @@ from flask_login import current_user, login_user, logout_user
 from nadin.auth.email import send_password_reset_email, send_user_registered_email
 from nadin.auth.forms import LoginForm, RegistrationForm, ResetPasswordForm, ResetPasswordRequestForm
 from nadin.extensions import db
-from nadin.models import User, UserRoles, Vendor
+from nadin.models.hub import User, UserRoles, Vendor
 from nadin.utils import flash_errors
 
 bp = Blueprint("auth", __name__)

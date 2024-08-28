@@ -5,7 +5,7 @@ from pytz import timezone
 
 from nadin import create_app
 from nadin.extensions import db
-from nadin.models import User
+from nadin.models.order import User
 
 
 @pytest.fixture(scope="session")

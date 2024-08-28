@@ -3,7 +3,7 @@ from wtforms import BooleanField, PasswordField, StringField, SubmitField
 from wtforms.fields import EmailField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
 
-from nadin.models import User
+from nadin.models.order import User
 
 
 class LoginForm(FlaskForm):

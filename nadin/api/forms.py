@@ -4,7 +4,8 @@ from wtforms import SelectField, StringField, TextAreaField
 from wtforms.fields import EmailField
 from wtforms.validators import DataRequired, Email, InputRequired, Length
 
-from nadin.models import ApiShoppingCartModel, ProjectPriceLevel
+from nadin.models.project import ProjectPriceLevel
+from nadin.models.shopping_cart import ApiShoppingCartModel
 
 
 class ShoppingCartField(StringField):

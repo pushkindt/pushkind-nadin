@@ -12,7 +12,8 @@ from authlib.oidc.core.grants import OpenIDCode as _OpenIDCode
 from flask import current_app, url_for
 
 from nadin.extensions import db
-from nadin.models import OAuth2AuthorizationCode, OAuth2Client, OAuth2Token, User
+from nadin.models.hub import User
+from nadin.models.oauth import OAuth2AuthorizationCode, OAuth2Client, OAuth2Token
 
 
 def generate_user_info(user, scope):

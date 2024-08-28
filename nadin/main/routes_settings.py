@@ -8,21 +8,11 @@ from sqlalchemy import and_, or_
 from nadin.extensions import db
 from nadin.main.forms import UserRolesForm, UserSettingsForm
 from nadin.main.routes import bp
-from nadin.main.utils import role_forbidden, role_required
-from nadin.models import (
-    Category,
-    Order,
-    OrderApproval,
-    OrderCategory,
-    OrderPosition,
-    OrderStatus,
-    Position,
-    Project,
-    User,
-    UserRoles,
-    Vendor,
-)
-from nadin.utils import flash_errors
+from nadin.models.hub import Position, User, UserRoles, Vendor
+from nadin.models.order import Order, OrderApproval, OrderCategory, OrderPosition, OrderStatus
+from nadin.models.product import Category
+from nadin.models.project import Project
+from nadin.utils import flash_errors, role_forbidden, role_required
 
 ################################################################################
 # Settings page

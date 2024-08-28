@@ -8,8 +8,10 @@ from nadin.api.auth import basic_auth
 from nadin.api.errors import error_response
 from nadin.api.forms import OrderForm
 from nadin.extensions import db
-from nadin.main.utils import GetNewOrderNumber
-from nadin.models import Category, Order, OrderLimit, Product, ProductTag, Project, User, UserRoles
+from nadin.models.hub import User, UserRoles
+from nadin.models.order import Order, OrderEvent, OrderLimit
+from nadin.models.product import Category, Product, ProductTag
+from nadin.models.project import Project
 from nadin.utils import flash_errors
 
 bp = Blueprint("api", __name__)
@@ -154,13 +156,13 @@ def order():
             flash("Пользователь не найден.")
             return render_template("api/order_error.html", return_url=request.referrer)
 
-        order = Order.from_api_request(form.cart.data)
-        order.number = GetNewOrderNumber(user.hub_id)
-        order.hub_id = user.hub_id
-        order.initiative = user
+        order = Order.from_api_request(form.email.data, form.cart.data)
+        comment = OrderEvent(data=form.comment.data, user=order.initiative)
 
         db.session.add(order)
+        db.session.add(comment)
         db.session.commit()
+
         flash(f"Заказ #{order.number} успешно оформлен")
         return redirect(url_for("main.ShowIndex"))
     flash_errors(form)

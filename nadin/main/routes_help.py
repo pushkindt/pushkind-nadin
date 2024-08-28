@@ -7,8 +7,10 @@ from sqlalchemy import text
 
 from nadin.extensions import db
 from nadin.main.routes import bp
-from nadin.main.utils import role_forbidden
-from nadin.models import Category, OrderStatus, Project, User, UserCategory, UserProject, UserRoles
+from nadin.models.hub import UserCategory, UserProject, UserRoles
+from nadin.models.order import OrderStatus, Project, User
+from nadin.models.product import Category
+from nadin.utils import role_forbidden
 
 ################################################################################
 # Responibility page

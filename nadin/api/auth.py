@@ -2,7 +2,7 @@ from flask import g
 from flask_httpauth import HTTPBasicAuth
 
 from nadin.api.errors import error_response
-from nadin.models import User
+from nadin.models.order import User
 
 basic_auth = HTTPBasicAuth()
 

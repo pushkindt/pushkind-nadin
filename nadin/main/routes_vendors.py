@@ -4,40 +4,39 @@ from flask import flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
 
 from nadin.extensions import db
-from nadin.main.forms import AddStoreForm
+from nadin.main.forms import AddVendorForm
 from nadin.main.routes import bp
-from nadin.main.utils import role_forbidden, role_required
-from nadin.models import User, UserRoles, Vendor
-from nadin.utils import flash_errors
+from nadin.models.hub import User, UserRoles, Vendor
+from nadin.utils import flash_errors, role_forbidden, role_required
 
 ################################################################################
-# Stores page
+# Vendors page
 ################################################################################
 
 
-@bp.route("/stores/", methods=["GET", "POST"])
+@bp.route("/vendors/", methods=["GET", "POST"])
 @login_required
 @role_forbidden([UserRoles.default, UserRoles.vendor])
-def ShowStores():
-    store_form = AddStoreForm()
+def show_vendors():
+    store_form = AddVendorForm()
     stores = Vendor.query.filter(Vendor.hub_id == current_user.hub_id).all()
     if len(stores) == 0:
         flash("Ни один поставщик не зарегистрован в системе.")
-    return render_template("stores.html", store_form=store_form, stores=stores)
+    return render_template("vendors.html", store_form=store_form, stores=stores)
 
 
-@bp.route("/stores/add/", methods=["POST"])
+@bp.route("/vendors/add/", methods=["POST"])
 @login_required
 @role_required([UserRoles.admin])
-def AddStore():
-    form = AddStoreForm()
+def add_vendor():
+    form = AddVendorForm()
     if form.validate_on_submit():
         store_name = form.name.data.strip()
         store_email = form.email.data.strip().lower()
         vendor_admin = User.query.filter_by(email=store_email).first()
         if vendor_admin:
             flash("Невозможно создать поставщика, так как электронный адрес занят.")
-            return redirect(url_for("main.ShowStores"))
+            return redirect(url_for("main.show_vendors"))
         vendor_admin = User(email=store_email, name=store_name, role=UserRoles.vendor, hub_id=current_user.hub_id)
         vendor_admin.set_password(form.password.data)
         vendor_admin.registered = datetime.now(tz=timezone.utc)
@@ -49,13 +48,13 @@ def AddStore():
         flash("Магазин успешно добавлен.")
     else:
         flash_errors(form)
-    return redirect(url_for("main.ShowStores"))
+    return redirect(url_for("main.show_vendors"))
 
 
-@bp.route("/stores/remove/<int:store_id>")
+@bp.route("/vendors/remove/<int:store_id>")
 @login_required
 @role_required([UserRoles.admin])
-def RemoveStore(store_id):
+def remove_vendor(store_id):
     store = Vendor.query.filter(Vendor.id == store_id, Vendor.hub_id == current_user.hub_id).first()
     if store is not None:
         vendor_admin = store.admin
@@ -66,13 +65,13 @@ def RemoveStore(store_id):
         flash("Поставщик успешно удалён.")
     else:
         flash("Этот поставщик не зарегистрован в системе.")
-    return redirect(url_for("main.ShowStores"))
+    return redirect(url_for("main.show_vendors"))
 
 
-@bp.route("/stores/activate/<int:store_id>")
+@bp.route("/vendors/activate/<int:store_id>")
 @login_required
 @role_required([UserRoles.admin])
-def ActivateStore(store_id):
+def acrivate_vendor(store_id):
     store = Vendor.query.filter(Vendor.id == store_id, Vendor.hub_id == current_user.hub_id).first()
     if store is not None:
         store.enabled = not store.enabled
@@ -80,4 +79,4 @@ def ActivateStore(store_id):
         flash("Поставщик успешно изменён.")
     else:
         flash("Этот поставщик не зарегистрован в системе.")
-    return redirect(url_for("main.ShowStores"))
+    return redirect(url_for("main.show_vendors"))

@@ -9,5 +9,5 @@ from nadin.main import (  # noqa: F401
     routes_projects,
     routes_settings,
     routes_shop,
-    routes_stores,
+    routes_vendors,
 )

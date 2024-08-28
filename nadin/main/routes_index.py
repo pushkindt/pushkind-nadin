@@ -9,22 +9,11 @@ from nadin.email import SendEmail
 from nadin.extensions import db
 from nadin.main.forms import MergeOrdersForm, SaveOrdersForm
 from nadin.main.routes import bp
-from nadin.main.utils import GetNewOrderNumber, SendEmailNotification, role_forbidden, role_required
-from nadin.models import (
-    AppSettings,
-    Category,
-    EventType,
-    Order,
-    OrderApproval,
-    OrderCategory,
-    OrderEvent,
-    OrderStatus,
-    OrderVendor,
-    Project,
-    UserRoles,
-    Vendor,
-)
-from nadin.utils import flash_errors, get_filter_timestamps
+from nadin.models.hub import AppSettings, UserRoles, Vendor
+from nadin.models.order import EventType, Order, OrderApproval, OrderCategory, OrderEvent, OrderStatus, OrderVendor
+from nadin.models.product import Category
+from nadin.models.project import Project
+from nadin.utils import SendEmailNotification, flash_errors, get_filter_timestamps, role_forbidden, role_required
 
 ################################################################################
 # Index page
@@ -188,7 +177,7 @@ def MergeOrders():
                 else:
                     products[product_id]["quantity"] += product["quantity"]
 
-        order_number = GetNewOrderNumber()
+        order_number = Order.new_order_number(current_user.hub_id)
         order = Order(number=order_number)
         db.session.add(order)
         order.initiative = current_user

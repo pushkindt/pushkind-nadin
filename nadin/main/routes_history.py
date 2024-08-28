@@ -4,9 +4,8 @@ from flask import render_template, request
 from flask_login import current_user, login_required
 
 from nadin.main.routes import bp
-from nadin.main.utils import role_forbidden
-from nadin.models import EventType, Order, OrderEvent, UserRoles
-from nadin.utils import get_filter_timestamps
+from nadin.models.order import EventType, Order, OrderEvent, UserRoles
+from nadin.utils import get_filter_timestamps, role_forbidden
 
 ################################################################################
 # Responibility page

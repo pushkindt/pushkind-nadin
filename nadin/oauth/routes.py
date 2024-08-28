@@ -9,9 +9,10 @@ from flask_login import current_user, login_required
 from werkzeug.security import gen_salt
 
 from nadin.extensions import db
-from nadin.main.utils import role_required
-from nadin.models import OAuth2AuthorizationCode, OAuth2Client, OAuth2Token, UserRoles
+from nadin.models.hub import UserRoles
+from nadin.models.oauth import OAuth2AuthorizationCode, OAuth2Client, OAuth2Token
 from nadin.oauth.server import authorization, generate_user_info, require_oauth
+from nadin.utils import role_required
 
 bp = Blueprint("oauth", __name__)
 

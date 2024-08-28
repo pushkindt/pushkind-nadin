@@ -1,9 +1,13 @@
 from collections.abc import Iterable
 from datetime import datetime, timedelta, timezone
+from functools import wraps
 from typing import Any, Optional
 
-from flask import flash
+from flask import current_app, flash, jsonify, render_template, url_for
+from flask_login import current_user
 from flask_wtf import FlaskForm
+
+from nadin.email import SendEmail
 
 
 def get_filter_timestamps():
@@ -34,3 +38,96 @@ def flash_errors(form: FlaskForm, category: str = "warning"):
     for field, errors in form.errors.items():
         for error in errors:
             flash(f"{getattr(form, field).label.text} - {error}", category)
+
+
+def role_required(roles_list):
+    def decorator(function):
+        @wraps(function)
+        def wrapper(*args, **kwargs):
+            if current_user.role not in roles_list:
+                return render_template("errors/403.html"), 403
+            return function(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def role_forbidden(roles_list):
+    def decorator(function):
+        @wraps(function)
+        def wrapper(*args, **kwargs):
+            if current_user.role in roles_list:
+                return render_template("errors/403.html"), 403
+            return function(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def role_required_ajax(roles_list):
+    def decorator(function):
+        @wraps(function)
+        def wrapper(*args, **kwargs):
+            if current_user.role not in roles_list:
+                return jsonify({"status": False, "flash": ["У вас нет соответствующих полномочий."]}), 403
+            return function(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def role_forbidden_ajax(roles_list):
+    def decorator(function):
+        @wraps(function)
+        def wrapper(*args, **kwargs):
+            if current_user.role in roles_list:
+                return jsonify({"status": False, "flash": ["У вас нет соответствующих полномочий."]}), 403
+            return function(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def SendEmailNotification(kind, order, recipients_id=None, data=None):
+    if not recipients_id:
+        recipients_id = []
+    recipients = (
+        r
+        for r in order.reviewers
+        if (getattr(r, f"email_{kind}", False) is True and (r.id in recipients_id or len(recipients_id) == 0))
+    )
+    for recipient in recipients:
+        current_app.logger.info('"%s" email about order %s has been sent to %s', kind, order.number, recipient.email)
+        token = recipient.get_jwt_token(expires_in=86400)
+        next_page = url_for("main.ShowOrder", order_id=order.id)
+        SendEmail(
+            f"Уведомление по заявке #{order.number}",
+            sender=(current_app.config["MAIL_SENDERNAME"], current_app.config["ADMINS"][0]),
+            recipients=[recipient.email],
+            text_body=render_template(f"email/{kind}.txt", next_page=next_page, token=token, order=order, data=data),
+            html_body=render_template(f"email/{kind}.html", next_page=next_page, token=token, order=order, data=data),
+        )
+
+
+def SendEmail1C(recipients, order, data):
+    current_app.logger.info('"export1C" email about order %s has been sent to %s', order.number, recipients)
+
+    if order.project is not None:
+        subject = f"{order.project.name}. (pushkind_{order.number})"
+    else:
+        subject = f"pushkind_{order.number}"
+
+    data = (f"pushkind_{order.number}.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", data)
+
+    SendEmail(
+        subject,
+        sender=(current_app.config["MAIL_SENDERNAME"], current_app.config["ADMINS"][0]),
+        recipients=recipients,
+        text_body=render_template("email/export1C.txt", order=order),
+        html_body=render_template("email/export1C.html", order=order),
+        attachments=[data],
+    )

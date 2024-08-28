@@ -19,11 +19,9 @@ from nadin.main.forms import (
     SplitOrderForm,
 )
 from nadin.main.routes import bp
-from nadin.main.utils import GetNewOrderNumber, SendEmail1C, SendEmailNotification, role_forbidden, role_required
-from nadin.models import (
-    AppSettings,
+from nadin.models.hub import AppSettings, User, UserRoles, Vendor
+from nadin.models.order import (
     CashflowStatement,
-    Category,
     EventType,
     IncomeStatement,
     Order,
@@ -34,13 +32,10 @@ from nadin.models import (
     OrderPosition,
     OrderStatus,
     OrderVendor,
-    Product,
-    Project,
-    User,
-    UserRoles,
-    Vendor,
 )
-from nadin.utils import flash_errors
+from nadin.models.product import Category, Product
+from nadin.models.project import Project
+from nadin.utils import SendEmail1C, SendEmailNotification, flash_errors, role_forbidden, role_required
 
 ################################################################################
 # Approve page
@@ -175,7 +170,7 @@ def SplitOrder(order_id):
         message_flash = "заявка разделена на заявки"
 
         for product_list in product_lists:
-            new_order_number = GetNewOrderNumber()
+            new_order_number = Order.new_order_number(current_user.hub_id)
             message_flash += f" {new_order_number}"
             new_order = Order(number=new_order_number)
             db.session.add(new_order)
@@ -245,7 +240,7 @@ def DuplicateOrder(order_id):
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
 
-    order_number = GetNewOrderNumber()
+    order_number = Order.new_order_number(current_user.hub_id)
     new_order = Order(number=order_number)
     db.session.add(new_order)
 

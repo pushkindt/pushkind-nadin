@@ -22,8 +22,10 @@ from wtforms.fields import DateField, EmailField, URLField
 from wtforms.validators import DataRequired, Email, InputRequired, Length, Optional, ValidationError
 
 from nadin.extensions import db
-from nadin.main.utils import SendEmailNotification
-from nadin.models import EventType, OrderEvent, OrderLimitsIntervals, ProjectPriceLevel, UserRoles
+from nadin.models.hub import UserRoles
+from nadin.models.order import EventType, OrderEvent, OrderLimitsIntervals
+from nadin.models.project import ProjectPriceLevel
+from nadin.utils import SendEmailNotification
 
 
 class JSONField(StringField):
@@ -147,11 +149,11 @@ class SplitOrderForm(FlaskForm):
 
 
 ################################################################################
-# Stores page
+# Vendors page
 ################################################################################
 
 
-class AddStoreForm(FlaskForm):
+class AddVendorForm(FlaskForm):
     name = StringField(
         "Поставщик",
         validators=[

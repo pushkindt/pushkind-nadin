@@ -2,8 +2,8 @@ from flask import render_template
 from flask_login import current_user, login_required
 
 from nadin.main.routes import bp
-from nadin.main.utils import role_required
-from nadin.models import User, UserRoles
+from nadin.models.order import User, UserRoles
+from nadin.utils import role_required
 
 ################################################################################
 # Dahboard page
