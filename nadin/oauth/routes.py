@@ -60,13 +60,13 @@ def create_client():
 @bp.route("/authorize", methods=("GET", "POST"))
 @login_required
 def authorize():
-    if request.method == "GET":
-        try:
-            grant = authorization.get_consent_grant(end_user=current_user)
-        except OAuth2Error as error:
-            flash(error.description, category="error")
-            return redirect(url_for("main.ShowIndex"))
-        return render_template("oauth/authorize.html", grant=grant)
+    # if request.method == "GET":
+    #     try:
+    #         grant = authorization.get_consent_grant(end_user=current_user)
+    #     except OAuth2Error as error:
+    #         flash(error.description, category="error")
+    #         return redirect(url_for("main.ShowIndex"))
+    #     return render_template("oauth/authorize.html", grant=grant)
     return authorization.create_authorization_response(grant_user=current_user)
 
 
@@ -151,10 +151,10 @@ def jwks():
 
 
 @bp.route("/logout")
-@login_required
 def logout():
-    OAuth2Token.query.filter_by(user_id=current_user.id).delete()
-    OAuth2AuthorizationCode.query.filter_by(user_id=current_user.id).delete()
+    if current_user.is_authenticated:
+        OAuth2Token.query.filter_by(user_id=current_user.id).delete()
+        OAuth2AuthorizationCode.query.filter_by(user_id=current_user.id).delete()
     db.session.commit()
     post_logout_redirect_uri = request.args.get("post_logout_redirect_uri")
     if not post_logout_redirect_uri:
