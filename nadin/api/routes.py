@@ -55,32 +55,44 @@ def get_category(category_id: int):
 def get_category_products(category_id: int):
 
     tag = request.args.get("tag", type=str)
+    page = request.args.get("page", default=1, type=int)
+    sort_by = request.args.get("sort_by", default="name", type=str)
+    order = request.args.get("order", default="asc", type=str)
 
-    if tag or category_id != 0:
-        page = request.args.get("page", default=1, type=int)
-        if category_id == 0:
-            products = Product.query
-        else:
+    products = Product.query
+
+    if not tag and not category_id:
+        page = 1
+        pages = 1
+        total = current_app.config["MAX_PER_PAGE"]
+        products = products.order_by(Product.id).limit(total).all()
+
+    else:
+
+        if category_id != 0:
             category = Category.query.get_or_404(category_id)
-            products = Product.query.join(Category, onclause=Category.id == Product.cat_id).filter(
+            products = products.join(Category, onclause=Category.id == Product.cat_id).filter(
                 Category.name.startswith(category.name)
             )
         if tag:
             products = products.join(ProductTag, onclause=ProductTag.product_id == Product.id).filter(
                 ProductTag.tag == tag
             )
-        if category_id != 0:
-            products = products.order_by(Category.name, Product.name)
+
+        try:
+            order_func = getattr(Product, sort_by)
+        except AttributeError:
+            order_func = Product.name
+        if order == "desc":
+            order_func = order_func.desc()
         else:
-            products = products.order_by(Product.name)
+            order_func = order_func.asc()
+
+        products = products.order_by(order_func)
+
         products = db.paginate(products, page=page, max_per_page=current_app.config["MAX_PER_PAGE"])
         pages = products.pages
         total = products.total
-    else:
-        page = 1
-        pages = 1
-        total = current_app.config["MAX_PER_PAGE"]
-        products = Product.query.order_by(Product.id).limit(total).all()
 
     products = {"total": total, "page": page, "pages": pages, "products": [p.to_dict() for p in products]}
     response = jsonify(products)
@@ -146,7 +158,7 @@ def get_product(product_id: int):
 
 
 @bp.route("/order", methods=["POST"])
-def order():
+def create_order():
     form = OrderForm()
     if form.validate_on_submit():
 
