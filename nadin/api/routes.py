@@ -56,8 +56,8 @@ def get_category_products(category_id: int):
 
     tag = request.args.get("tag", type=str)
     page = request.args.get("page", default=1, type=int)
-    sort_by = request.args.get("sort_by", default="name", type=str)
-    order = request.args.get("order", default="asc", type=str)
+    sort_by = request.args.get("sort_by", default="name_asc", type=str)
+    sort_by, order = sort_by.split("_", 1)
 
     products = Product.query
 
