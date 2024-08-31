@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from urllib.parse import urlparse as url_parse
 
+import sqlalchemy as sa
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_user, logout_user
 
@@ -8,6 +9,7 @@ from nadin.auth.email import send_password_reset_email, send_user_registered_ema
 from nadin.auth.forms import LoginForm, RegistrationForm, ResetPasswordForm, ResetPasswordRequestForm
 from nadin.extensions import db, oauth_ext
 from nadin.models.hub import User, UserRoles, Vendor
+from nadin.models.oauth import OAuth2AuthorizationCode, OAuth2Token
 from nadin.utils import flash_errors
 
 bp = Blueprint("auth", __name__)
@@ -84,7 +86,10 @@ def signup():
 
 @bp.route("/logout/")
 def logout():
+    OAuth2Token.query.filter(OAuth2Token.user_id == current_user.id).delete()
+    OAuth2AuthorizationCode.query.filter(OAuth2AuthorizationCode.user_id == current_user.id).delete()
     logout_user()
+    db.session.commit()
     return redirect(url_for("auth.login"))
 
 
@@ -167,12 +172,14 @@ def callback_oauth(authenticator: str):
     user = User.query.filter_by(email=profile["email"]).first()
     if not user:
         user = User(email=profile["email"], role=UserRoles.initiative, password="")
-        user.hub = Vendor.query.first()
+        user.hub = Vendor.query.filter(Vendor.hub_id == sa.null()).first()
         db.session.add(user)
     user.name = profile["name"]
     user.phone = profile["phone_number"]
     if user.role == UserRoles.initiative:
-        user.set_default_project()
+        project = user.set_default_project()
+        if project:
+            db.session.add(project)
     db.session.commit()
     login_user(user)
     current_app.logger.info("%s logged", user.email)

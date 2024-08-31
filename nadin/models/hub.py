@@ -2,6 +2,7 @@ import enum
 import json
 from hashlib import md5
 from time import time
+from typing import Optional
 
 import jwt
 import sqlalchemy as sa
@@ -139,20 +140,22 @@ class User(UserMixin, db.Model):
             return Vendor.query.filter_by(hub_id=None).all()
         return [self.hub]
 
-    def set_default_project(self):
+    def set_default_project(self) -> Optional[Project]:
         """
         Sets the user's project to be the one with the same email or phone
         Should only be used for initiatives
         """
         if len(self.projects) > 0:
-            return
+            return None
         project = (
             Project.query.filter_by(hub_id=self.hub_id)
             .filter(sa.or_(Project.email == self.email, Project.phone == self.phone))
             .first()
         )
-        if project:
-            self.projects = [project]
+        if not project:
+            project = Project(hub_id=self.hub_id, email=self.email, phone=self.phone, name=self.name, contact=self.name)
+        self.projects = [project]
+        return project
 
     def price_level(self, project: "Project" = None):
         if len(self.projects) == 0:
