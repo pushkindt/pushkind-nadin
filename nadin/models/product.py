@@ -72,6 +72,7 @@ class Product(SearchableMixin, db.Model):
     price = db.Column(db.Float, nullable=False)  # online_price
     prices = db.Column(db.JSON(), nullable=True)  # the rest of the price levels
     image = db.Column(db.String(128), nullable=True)
+    images = db.Column(db.JSON(), nullable=True)
     measurement = db.Column(db.String(128), nullable=True)
     cat_id = db.Column(db.Integer, db.ForeignKey("category.id", ondelete="CASCADE"), nullable=False)
     description = db.Column(db.String(512), nullable=True)
@@ -107,6 +108,7 @@ class Product(SearchableMixin, db.Model):
             "prices": prices,
             "measurement": self.measurement,
             "tags": [tag.tag for tag in self.tags],
+            "images": self.images,
         }
 
 
