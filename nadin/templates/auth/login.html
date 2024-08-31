@@ -4,44 +4,57 @@
 
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header text-muted fw-bold">
                     Авторизация
                 </div>
                 <div class="card-body">
-                    <form method="POST">
-                        {{ form.csrf_token(id=False) }}
-                        <div class="row mb-3">
-                            {{ form.email.label (class_ = "col-md-4 col-form-label") }}
-                            <div class="col-md-6">
-                                {{ form.email(class_ = 'form-control', autofocus = '') }}
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            {{ form.password.label (class_ = "col-md-4 col-form-label") }}
-                            <div class="col-md-6">
-                                {{ form.password(class_ = 'form-control') }}
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6 offset-md-4">
-                                <div class="form-check">
-                                    {{ form.remember_me(class_="form-check-input") }}
-                                    {{ form.remember_me.label(class_="form-check-label") }}
+                    <p>
+                    <a class="btn btn-outline-dark" data-bs-toggle="collapse" href="#collapseLogin" role="button" aria-expanded="false" aria-controls="collapseLogin">
+                        <i class="bi bi-arrow-right-square"></i>
+                        по паролю
+                    </a>
+                    <div class="collapse" id="collapseLogin">
+                        <form method="POST">
+                            {{ form.csrf_token(id=False) }}
+                            <div class="row mb-3">
+                                {{ form.email.label (class_ = "col-md-4 col-form-label") }}
+                                <div class="col-md-6">
+                                    {{ form.email(class_ = 'form-control', autofocus = '') }}
                                 </div>
                             </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6 offset-md-4">
-                                {{ form.submit(class_ = 'btn btn-primary text-white') }}
-                                <a class="btn btn-outline-dark" role="button" href="{{ url_for('auth.login_oauth', authenticator='yandex') }}">
-                                    <i class="bi bi-arrow-right-square"></i>
-                                    Yandex
-                                </a>
+                            <div class="row mb-3">
+                                {{ form.password.label (class_ = "col-md-4 col-form-label") }}
+                                <div class="col-md-6">
+                                    {{ form.password(class_ = 'form-control') }}
+                                </div>
                             </div>
-                        </div>
-                    </form>
+                            <div class="row mb-3">
+                                <div class="col-md-6 offset-md-4">
+                                    <div class="form-check">
+                                        {{ form.remember_me(class_="form-check-input") }}
+                                        {{ form.remember_me.label(class_="form-check-label") }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6 offset-md-4">
+                                    {{ form.submit(class_ = 'btn btn-primary text-white') }}
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    </p>
+                    <p>
+                        или через
+                    </p>
+                    <p>
+                        <a class="btn btn-outline-dark" role="button" href="{{ url_for('auth.login_oauth', authenticator='yandex') }}">
+                            <i class="bi bi-arrow-right-square"></i>
+                            Yandex ID
+                        </a>
+                    </p>
                 </div>
                 <div class="card-footer">
                     <div class="row">
