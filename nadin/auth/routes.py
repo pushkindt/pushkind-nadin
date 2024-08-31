@@ -6,7 +6,7 @@ from flask_login import current_user, login_user, logout_user
 
 from nadin.auth.email import send_password_reset_email, send_user_registered_email
 from nadin.auth.forms import LoginForm, RegistrationForm, ResetPasswordForm, ResetPasswordRequestForm
-from nadin.extensions import db
+from nadin.extensions import db, oauth_ext
 from nadin.models.hub import User, UserRoles, Vendor
 from nadin.utils import flash_errors
 
@@ -128,8 +128,7 @@ def reset_password(token):
 def login_oauth(authenticator: str):
     if current_user.is_authenticated:
         return redirect(url_for("main.ShowIndex"))
-    oauth_ext = current_app.extensions["authlib.integrations.flask_client"]
-    oauth_client = oauth_ext.create_client(authenticator)
+    oauth_client = getattr(oauth_ext, authenticator)
     if not oauth_client:
         abort(404)
     redirect_uri = url_for("auth.callback_oauth", authenticator=authenticator, _external=True)
@@ -140,8 +139,8 @@ def login_oauth(authenticator: str):
 def callback_oauth(authenticator: str):
     if current_user.is_authenticated:
         return redirect(url_for("main.ShowIndex"))
-    oauth_ext = current_app.extensions["authlib.integrations.flask_client"]
-    oauth_client = oauth_ext.create_client(authenticator)
+
+    oauth_client = getattr(oauth_ext, authenticator)
     if not oauth_client:
         abort(404)
     try:

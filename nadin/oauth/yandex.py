@@ -20,6 +20,10 @@ class YandexOauth2Config(FlaskOAuth2App):
         user_info["email"] = user_info.get("default_email", "").lower()
         user_info["name"] = user_info.get("real_name")
         user_info["picture"] = picture
-        user_info["phone_number"] = user_info.get("default_phone", {}).get("number")
+        phone = user_info.get("default_phone")
+        if phone and isinstance(phone, dict):
+            user_info["phone_number"] = phone.get("number")
+        else:
+            user_info["phone_number"] = None
         user_info["gender"] = user_info.get("sex")
         return user_info

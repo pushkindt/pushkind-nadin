@@ -8,7 +8,7 @@ from elasticsearch import Elasticsearch
 from flask import Flask, render_template, request
 
 from nadin import admin, api, auth, oauth
-from nadin.extensions import db, login_manager, mail, migrate, moment, oauth_client
+from nadin.extensions import db, login_manager, mail, migrate, moment, oauth_ext
 from nadin.main import routes as main_routes
 from nadin.oauth.server import config_oauth_server
 from nadin.oauth.yandex import YandexOauth2Config
@@ -28,11 +28,11 @@ def create_app(**config):
 
 def register_extensions(app):
 
-    oauth_client.register(
+    oauth_ext.register(
         name=YandexOauth2Config.NAME,
         client_cls=YandexOauth2Config,
     )
-    oauth_client.init_app(app)
+    oauth_ext.init_app(app)
     config_oauth_server(app)
     login_manager.login_view = "auth.login"
     login_manager.login_message = app.config["LOGIN_MESSAGE"]
