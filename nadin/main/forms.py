@@ -196,7 +196,7 @@ class UserSettings(Form):
             Length(max=128, message="Слишком длинная роль."),
         ],
     )
-    location = StringField("Площадка", validators=[Length(max=512, message="Слишком длинное название.")])
+    location = StringField("Адрес", validators=[Length(max=512, message="Слишком длинное название.")])
     email_new = BooleanField("Новые заявки")
     email_modified = BooleanField("Заявка изменена")
     email_disapproved = BooleanField("Заявка отклонена")
