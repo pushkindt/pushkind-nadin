@@ -126,19 +126,29 @@ def reset_password(token):
 
 @bp.route("/login/<authenticator>")
 def login_oauth(authenticator: str):
+
+    next_page = request.args.get("next")
+    if not next_page or url_parse(next_page).netloc != "":
+        next_page = url_for("main.ShowIndex")
+
     if current_user.is_authenticated:
-        return redirect(url_for("main.ShowIndex"))
+        return redirect(next_page)
     oauth_client = getattr(oauth_ext, authenticator)
     if not oauth_client:
         abort(404)
-    redirect_uri = url_for("auth.callback_oauth", authenticator=authenticator, _external=True)
+    redirect_uri = url_for("auth.callback_oauth", authenticator=authenticator, next=next_page, _external=True)
     return oauth_client.authorize_redirect(redirect_uri)
 
 
 @bp.route("/callback/<authenticator>")
 def callback_oauth(authenticator: str):
+
+    next_page = request.args.get("next")
+    if not next_page or url_parse(next_page).netloc != "":
+        next_page = url_for("main.ShowIndex")
+
     if current_user.is_authenticated:
-        return redirect(url_for("main.ShowIndex"))
+        return redirect(next_page)
 
     oauth_client = getattr(oauth_ext, authenticator)
     if not oauth_client:
@@ -148,6 +158,7 @@ def callback_oauth(authenticator: str):
     except:
         flash("Не удалось авторизоваться. Попробуйте позже.")
         return redirect(url_for("auth.login"))
+
     user_info = oauth_client.userinfo(token=token)
     profile = oauth_client.map_profile(user_info)
     if not profile["email"]:
@@ -164,4 +175,4 @@ def callback_oauth(authenticator: str):
     db.session.commit()
     login_user(user)
     current_app.logger.info("%s logged", user.email)
-    return redirect(url_for("main.ShowIndex"))
+    return redirect(next_page)
