@@ -34,7 +34,7 @@ def register_extensions(app):
     )
     oauth_ext.init_app(app)
     config_oauth_server(app)
-    login_manager.login_view = "auth.login"
+    login_manager.login_view = app.config["LOGIN_VIEW"]
     login_manager.login_message = app.config["LOGIN_MESSAGE"]
     login_manager.init_app(app)
     db.init_app(app)

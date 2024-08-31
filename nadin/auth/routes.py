@@ -13,7 +13,7 @@ from nadin.utils import flash_errors
 bp = Blueprint("auth", __name__)
 
 
-@bp.route("/login/", methods=["GET", "POST"])
+@bp.route("/login_local/", methods=["GET", "POST"])
 def login():
 
     next_page = request.args.get("next")
@@ -124,6 +124,7 @@ def reset_password(token):
     return render_template("auth/reset.html", form=form)
 
 
+@bp.route("/login/", defaults={"authenticator": "yandex"})
 @bp.route("/login/<authenticator>")
 def login_oauth(authenticator: str):
 
