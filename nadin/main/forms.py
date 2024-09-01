@@ -27,6 +27,8 @@ from nadin.models.order import EventType, OrderEvent, OrderLimitsIntervals
 from nadin.models.project import ProjectPriceLevel
 from nadin.utils import SendEmailNotification
 
+IMAGES = list("jpg jpe jpeg png gif svg bmp webp".split())
+
 
 class JSONField(StringField):
     def _value(self):
@@ -524,20 +526,37 @@ class EditProductForm(FlaskForm):
         validators=[DataRequired(message="ID товара - обязательное поле.")],
         render_kw={"hidden": ""},
     )
-    name = StringField("Название", validators=[Length(max=128, message="Слишком длинное название.")])
+    name = StringField(
+        "Название",
+        validators=[
+            InputRequired(message="Название - обязательное поле."),
+            Length(max=128, message="Слишком длинное название."),
+        ],
+    )
     image = FileField(
         label="Изображение",
         validators=[
-            FileRequired("Разрешены только изображения JPG и PNG!"),
-            FileAllowed(["jpg", "png"], "Разрешены только изображения JPG и PNG!"),
+            FileAllowed(IMAGES, "Разрешены только изображения."),
         ],
     )
-    description = TextAreaField("Описание")
-    sku = StringField("Артикул", validators=[InputRequired(message="Невозможное значение количества.")])
+    description = TextAreaField("Описание", validators=[Length(max=512, message="Слишком длинное описание.")])
+    sku = StringField(
+        "Артикул",
+        validators=[
+            InputRequired(message="Артикул - обязательное поле."),
+            Length(max=128, message="Слишком длинный артикул."),
+        ],
+    )
     price = DecimalField("Цена", validators=[InputRequired(message="Цена - обязательное поле.")])
-    measurement = StringField("Единица измерения", validators=[InputRequired(message="ЕИ - обязательное поле.")])
+    measurement = StringField(
+        "Единица измерения",
+        validators=[
+            InputRequired(message="ЕИ - обязательное поле."),
+            Length(max=128, message="Слишком длинная ЕИ."),
+        ],
+    )
     tags = StringField("Теги", description="Теги, разделенные пробелом")
-    images = TextAreaField("Изображения", description="Ссылки на новой строке")
+    images = TextAreaField("Изображения", description="Ссылки на отдельных строках")
     submit = SubmitField("Сохранить")
     delete = SubmitField("Удалить")
 

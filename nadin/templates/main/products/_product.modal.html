@@ -17,7 +17,7 @@
                                         <img src="{{product.image or config['PLACEHOLDER_IMAGE']}}" class="d-block w-100"
                                             alt="Main image">
                                     </div>
-                                    {% for image in (product.images or []) %}
+                                    {% for image in product.images_list() %}
                                         <div class="carousel-item">
                                             <img src="{{image}}" class="d-block w-100" alt="Media image">
                                         </div>
@@ -36,7 +36,47 @@
                             </div>
                         </div>
                         <div class="col-sm">
-                            <form action="{{url_for('main.edit_product', product_id=product.id)}}" method="POST">
+                            <form action="{{url_for('main.edit_product', product_id=product.id)}}" method="POST" enctype="multipart/form-data">
+                                {{ edit_product_form.csrf_token(id=False) }}
+                                {{ edit_product_form.product_id(id=False, value=product.id) }}
+                                <div class="mb-3">
+                                    {{ edit_product_form.name.label(class="form-label") }}
+                                    {{ edit_product_form.name(class="form-control", id=False, value=product.name) }}
+                                </div>
+                                <div class="mb-3">
+                                    {{ edit_product_form.sku.label(class="form-label") }}
+                                    {{ edit_product_form.sku(class="form-control", id=False, value=product.sku) }}
+                                </div>
+                                <div class="mb-3">
+                                    {{ edit_product_form.price.label(class="form-label") }}
+                                    {{ edit_product_form.price(class="form-control", id=False, value=product.price) }}
+                                </div>
+                                <div class="mb-3">
+                                    {{ edit_product_form.measurement.label(class="form-label") }}
+                                    {{ edit_product_form.measurement(class="form-control", id=False, value=product.measurement) }}
+                                </div>
+                                <div class="mb-3">
+                                    {{ edit_product_form.description.label(class="form-label") }}
+                                    <textarea class="form-control" name="description">{{product.description}}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    {{ edit_product_form.tags.label(class="form-label") }}
+                                    {{ edit_product_form.tags(class="form-control", id=False, value=" ".join(product.tag_list())) }}
+                                    <small class="text-muted">{{ edit_product_form.tags.description }}</small>
+                                </div>
+                                <div class="mb-3">
+                                    {{ edit_product_form.image.label(class="form-label") }}
+                                    {{ edit_product_form.image(class="form-control", id=False, accept="image/*") }}
+                                </div>
+                                <div class="mb-3">
+                                    {{ edit_product_form.images.label(class="form-label") }}
+                                    <textarea class="form-control" name="images">{{"\r\n".join(product.images_list())}}</textarea>
+                                    <small class="text-muted">{{ edit_product_form.images.description }}</small>
+                                </div>
+                                <div class="mb-3">
+                                    {{ edit_product_form.submit(class="btn btn-primary", id=False) }}
+                                    {{ edit_product_form.delete(class="btn btn-danger", id=False) }}
+                                </div>
                             </form>
                         </div>
                     </div>

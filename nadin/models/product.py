@@ -81,6 +81,12 @@ class Product(SearchableMixin, db.Model):
     category = db.relationship("Category", back_populates="products")
     tags = db.relationship("ProductTag", backref="product", cascade="all, delete-orphan")
 
+    def tag_list(self):
+        return [tag.tag for tag in self.tags]
+
+    def images_list(self):
+        return [image for image in (self.images or []) if image]
+
     def get_price(self, price_level: ProjectPriceLevel) -> float:
         if self.prices is not None and price_level.name in self.prices:
             try:
@@ -107,7 +113,7 @@ class Product(SearchableMixin, db.Model):
             "price": self.price,
             "prices": prices,
             "measurement": self.measurement,
-            "tags": [tag.tag for tag in self.tags],
+            "tags": self.tag_list(),
             "images": self.images,
         }
 

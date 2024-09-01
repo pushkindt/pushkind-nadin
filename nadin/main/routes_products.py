@@ -304,23 +304,48 @@ def edit_product(product_id):
         flash("Такой поставщик не найден.")
         return redirect(url_for("main.show_products"))
 
-    # product = Product.query.filter_by(id=product_id, vendor_id=vendor.id).first()
-    # if product is None:
-    #     flash("Такой товар не найден.")
-    #     return redirect(url_for("main.show_products"))
+    product = Product.query.filter_by(id=product_id, vendor_id=vendor.id).first()
+    if product is None:
+        flash("Такой товар не найден.")
+        return redirect(url_for("main.show_products"))
 
-    # form = UploadProductImageForm()
-    # if form.validate_on_submit():
-    #     file_data = form.image.data
-    #     file_name = Path(file_data.filename)
-    #     file_name = Path(str(product.sku) + file_name.suffix)
-    #     static_path = Path(f"nadin/static/upload/vendor{vendor.id}")
-    #     static_path.mkdir(parents=True, exist_ok=True)
-    #     full_path = static_path / file_name
-    #     file_data.save(full_path)
-    #     product.image = url_for("static", filename=Path(*full_path.parts[2:]))
-    #     db.session.commit()
-    #     flash("Изображение товара успешно загружено.")
-    # else:
-    #     flash_errors(form)
+    form = EditProductForm()
+    if form.validate_on_submit():
+
+        if form.delete.data:
+            db.session.delete(product)
+            db.session.commit()
+            flash("Товар успешно удалён.")
+            return redirect(url_for("main.show_products", vendor_id=vendor.id))
+
+        product.name = form.name.data.strip()[:128]
+        product.sku = form.sku.data.strip()[:128]
+        product.price = form.price.data
+        product.measurement = form.measurement.data.strip()[:128]
+        product.description = form.description.data.strip()[:512]
+        if form.images.data:
+            product.images = [image.strip() for image in form.images.data.split()]
+
+        if form.image.data:
+            file_data = form.image.data
+            file_name = Path(file_data.filename)
+            file_name = Path(str(product.sku) + file_name.suffix)
+            static_path = Path(current_app.config["STATIC_UPLOAD_PATH"])
+            static_path = static_path / f"vendor{vendor.id}"
+            static_path.mkdir(parents=True, exist_ok=True)
+            full_path = static_path / file_name
+            file_data.save(full_path)
+            product.image = url_for("static", filename=Path(*full_path.parts[2:]))
+
+        if form.tags.data:
+            ProductTag.query.filter_by(product_id=product.id).delete()
+            tags = [ProductTag(tag=tag.strip(), product_id=product.id) for tag in form.tags.data.split(" ")]
+            for tag in tags:
+                db.session.add(tag)
+            product.tags = tags
+
+        db.session.commit()
+        flash("Товар успешно сохранён.")
+    else:
+        flash_errors(form)
     return redirect(url_for("main.show_products", vendor_id=vendor.id))

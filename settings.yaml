@@ -1,6 +1,6 @@
 default:
   title: "Личный кабинет"
-  static_upload_path: upload
+  static_upload_path: "nadin/static/upload"
   sqlalchemy_database_uri: sqlite:///app.db
   login_message: "Please login"
   placeholder_image: "/static/placeholder.png"
