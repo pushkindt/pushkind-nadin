@@ -133,7 +133,7 @@
         <div class="col">
             <span class="fw-bold">Инициатор:</span>
             {% set user = order.initiative %}
-            {% include '_user.popover.html' %}
+            {% include 'popovers/_user.popover.html' %}
             {{ user.name }}
         </div>
     </div>
@@ -147,7 +147,7 @@
                         <li>
                             <span class="bg-yellow">
                                 {% set user = event.user %}
-                                {{ moment(event.timestamp).format('DD.MM.YYYY') }} {% include '_user.popover.html' %}
+                                {{ moment(event.timestamp).format('DD.MM.YYYY') }} {% include 'popovers/_user.popover.html' %}
                                 {{ event.type }}: {{ event.data }}
                             </span>
                         </li>
@@ -166,7 +166,7 @@
                         {% if appr.approved is sameas true %}
                             <span class="fw-bold text-success">согласен</span>
                             {% set user = appr.user %}
-                            {% include '_user.popover.html' %}
+                            {% include 'popovers/_user.popover.html' %}
                             {{ user.name }}
                             {{ moment(appr.timestamp).format('DD.MM.YYYY') }}
                         {% else %}
@@ -179,13 +179,13 @@
                                             или
                                         {% endif %}
                                         {% set ns.first = 0 %}
-                                        {% include '_user.popover.html' %}
+                                        {% include 'popovers/_user.popover.html' %}
                                     {% endif %}
                                 {% endfor %}
                             {% else %}
                                 <span class="fw-bold text-danger">замечания</span>
                                 {% set user = appr.user %}
-                                {% include '_user.popover.html' %}
+                                {% include 'popovers/_user.popover.html' %}
                                 {{ user.name }}
                                 {{ moment(appr.timestamp).format('DD.MM.YYYY') }}
                             {% endif %}
@@ -254,7 +254,7 @@
                     <div class="col">
                         {{ moment(event.timestamp).format() }}
                         {% set user = event.user %}
-                        {% include '_user.popover.html' %}
+                        {% include 'popovers/_user.popover.html' %}
                         <span class="fw-bold text-{{event.type.color()}}">{{event.type}}</span>
                     </div>
                 </div>
@@ -499,7 +499,7 @@
                     {% for approval in order.user_approvals %}
                         <li class="remarkListItem" data-id="{{approval.product_id}}">
                             {% set user = approval.user %}
-                            {% include '_user.popover.html' %}
+                            {% include 'popovers/_user.popover.html' %}
                             {{ user.name }}:
                             {{ approval.remark or 'без комментария' }}
                         </li>

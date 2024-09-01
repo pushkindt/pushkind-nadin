@@ -195,7 +195,7 @@
 									</td>
 									<td style="width: 20%">
 										{% for user in projects[project]['users'] %}
-										{% include '_user.popover.html' %}{{user.name}}<br>
+										{% include 'popovers/_user.popover.html' %}{{user.name}}<br>
 										{% endfor %}
 									</td>
 								</tr>
@@ -240,7 +240,7 @@
 									</td>
 									<td style="width: 20%">
 										{% for user in categories[category]['users'] %}
-										{% include '_user.popover.html' %}{{ user.name }}<br>
+										{% include 'popovers/_user.popover.html' %}{{ user.name }}<br>
 										{% endfor %}
 									</td>
 								</tr>

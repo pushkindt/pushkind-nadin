@@ -54,7 +54,7 @@
         <div class="col">
             <strong>Инициатор:</strong>
             {% set user = current_user %}
-            {% include '_user.popover.html' %}
+            {% include 'popovers/_user.popover.html' %}
             {{ user.name or user.email }}
         </div>
     </div>
