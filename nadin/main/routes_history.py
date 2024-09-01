@@ -27,4 +27,6 @@ def ShowHistory():
     events = OrderEvent.query.filter(OrderEvent.timestamp > dt.fromtimestamp(filter_from))
     events = events.join(Order).filter_by(hub_id=current_user.hub_id)
     events = events.order_by(OrderEvent.timestamp.desc()).all()
-    return render_template("history.html", events=events, EventType=EventType, filter_from=filter_from, dates=dates)
+    return render_template(
+        "main/history/history.html", events=events, EventType=EventType, filter_from=filter_from, dates=dates
+    )

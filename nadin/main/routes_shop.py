@@ -60,7 +60,7 @@ def shop_search():
 def shop_categories():
 
     categories = Category.query.filter(Category.hub_id == current_user.hub_id, not_(Category.name.like("%/%"))).all()
-    response = make_response(render_template("shop_categories.html", categories=categories))
+    response = make_response(render_template("main/shop/shop_categories.html", categories=categories))
     if len(current_user.projects) == 1:
         response.set_cookie("project_id", str(current_user.projects[0].id))
         response.set_cookie("project_name", quote(current_user.projects[0].name))
@@ -118,7 +118,7 @@ def shop_cart():
             products = Product.query.filter(Product.id.in_(p["product"] for p in form.cart.data)).all()
             if len(products) == 0:
                 flash("Заявка не может быть пуста.")
-                return render_template("shop_cart.html", form=form)
+                return render_template("main/shop/shop_cart.html", form=form)
             project = Project.query.filter_by(id=form.project_id.data).first()
             if project is None:
                 flash("Такого клиента не существует.")
@@ -192,4 +192,4 @@ def shop_cart():
             return redirect(url_for("main.ShowIndex"))
 
         flash_errors(form)
-    return render_template("shop_cart.html", form=form)
+    return render_template("main/shop/shop_cart.html", form=form)

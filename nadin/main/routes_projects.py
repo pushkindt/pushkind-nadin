@@ -180,7 +180,7 @@ def ShowProjects():
     }
 
     return render_template(
-        "projects.html",
+        "main/projects/projects.html",
         projects=projects,
         forms=forms,
         show_add_project=show_add_project,

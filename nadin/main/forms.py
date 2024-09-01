@@ -518,6 +518,30 @@ class CreateOrderForm(FlaskForm):
 ################################################################################
 
 
+class EditProductForm(FlaskForm):
+    product_id = IntegerField(
+        "ID товара",
+        validators=[DataRequired(message="ID товара - обязательное поле.")],
+        render_kw={"hidden": ""},
+    )
+    name = StringField("Название", validators=[Length(max=128, message="Слишком длинное название.")])
+    image = FileField(
+        label="Изображение",
+        validators=[
+            FileRequired("Разрешены только изображения JPG и PNG!"),
+            FileAllowed(["jpg", "png"], "Разрешены только изображения JPG и PNG!"),
+        ],
+    )
+    description = TextAreaField("Описание")
+    sku = StringField("Артикул", validators=[InputRequired(message="Невозможное значение количества.")])
+    price = DecimalField("Цена", validators=[InputRequired(message="Цена - обязательное поле.")])
+    measurement = StringField("Единица измерения", validators=[InputRequired(message="ЕИ - обязательное поле.")])
+    tags = StringField("Теги", description="Теги, разделенные пробелом")
+    images = TextAreaField("Изображения", description="Ссылки на новой строке")
+    submit = SubmitField("Сохранить")
+    delete = SubmitField("Удалить")
+
+
 class UploadProductsForm(FlaskForm):
     products = FileField(
         label="Продукты",
@@ -535,17 +559,6 @@ class UploadImagesForm(FlaskForm):
         validators=[
             FileRequired("Разрешены только zip архивы."),
             FileAllowed(["zip"], "Разрешены только zip архивы."),
-        ],
-    )
-    submit = SubmitField("Загрузить")
-
-
-class UploadProductImageForm(FlaskForm):
-    image = FileField(
-        label="Изображение",
-        validators=[
-            FileRequired("Разрешены только изображения JPG и PNG!"),
-            FileAllowed(["jpg", "png"], "Разрешены только изображения JPG и PNG!"),
         ],
     )
     submit = SubmitField("Загрузить")

@@ -104,18 +104,7 @@
         {% for product in products %}
         <div class="row my-1 bg-white rounded product">
             <div class="col-auto text-center">
-                <form method="POST" enctype="multipart/form-data" id="uploadProductImageForm{{product.id}}"
-                    action="{{url_for('main.UploadProductImage', product_id=product.id, vendor_id=vendor_id)}}">
-                    {{ product_image_form.csrf_token(id=False) }}
-                    <label for="uploadProductImageButton{{product.id}}">
-                        <img src="{{product.image or config['PLACEHOLDER_IMAGE']}}" height="64" width="64"
-                            class="uploadImageIcon">
-                        <br>
-                        <span class="text-primary">фото</span>
-                    </label>
-                    <input id="uploadProductImageButton{{product.id}}" type="file" name="image"
-                        class="d-none uploadProductImageButton" accept="image/png,image/jpeg">
-                </form>
+                <img src="{{product.image or config['PLACEHOLDER_IMAGE']}}" height="64" width="64">
             </div>
             <div class="col">
                 <div class="row" data-id="{{product.id}}">
@@ -164,38 +153,47 @@
         </div>
         <div class="modal fade" id="descriptionModal{{product.id}}" tabindex="-1"
             aria-labelledby="descriptionModalLabel{{product.id}}" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="descriptionModalLabel{{product.id}}">{{product.name}}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div id="carouselControls{{product.id}}" class="carousel carousel-dark slide"
-                            data-bs-ride="carousel">
-                            <div class="carousel-inner">
-                                <div class="carousel-item active">
-                                    <img src="{{product.image or config['PLACEHOLDER_IMAGE']}}" class="d-block w-100"
-                                        alt="Main image">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-sm">
+                                    <div id="carouselControls{{product.id}}" class="carousel carousel-dark slide"
+                                        data-bs-ride="carousel">
+                                        <div class="carousel-inner">
+                                            <div class="carousel-item active">
+                                                <img src="{{product.image or config['PLACEHOLDER_IMAGE']}}" class="d-block w-100"
+                                                    alt="Main image">
+                                            </div>
+                                            {% for image in (product.images or []) %}
+                                                <div class="carousel-item">
+                                                    <img src="{{image}}" class="d-block w-100" alt="Media image">
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <button class="carousel-control-prev" type="button"
+                                            data-bs-target="#carouselControls{{product.id}}" data-bs-slide="prev">
+                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Previous</span>
+                                        </button>
+                                        <button class="carousel-control-next" type="button"
+                                            data-bs-target="#carouselControls{{product.id}}" data-bs-slide="next">
+                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Next</span>
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="carousel-item">
-                                    <img src="{{product.image or config['PLACEHOLDER_IMAGE']}}" class="d-block w-100"
-                                        alt="Media image">
+                                <div class="col-sm">
+                                    <form action="{{url_for('main.edit_product', product_id=product.id)}}" method="POST">
+                                    </form>
                                 </div>
                             </div>
-                            <button class="carousel-control-prev" type="button"
-                                data-bs-target="#carouselControls{{product.id}}" data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Previous</span>
-                            </button>
-                            <button class="carousel-control-next" type="button"
-                                data-bs-target="#carouselControls{{product.id}}" data-bs-slide="next">
-                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Next</span>
-                            </button>
                         </div>
-                        <strong>Описание:</strong>
-                        <pre>{{product.description or ''}}</pre>
                     </div>
                 </div>
             </div>
@@ -208,7 +206,7 @@
                 {% if page %}
                     {% if page != products.page %}
                         <li class="page-item">
-                        <a class="page-link" href="{{ url_for('main.ShowProducts', page=page, vendor_id=vendor_id, category_id=category_id) }}">
+                        <a class="page-link" href="{{ url_for('main.show_products', page=page, vendor_id=vendor_id, category_id=category_id) }}">
                                 {{ page }}
                             </a>
                         </li>
@@ -238,10 +236,10 @@
             $('#uploadProductsForm').submit();
         });
         $('#vendorSelect').change(() => {
-            window.location = "{{url_for('main.ShowProducts', vendor_id=-1)}}".replace('-1', $('#vendorSelect').val());
+            window.location = "{{url_for('main.show_products', vendor_id=-1)}}".replace('-1', $('#vendorSelect').val());
         });
         $('#categorySelect').change(() => {
-            window.location = "{{url_for('main.ShowProducts', category_id=-1)}}".replace('-1', $('#categorySelect').val());
+            window.location = "{{url_for('main.show_products', category_id=-1)}}".replace('-1', $('#categorySelect').val());
         });
         $('#uploadImagesButton').on('change', () => {
             $('#uploadImagesForm').submit();

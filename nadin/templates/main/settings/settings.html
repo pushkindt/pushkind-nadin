@@ -52,7 +52,7 @@
 			</div>
 		</div>
 		{% for user in users %}
-		{% include '_user.html' %}
+		{% include 'main/settings/_user.html' %}
 		{% endfor %}
 	</div>
 
@@ -63,7 +63,7 @@
 					<h5 class="modal-title" id="userModalLabel">НАСТРОЙКИ ПОЛЬЗОВАТЕЛЯ #<span id="about_user-id"></span>: <span id="about_user-email"></span></h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
-				{% include '_user.settings.form.html' %}
+				{% include 'main/settings/_user.settings.form.html' %}
 			</div>
 		</div>
 	</div>
@@ -71,7 +71,7 @@
 {% else %}
 
 	<div class="container">
-		{% include '_user.settings.form.html' %}
+		{% include 'main/settings/_user.settings.form.html' %}
 	</div>
 
 {% endif %}

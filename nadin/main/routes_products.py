@@ -9,7 +9,7 @@ from flask import current_app, flash, redirect, render_template, request, send_f
 from flask_login import current_user, login_required
 
 from nadin.extensions import db
-from nadin.main.forms import UploadImagesForm, UploadProductImageForm, UploadProductsForm
+from nadin.main.forms import EditProductForm, UploadImagesForm, UploadProductsForm
 from nadin.main.routes import bp
 from nadin.models.hub import UserRoles, Vendor
 from nadin.models.product import Category, Product, ProductTag
@@ -107,14 +107,14 @@ def products_excel_to_df(df: pd.DataFrame, vendor_id: int, categories: "dict[str
 @bp.route("/products/show", methods=["GET", "POST"])
 @login_required
 @role_forbidden([UserRoles.default, UserRoles.initiative, UserRoles.supervisor])
-def ShowProducts():
+def show_products():
 
     search_key = request.args.get("search", type=str)
     page = request.args.get("page", type=int, default=1)
 
     products_form = UploadProductsForm()
     images_form = UploadImagesForm()
-    product_image_form = UploadProductImageForm()
+    edit_product_form = EditProductForm()
 
     vendors = Vendor.query.filter_by(hub_id=current_user.hub_id)
     if current_user.role == UserRoles.vendor:
@@ -139,25 +139,28 @@ def ShowProducts():
 
     products = products.filter_by(vendor_id=vendor_id)
     if category_id:
-        products = products.filter_by(cat_id=category_id)
+        category = Category.query.get_or_404(category_id)
+        products = products.join(Category, onclause=Category.id == Product.cat_id).filter(
+            Category.name.startswith(category.name)
+        )
 
     if search_key:
         products = db.paginate(products, page=1, max_per_page=current_app.config["MAX_PER_PAGE"])
         products.total = total
         products.page = page
     else:
-        products = products.order_by(Product.name)
+        products = products.order_by(Product.id)
         products = db.paginate(products, page=page, max_per_page=current_app.config["MAX_PER_PAGE"])
 
     return render_template(
-        "products.html",
+        "main/products/products.html",
         vendors=vendors,
         vendor_id=vendor_id,
         products=products,
         categories=categories,
         products_form=products_form,
         images_form=images_form,
-        product_image_form=product_image_form,
+        edit_product_form=edit_product_form,
         category_id=category_id,
         search_key=search_key,
     )
@@ -171,7 +174,7 @@ def UploadProducts():
     vendor = _get_vendor(request.args.get("vendor_id", type=int))
     if vendor is None:
         flash("Такой поставщик не найден.")
-        return redirect(url_for("main.ShowProducts"))
+        return redirect(url_for("main.show_products"))
 
     category_id = request.args.get("category_id", type=int)
 
@@ -182,12 +185,12 @@ def UploadProducts():
             df = pd.read_excel(form.products.data, engine="openpyxl", dtype=str, keep_default_na=False)
         except ValueError as e:
             flash(str(e), category="error")
-            return redirect(url_for("main.ShowProducts", vendor_id=vendor.id))
+            return redirect(url_for("main.show_products", vendor_id=vendor.id))
         try:
             df = products_excel_to_df(df, vendor.id, categories)
         except ValueError as e:
             flash(str(e), category="error")
-            return redirect(url_for("main.ShowProducts", vendor_id=vendor.id))
+            return redirect(url_for("main.show_products", vendor_id=vendor.id))
         skus = df.sku.values.tolist()
         Product.query.filter_by(vendor_id=vendor.id).filter(Product.sku.in_(skus)).delete()
         db.session.commit()
@@ -203,7 +206,7 @@ def UploadProducts():
         flash("Список товаров успешно обновлён.")
     else:
         flash_errors(form)
-    return redirect(url_for("main.ShowProducts", vendor_id=vendor.id, category_id=category_id))
+    return redirect(url_for("main.show_products", vendor_id=vendor.id, category_id=category_id))
 
 
 @bp.route("/products/upload/images", methods=["GET", "POST"])
@@ -214,7 +217,7 @@ def UploadImages():
     vendor = _get_vendor(request.args.get("vendor_id", type=int))
     if vendor is None:
         flash("Такой поставщик не найден.")
-        return redirect(url_for("main.ShowProducts"))
+        return redirect(url_for("main.show_products"))
     if form.validate_on_submit():
         products = Product.query.filter_by(vendor_id=vendor.id).all()
         products = [p.sku for p in products]
@@ -238,7 +241,7 @@ def UploadImages():
         flash("Изображения товаров успешно загружены.")
     else:
         flash_errors(form)
-    return redirect(url_for("main.ShowProducts", vendor_id=vendor.id))
+    return redirect(url_for("main.show_products", vendor_id=vendor.id))
 
 
 @bp.route("/products/remove", methods=["POST"])
@@ -248,13 +251,13 @@ def remove_products():
     vendor = _get_vendor(request.args.get("vendor_id", type=int))
     if vendor is None:
         flash("Такой поставщик не найден.")
-        return redirect(url_for("main.ShowProducts"))
+        return redirect(url_for("main.show_products"))
     products = Product.query.filter_by(vendor_id=vendor.id).all()
     ProductTag.query.filter(ProductTag.product_id.in_([p.id for p in products])).delete()
     Product.query.filter_by(vendor_id=vendor.id).delete()
     db.session.commit()
     flash("Список товаров успешно очищен.")
-    return redirect(url_for("main.ShowProducts", vendor_id=vendor.id))
+    return redirect(url_for("main.show_products", vendor_id=vendor.id))
 
 
 @bp.route("/products/download", methods=["GET", "POST"])
@@ -264,7 +267,7 @@ def DownloadProducts():
     vendor = _get_vendor(request.args.get("vendor_id", type=int))
     if vendor is None:
         flash("Такой поставщик не найден.")
-        return redirect(url_for("main.ShowProducts"))
+        return redirect(url_for("main.show_products"))
 
     products = Product.query.filter_by(vendor_id=vendor.id).all()
     products = [p.to_dict() for p in products]
@@ -292,32 +295,32 @@ def DownloadProducts():
     )
 
 
-@bp.route("/products/<int:product_id>/upload/image", methods=["GET", "POST"])
+@bp.route("/products/<int:product_id>/edit", methods=["POST"])
 @login_required
 @role_forbidden([UserRoles.default, UserRoles.initiative, UserRoles.supervisor])
-def UploadProductImage(product_id):
+def edit_product(product_id):
     vendor = _get_vendor(request.args.get("vendor_id", type=int))
     if vendor is None:
         flash("Такой поставщик не найден.")
-        return redirect(url_for("main.ShowProducts"))
+        return redirect(url_for("main.show_products"))
 
-    product = Product.query.filter_by(id=product_id, vendor_id=vendor.id).first()
-    if product is None:
-        flash("Такой товар не найден.")
-        return redirect(url_for("main.ShowProducts"))
+    # product = Product.query.filter_by(id=product_id, vendor_id=vendor.id).first()
+    # if product is None:
+    #     flash("Такой товар не найден.")
+    #     return redirect(url_for("main.show_products"))
 
-    form = UploadProductImageForm()
-    if form.validate_on_submit():
-        file_data = form.image.data
-        file_name = Path(file_data.filename)
-        file_name = Path(str(product.sku) + file_name.suffix)
-        static_path = Path(f"nadin/static/upload/vendor{vendor.id}")
-        static_path.mkdir(parents=True, exist_ok=True)
-        full_path = static_path / file_name
-        file_data.save(full_path)
-        product.image = url_for("static", filename=Path(*full_path.parts[2:]))
-        db.session.commit()
-        flash("Изображение товара успешно загружено.")
-    else:
-        flash_errors(form)
-    return redirect(url_for("main.ShowProducts", vendor_id=vendor.id))
+    # form = UploadProductImageForm()
+    # if form.validate_on_submit():
+    #     file_data = form.image.data
+    #     file_name = Path(file_data.filename)
+    #     file_name = Path(str(product.sku) + file_name.suffix)
+    #     static_path = Path(f"nadin/static/upload/vendor{vendor.id}")
+    #     static_path.mkdir(parents=True, exist_ok=True)
+    #     full_path = static_path / file_name
+    #     file_data.save(full_path)
+    #     product.image = url_for("static", filename=Path(*full_path.parts[2:]))
+    #     db.session.commit()
+    #     flash("Изображение товара успешно загружено.")
+    # else:
+    #     flash_errors(form)
+    return redirect(url_for("main.show_products", vendor_id=vendor.id))

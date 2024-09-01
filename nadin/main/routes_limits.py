@@ -39,7 +39,7 @@ def ShowLimits():
     limits = limits.all()
 
     return render_template(
-        "limits.html", limits=limits, intervals=OrderLimitsIntervals, filter_from=filter_from, form=form
+        "main/limits/limits.html", limits=limits, intervals=OrderLimitsIntervals, filter_from=filter_from, form=form
     )
 
 

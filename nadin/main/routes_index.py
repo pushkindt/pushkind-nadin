@@ -101,7 +101,7 @@ def ShowIndex():
     alert = app_data.alert if app_data else None
 
     return render_template(
-        "index.html",
+        "main/index/index.html",
         orders=orders,
         dates=dates,
         projects=projects,

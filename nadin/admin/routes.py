@@ -63,7 +63,7 @@ def ShowAdminPage():
     forms["edit_category"].process()
 
     return render_template(
-        "admin.html",
+        "admin/admin.html",
         forms=forms,
         categories=categories,
         incomes=incomes,

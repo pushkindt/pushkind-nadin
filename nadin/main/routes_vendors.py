@@ -22,7 +22,7 @@ def show_vendors():
     stores = Vendor.query.filter(Vendor.hub_id == current_user.hub_id).all()
     if len(stores) == 0:
         flash("Ни один поставщик не зарегистрован в системе.")
-    return render_template("vendors.html", store_form=store_form, stores=stores)
+    return render_template("main/vendors/vendors.html", store_form=store_form, stores=stores)
 
 
 @bp.route("/vendors/add/", methods=["POST"])

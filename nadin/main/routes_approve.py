@@ -119,7 +119,7 @@ def ShowOrder(order_id):
     split_form = SplitOrderForm()
 
     return render_template(
-        "approve.html",
+        "main/approve/approve.html",
         order=order,
         comment_form=comment_form,
         approval_form=approval_form,

@@ -134,8 +134,8 @@ def ShowSettings():
     if current_user.role == UserRoles.admin:
         users = User.query.filter(or_(User.role == UserRoles.default, User.hub_id == current_user.hub_id))
         users = users.order_by(User.name, User.email).all()
-        return render_template("settings.html", user_form=user_form, users=users)
-    return render_template("settings.html", user_form=user_form)
+        return render_template("main/settings/settings.html", user_form=user_form, users=users)
+    return render_template("main/settings/settings.html", user_form=user_form)
 
 
 @bp.route("/users/remove/<int:user_id>")

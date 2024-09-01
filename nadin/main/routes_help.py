@@ -96,7 +96,7 @@ def ShowHelp():
             category_responsibility[category.name]["positions"].add(position)
 
     return render_template(
-        "help.html",
+        "main/help/help.html",
         projects=project_responsibility,
         categories=category_responsibility,
         stats=buf,

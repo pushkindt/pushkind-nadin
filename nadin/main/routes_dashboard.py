@@ -17,7 +17,7 @@ def show_dashboard_self():
         users = User.query.filter_by(hub_id=current_user.hub_id).all()
     else:
         users = [current_user]
-    return render_template("dashboard.html", user=current_user, users=users)
+    return render_template("main/dashboards/dashboard.html", user=current_user, users=users)
 
 
 @bp.route("/dashboard/<int:user_id>", methods=["GET", "POST"])
@@ -29,4 +29,4 @@ def show_dashboard_all(user_id):
     """
     user = User.query.get_or_404(user_id)
     users = User.query.filter_by(hub_id=current_user.hub_id).all()
-    return render_template("dashboard.html", user=user, users=users)
+    return render_template("main/dashboards/dashboard.html", user=user, users=users)

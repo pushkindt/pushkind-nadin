@@ -31,8 +31,8 @@
     {% endif %}
     {% if current_user.role.name not in ['default', 'initiative', 'supervisor'] %}
         <li class="nav-item">
-            <a class="nav-link {% if request.endpoint == 'main.ShowProducts' %} active {% endif %}"
-                href="{{ url_for('main.ShowProducts') }}">Товары</a>
+            <a class="nav-link {% if request.endpoint == 'main.show_products' %} active {% endif %}"
+                href="{{ url_for('main.show_products') }}">Товары</a>
         </li>
     {% endif %}
     {% if current_user.role.name not in ['default', 'vendor', 'initiative'] %}
