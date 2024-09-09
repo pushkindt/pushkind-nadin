@@ -14,8 +14,12 @@ class ProjectPriceLevel(enum.IntEnum):
     large_wholesale = 3
     distributor = 4
     exclusive = 5
-    retail = 6
-    retail_promo = 7
+    chains_vat = 6
+    chains_vat_promo = 7
+    chains_no_vat = 8
+    chains_no_vat_promo = 9
+    msrp_chains = 10
+    msrp_retail = 11
 
     @staticmethod
     def pretty_names() -> dict[str, "ProjectPriceLevel"]:
@@ -26,8 +30,12 @@ class ProjectPriceLevel(enum.IntEnum):
             "КРУПНЫЙ ОПТ": ProjectPriceLevel.large_wholesale,
             "ДИСТРИБЬЮТОР": ProjectPriceLevel.distributor,
             "ЭКСКЛЮЗИВ": ProjectPriceLevel.exclusive,
-            "СЕТИ": ProjectPriceLevel.retail,
-            "СЕТИ ПРОМО": ProjectPriceLevel.retail_promo,
+            "СЕТИ С НДС": ProjectPriceLevel.chains_vat,
+            "СЕТИ С НДС ПРОМО": ProjectPriceLevel.chains_vat_promo,
+            "СЕТИ БЕЗ НДС": ProjectPriceLevel.chains_no_vat,
+            "СЕТИ БЕЗ НДС ПРОМО": ProjectPriceLevel.chains_no_vat_promo,
+            "РРЦ СЕТИ": ProjectPriceLevel.msrp_chains,
+            "РРЦ РОЗНИЦА": ProjectPriceLevel.msrp_retail,
         }
         return pretty
 
@@ -70,9 +78,10 @@ class Project(SearchableMixin, db.Model):
         server_default="online_store",
     )
     last_order_date = db.Column(db.Date, nullable=True)
+    discount = db.Column(db.Float, nullable=False, default=0.0, server_default="0.0")
+
     hub = db.relationship("Vendor", back_populates="projects")
     orders = db.relationship("Order", back_populates="project")
-
     order_limits = db.relationship(
         "OrderLimit",
         back_populates="project",
@@ -106,6 +115,7 @@ class Project(SearchableMixin, db.Model):
             "price_level": self.price_level.name,
             "price_level_pretty": str(self.price_level),
             "price_level_id": int(self.price_level),
+            "discount": self.discount,
             "last_order_date": self.last_order_date.isoformat() if self.last_order_date is not None else "",
             "order_history": {
                 "year": [h.year for h in self.order_history],
