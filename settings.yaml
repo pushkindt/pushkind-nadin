@@ -16,6 +16,7 @@ default:
 
 local:
   login_view: auth.login
+  elasticsearch_url: http://127.0.0.1:9200
 
 development:
   debug: true

@@ -17,7 +17,7 @@ from nadin.utils import SendEmailNotification, flash_errors, role_required
 
 @bp.route("/shop/search")
 @login_required
-@role_required([UserRoles.initiative, UserRoles.purchaser, UserRoles.admin])
+@role_required([UserRoles.purchaser, UserRoles.admin])
 def shop_search():
     search_key = request.args.get("search", type=str)
     vendor_id = request.args.get("vendor_id", type=int)
@@ -44,7 +44,7 @@ def shop_search():
     vendors = set(product.vendor for product in products)
 
     return render_template(
-        "shop_products.html",
+        "main/shop/shop_products.html",
         search_key=search_key,
         category=category,
         categories=categories,
@@ -56,21 +56,26 @@ def shop_search():
 
 @bp.route("/shop/")
 @login_required
-@role_required([UserRoles.initiative, UserRoles.purchaser, UserRoles.admin])
+@role_required([UserRoles.purchaser, UserRoles.admin])
 def shop_categories():
 
-    categories = Category.query.filter(Category.hub_id == current_user.hub_id, not_(Category.name.like("%/%"))).all()
-    response = make_response(render_template("main/shop/shop_categories.html", categories=categories))
     if len(current_user.projects) == 1:
-        response.set_cookie("project_id", str(current_user.projects[0].id))
-        response.set_cookie("project_name", quote(current_user.projects[0].name))
+        project = current_user.projects[0]
+    else:
+        project = None
+
+    categories = Category.query.filter(Category.hub_id == current_user.hub_id, not_(Category.name.like("%/%"))).all()
+    response = make_response(render_template("main/shop/shop_categories.html", categories=categories, project=project))
+    if project:
+        response.set_cookie("project_id", str(project.id))
+        response.set_cookie("project_name", quote(f"{project.name} ({project.legal_address})"))
     return response
 
 
 @bp.route("/shop/<int:cat_id>", defaults={"vendor_id": None})
 @bp.route("/shop/<int:cat_id>/<int:vendor_id>")
 @login_required
-@role_required([UserRoles.initiative, UserRoles.purchaser, UserRoles.admin])
+@role_required([UserRoles.purchaser, UserRoles.admin])
 def shop_products(cat_id, vendor_id):
 
     project_id = request.cookies.get("project_id", type=int)
@@ -97,7 +102,7 @@ def shop_products(cat_id, vendor_id):
     vendor_ids = {p.vendor_id for p in products}
     vendors = Vendor.query.filter(Vendor.id.in_(vendor_ids)).all()
     return render_template(
-        "shop_products.html",
+        "main/shop/shop_products.html",
         category=category,
         categories=categories,
         vendors=vendors,
@@ -109,7 +114,7 @@ def shop_products(cat_id, vendor_id):
 
 @bp.route("/shop/order", methods=["GET", "POST"])
 @login_required
-@role_required([UserRoles.initiative, UserRoles.purchaser, UserRoles.admin])
+@role_required([UserRoles.purchaser, UserRoles.admin])
 def shop_cart():
     form = CreateOrderForm()
     if form.submit.data:

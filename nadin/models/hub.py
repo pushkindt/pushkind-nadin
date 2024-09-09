@@ -157,21 +157,19 @@ class User(UserMixin, db.Model):
         self.projects = [project]
         return project
 
-    def price_level(self, project: "Project" = None):
-        if len(self.projects) == 0:
-            return ProjectPriceLevel.online_store
-        if len(self.projects) == 1:
-            return self.projects[0].price_level
-        if project:
-            project = (
-                Project.query.filter_by(id=project.id)
-                .join(UserProject, onclause=(Project.id == UserProject.project_id))
-                .filter(UserProject.user_id == self.id)
-                .first()
-            )
-            if project:
-                return project.price_level
-        return ProjectPriceLevel.online_store
+    @property
+    def default_project(self) -> Optional[Project]:
+        return self.projects[0] if len(self.projects) > 0 else None
+
+    @property
+    def price_level(self) -> ProjectPriceLevel:
+        default_project = self.default_project
+        return default_project.price_level if default_project else ProjectPriceLevel.online_store
+
+    @property
+    def discount(self) -> float:
+        default_project = self.default_project
+        return default_project.discount if default_project else 0.0
 
     def __hash__(self):
         return self.id

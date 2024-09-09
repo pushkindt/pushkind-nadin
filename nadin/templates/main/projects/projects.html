@@ -189,39 +189,43 @@
                     </div>
                     <div class="mb-3">
                         {{ forms['add_project'].uid.label(id=False, class_='form-label', for='addProjectUid') }}
-                        {{ forms['add_project'].uid(id='addProjectUid',class_='form-control') }}
+                        {{ forms['add_project'].uid(id='addProjectUid', class_='form-control') }}
                     </div>
                     <div class="mb-3">
                         {{ forms['add_project'].tin.label(id=False, class_='form-label', for='addProjectTin') }}
-                        {{ forms['add_project'].tin(id='addProjectTin',class_='form-control') }}
+                        {{ forms['add_project'].tin(id='addProjectTin', class_='form-control') }}
                     </div>
                     <div class="mb-3">
                         {{ forms['add_project'].phone.label(id=False, class_='form-label', for='addProjectPhone') }}
-                        {{ forms['add_project'].phone(id='addProjectPhone',class_='form-control') }}
+                        {{ forms['add_project'].phone(id='addProjectPhone', class_='form-control') }}
                     </div>
                     <div class="mb-3">
                         {{ forms['add_project'].email.label(id=False, class_='form-label', for='addProjectEmail') }}
-                        {{ forms['add_project'].email(id='addProjectEmail',class_='form-control') }}
+                        {{ forms['add_project'].email(id='addProjectEmail', class_='form-control') }}
                     </div>
                     <div class="mb-3">
                         {{ forms['add_project'].contact.label(id=False, class_='form-label', for='addProjectContact') }}
-                        {{ forms['add_project'].contact(id='addProjectContact',class_='form-control') }}
+                        {{ forms['add_project'].contact(id='addProjectContact', class_='form-control') }}
                     </div>
                     <div class="mb-3">
                         {{ forms['add_project'].legal_address.label(id=False, class_='form-label', for='addProjectLegalAddress') }}
-                        {{ forms['add_project'].legal_address(id='addProjectLegalAddress',class_='form-control') }}
+                        {{ forms['add_project'].legal_address(id='addProjectLegalAddress', class_='form-control') }}
                     </div>
                     <div class="mb-3">
                         {{ forms['add_project'].shipping_address.label(id=False, class_='form-label', for='addProjectShippingAddress') }}
-                        {{ forms['add_project'].shipping_address(id='addProjectShippingAddress',class_='form-control') }}
+                        {{ forms['add_project'].shipping_address(id='addProjectShippingAddress', class_='form-control') }}
                     </div>
                     <div class="mb-3">
                         {{ forms['add_project'].note.label(id=False, class_='form-label', for='addProjectNote') }}
-                        {{ forms['add_project'].note(id='addProjectNote',class_='form-control') }}
+                        {{ forms['add_project'].note(id='addProjectNote', class_='form-control') }}
                     </div>
                     <div class="mb-3">
                         {{ forms['add_project'].price_level.label(id=False, class_='form-label', for='addProjectPriceLevel') }}
-                        {{ forms['add_project'].price_level(id='addProjectPriceLevel',class_='form-select') }}
+                        {{ forms['add_project'].price_level(id='addProjectPriceLevel', class_='form-select') }}
+                    </div>
+                    <div class="mb-3">
+                        {{ forms['add_project'].discount.label(id=False, class_='form-label', for='addProjectDiscount') }}
+                        {{ forms['add_project'].discount(id='addProjectDiscount', class_='form-control') }}
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -251,15 +255,15 @@
                     </div>
                     <div class="mb-3">
                         {{ forms['edit_project'].uid.label(id=False, class_='form-label', for='editProjectUid') }}
-                        {{ forms['edit_project'].uid(id='editProjectUid',class_='form-control') }}
+                        {{ forms['edit_project'].uid(id='editProjectUid', class_='form-control') }}
                     </div>
                     <div class="mb-3">
                         {{ forms['edit_project'].tin.label(id=False, class_='form-label', for='editProjectTin') }}
-                        {{ forms['edit_project'].tin(id='editProjectTin',class_='form-control') }}
+                        {{ forms['edit_project'].tin(id='editProjectTin', class_='form-control') }}
                     </div>
                     <div class="mb-3">
                         {{ forms['edit_project'].phone.label(id=False, class_='form-label', for='editProjectPhone') }}
-                        {{ forms['edit_project'].phone(id='editProjectPhone',class_='form-control') }}
+                        {{ forms['edit_project'].phone(id='editProjectPhone', class_='form-control') }}
                     </div>
                     <div class="mb-3">
                         {{ forms['edit_project'].email.label(id=False, class_='form-label', for='editProjectEmail') }}
@@ -267,7 +271,7 @@
                     </div>
                     <div class="mb-3">
                         {{ forms['edit_project'].contact.label(id=False, class_='form-label', for='editProjectContact') }}
-                        {{ forms['edit_project'].contact(id='editProjectContact',class_='form-control') }}
+                        {{ forms['edit_project'].contact(id='editProjectContact', class_='form-control') }}
                     </div>
                     <div class="mb-3">
                         {{ forms['edit_project'].legal_address.label(id=False, class_='form-label', for='editProjectLegalAddress') }}
@@ -275,15 +279,19 @@
                     </div>
                     <div class="mb-3">
                         {{ forms['edit_project'].shipping_address.label(id=False, class_='form-label', for='editProjectShippingAddress') }}
-                        {{ forms['edit_project'].shipping_address(id='editProjectShippingAddress',class_='form-control') }}
+                        {{ forms['edit_project'].shipping_address(id='editProjectShippingAddress', class_='form-control') }}
                     </div>
                     <div class="mb-3">
                         {{ forms['edit_project'].note.label(id=False, class_='form-label', for='editProjectNote') }}
-                        {{ forms['edit_project'].note(id='editProjectNote',class_='form-control') }}
+                        {{ forms['edit_project'].note(id='editProjectNote', class_='form-control') }}
                     </div>
                     <div class="mb-3">
                         {{ forms['edit_project'].price_level.label(id=False, class_='form-label', for='editProjectPriceLevel') }}
-                        {{ forms['edit_project'].price_level(id='editProjectPriceLevel',class_='form-select') }}
+                        {{ forms['edit_project'].price_level(id='editProjectPriceLevel', class_='form-select') }}
+                    </div>
+                    <div class="mb-3">
+                        {{ forms['edit_project'].discount.label(id=False, class_='form-label', for='editProjectDiscount') }}
+                        {{ forms['edit_project'].discount(id='editProjectDiscount', class_='form-control') }}
                     </div>
                     <div class="mb-3 form-check">
                         {{ forms['edit_project'].enabled(id='editProjectEnabled',class_='form-check-input') }}
@@ -347,6 +355,7 @@
                     $("#editProjectShippingAddress").val(project["shipping_address"]);
                     $("#editProjectNote").val(project["note"]);
                     $("#editProjectPriceLevel").val(project["price_level_id"]);
+                    $("#editProjectDiscount").val(project["discount"]);
                     $("#editProjectEnabled").prop('checked', project["enabled"]);
                     return true;
                 }

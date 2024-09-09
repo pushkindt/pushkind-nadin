@@ -214,6 +214,7 @@ def AddProject():
                 shipping_address=form.shipping_address.data,
                 note=form.note.data,
                 price_level=form.price_level.data,
+                discount=form.discount.data,
             )
             db.session.add(project)
             db.session.commit()
@@ -248,23 +249,20 @@ def EditProject():
         project = Project.query.filter_by(id=form.project_id.data).first()
         if project is not None:
             project_name = form.project_name.data.strip()
-            existed = Project.query.filter_by(hub_id=current_user.hub_id, name=project_name).first()
-            if existed is None or existed.id == project.id:
-                project.name = project_name
-                project.uid = form.uid.data.strip() if form.uid.data is not None else None
-                project.enabled = form.enabled.data
-                project.tin = form.tin.data
-                project.phone = form.phone.data
-                project.email = form.email.data
-                project.contact = form.contact.data
-                project.legal_address = form.legal_address.data
-                project.shipping_address = form.shipping_address.data
-                project.note = form.note.data
-                project.price_level = form.price_level.data
-                db.session.commit()
-                flash(f"Клиент {project_name} изменён.")
-            else:
-                flash(f"Клиент {project_name} уже существует.")
+            project.name = project_name
+            project.uid = form.uid.data.strip() if form.uid.data is not None else None
+            project.enabled = form.enabled.data
+            project.tin = form.tin.data
+            project.phone = form.phone.data
+            project.email = form.email.data
+            project.contact = form.contact.data
+            project.legal_address = form.legal_address.data
+            project.shipping_address = form.shipping_address.data
+            project.note = form.note.data
+            project.price_level = form.price_level.data
+            project.discount = form.discount.data
+            db.session.commit()
+            flash(f"Клиент {project_name} изменён.")
         else:
             flash("Такого клиента не существует.")
     else:

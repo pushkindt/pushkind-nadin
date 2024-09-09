@@ -6,7 +6,7 @@ from sqlalchemy.sql import expression, func
 
 from nadin.extensions import db
 from nadin.models.hub import AppSettings, Position, User, UserCategory, UserProject, UserRoles
-from nadin.models.product import Category, Product
+from nadin.models.product import Product
 from nadin.models.project import Project
 from nadin.models.shopping_cart import ApiShoppingCartModel
 from nadin.utils import get_filter_timestamps
@@ -367,7 +367,7 @@ class Order(db.Model):
                 "id": product.id,
                 "quantity": cart_item.quantity,
                 "sku": product.sku,
-                "price": product.get_price(user.price_level()),
+                "price": product.get_price(user.price_level, user.discount),
                 "name": product.name,
                 "imageUrl": product.image,
                 "categoryId": product.cat_id,

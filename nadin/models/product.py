@@ -95,11 +95,15 @@ class Product(SearchableMixin, db.Model):
                 price = self.price
         else:
             price = self.price
-        return price * (1 - discount / 100)
+        return max(price * (1 - discount / 100), 0.0)
 
-    def to_dict(self):
+    @property
+    def get_prices(self):
         prices = self.prices if self.prices is not None else {}
         prices[ProjectPriceLevel.online_store.name] = self.price
+        return prices
+
+    def to_dict(self):
         return {
             "id": self.id,
             "vendor": self.vendor.name,
@@ -111,7 +115,7 @@ class Product(SearchableMixin, db.Model):
             "description": self.description,
             "sku": self.sku,
             "price": self.price,
-            "prices": prices,
+            "prices": self.get_prices,
             "measurement": self.measurement,
             "tags": self.tag_list(),
             "images": self.images,

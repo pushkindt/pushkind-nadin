@@ -157,6 +157,34 @@
             }
         });
 
+        const selectElements = document.querySelectorAll('.form-select.productPriceLevel');
+
+        selectElements.forEach(function(select) {
+            // Add the 'change' event listener to each select element
+            select.addEventListener('change', function() {
+                const dataId = this.getAttribute('data-id');
+                
+                // Find the corresponding input element by class 'productPrice' and data-id
+                const input = document.querySelector(`.form-control.productPrice[data-id="${dataId}"]`);
+                
+                if (input) {
+                    // Get the data-prices attribute from the input and parse it into an object
+                    const prices = JSON.parse(input.getAttribute('data-prices').replaceAll("'", '"'));
+
+                    // Get the selected option value
+                    const selectedPriceLevel = this.value;
+                    
+                    // Find the price corresponding to the selected price level in the prices object
+                    const newPrice = prices[selectedPriceLevel];
+
+                    // Update the input value with the new price
+                    if (newPrice !== undefined) {
+                        input.value = newPrice;
+                    }
+                }
+            });
+        });
+
     });
 </script>
 {% endblock %}

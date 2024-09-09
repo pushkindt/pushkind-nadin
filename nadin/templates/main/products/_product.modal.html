@@ -48,8 +48,13 @@
                                     {{ edit_product_form.sku(class="form-control", id=False, value=product.sku) }}
                                 </div>
                                 <div class="mb-3">
+                                    {{ edit_product_form.price_level.label(class_='form-label') }}
+                                    {{ edit_product_form.price_level(id=False, class_='form-select productPriceLevel', data_id=product.id) }}
+                                    <small class="text-muted">{{ edit_product_form.price_level.description }}</small>
+                                </div>
+                                <div class="mb-3">
                                     {{ edit_product_form.price.label(class="form-label") }}
-                                    {{ edit_product_form.price(class="form-control", id=False, value=product.price) }}
+                                    {{ edit_product_form.price(class="form-control productPrice", id=False, value=product.price, data_prices=product.get_prices, data_id=product.id) }}
                                 </div>
                                 <div class="mb-3">
                                     {{ edit_product_form.measurement.label(class="form-label") }}

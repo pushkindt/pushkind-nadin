@@ -19,7 +19,7 @@ from wtforms import (
     TextAreaField,
 )
 from wtforms.fields import DateField, EmailField, URLField
-from wtforms.validators import DataRequired, Email, InputRequired, Length, Optional, ValidationError
+from wtforms.validators import DataRequired, Email, InputRequired, Length, NumberRange, Optional, ValidationError
 
 from nadin.extensions import db
 from nadin.models.hub import UserRoles
@@ -132,7 +132,7 @@ class ChangeQuantityForm(FlaskForm):
     )
     product_quantity = IntegerField(
         "Количество товара",
-        validators=[InputRequired(message="Невозможное значение количества.")],
+        validators=[InputRequired(message="Невозможное значение количества."), NumberRange(min=0)],
         render_kw={"type": "number", "step": 1, "min": 0},
     )
     submit = SubmitField("Сохранить")
@@ -297,6 +297,12 @@ class AddProjectForm(FlaskForm):
         coerce=int,
         choices=[(int(level), str(level)) for level in ProjectPriceLevel],
     )
+    discount = DecimalField(
+        "Скидка",
+        validators=[InputRequired(message="Необходимо указать уровень скидку."), NumberRange(min=0, max=100)],
+        places=2,
+        default=0.0,
+    )
     submit = SubmitField("Добавить")
 
 
@@ -334,6 +340,12 @@ class EditProjectForm(FlaskForm):
         validators=[InputRequired(message="Необходимо указать уровень цен.")],
         coerce=int,
         choices=[(int(level), str(level)) for level in ProjectPriceLevel],
+    )
+    discount = DecimalField(
+        "Скидка",
+        validators=[InputRequired(message="Необходимо указать уровень скидку."), NumberRange(min=0, max=100)],
+        places=2,
+        default=0.0,
     )
     submit = SubmitField("Изменить")
 
@@ -493,7 +505,7 @@ class CartItemForm(Form):
     )
     quantity = IntegerField(
         "Количество товара",
-        validators=[InputRequired(message="Невозможное значение количества.")],
+        validators=[InputRequired(message="Невозможное значение количества."), NumberRange(min=0)],
         render_kw={"type": "number", "step": 1, "min": 0},
     )
     text = TextAreaField("Текст")
@@ -546,6 +558,12 @@ class EditProductForm(FlaskForm):
             InputRequired(message="Артикул - обязательное поле."),
             Length(max=128, message="Слишком длинный артикул."),
         ],
+    )
+    price_level = SelectField(
+        "Уровень цен",
+        coerce=str,
+        choices=[(str(level.name), str(level)) for level in ProjectPriceLevel],
+        description="Сохраняйтесь после изменения каждого уровня цен.",
     )
     price = DecimalField("Цена", validators=[InputRequired(message="Цена - обязательное поле.")])
     measurement = StringField(

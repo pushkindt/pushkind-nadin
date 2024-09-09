@@ -123,7 +123,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="d-none" id="projectInfo">
+                <div id="projectInfo">
                     <div class="row d-none d-sm-flex fw-bold">
                         <div class="col-2">
                             Код/ИНН
@@ -138,17 +138,19 @@
                     <div class="row">
                         <div class="col-sm-2">
                             <span class="d-sm-none fw-bold">Код/ИНН:</span>
-                            <span id="projectInfoUid"></span>
+                            <span id="projectInfoUid">{{project.uid}}</span>
                             <br>
-                            <span id="projectInfoTin"></span>
+                            <span id="projectInfoTin">{{project.tin}}</span>
                             <br>
-                            <small class="text-secondary">Цены: <span id="projectInfoPriceLevel"></span></small>
+                            <small class="text-secondary">Цены: <span id="projectInfoPriceLevel">{{project.price_level}}</span></small>
+                            <br>
+                            <small class="text-secondary">Скидка: <span id="projectInfoDiscount">{{project.discount}}</span></small>
                         </div>
                         <div class="col-sm-3">
                             <span class="d-sm-none fw-bold">Контакт:</span>
-                            <span id="projectInfoContact"></span>
-                            <span id="projectInfoEmail"></span>
-                            <span id="projectInfoPhone"></span>
+                            <span id="projectInfoContact">{{project.contact}}</span>
+                            <span id="projectInfoEmail">{{project.email}}</span>
+                            <span id="projectInfoPhone">{{project.phone}}</span>
                         </div>
                         <div class="col-sm">
                             <div class="row">
@@ -163,7 +165,7 @@
                                     <span class="d-sm-none fw-bold">&boxur;</span> <strong>Юридический</strong>
                                 </div>
                                 <div class="col">
-                                    <span id="projectInfoLegalAddress"></span>
+                                    <span id="projectInfoLegalAddress">{{project.legal_address}}</span>
                                 </div>
                             </div>
                             <div class="row">
@@ -171,7 +173,7 @@
                                     <span class="d-sm-none fw-bold">&boxur;</span> <strong>Доставки</strong>
                                 </div>
                                 <div class="col">
-                                    <span id="projectInfoShippingAddress"></span>
+                                    <span id="projectInfoShippingAddress">{{project.shipping_address}}</span>
                                 </div>
                             </div>
                         </div>
@@ -209,6 +211,7 @@
         const projectInfoLegalAddress = document.getElementById("projectInfoLegalAddress");
         const projectInfoShippingAddress = document.getElementById("projectInfoShippingAddress");
         const projectInfoPriceLevel = document.getElementById("projectInfoPriceLevel");
+        const projectInfoDiscount = document.getElementById("projectInfoDiscount");
         const projectDismiss = document.getElementById("projectDismiss");
 
         const selectables = document.querySelectorAll(".selectable");
@@ -255,6 +258,7 @@
                     'data-legaladdress="'+escape(item.legal_address)+'"'+
                     'data-shippingaddress="'+escape(item.shipping_address)+'"'+
                     'data-pricelevelpretty="'+escape(item.price_level_pretty)+'"'+
+                    'data-discount="'+escape(item.discount)+'"'+
                     '>'+
                     escape(item.name)+' ('+escape(item.legal_address)+')'+
                     '</div>';
@@ -286,6 +290,7 @@
                 projectInfoLegalAddress.textContent = selectedOption.data("legaladdress");
                 projectInfoShippingAddress.textContent = selectedOption.data("shippingaddress");
                 projectInfoPriceLevel.textContent = selectedOption.data("pricelevelpretty");
+                projectInfoDiscount.textContent = selectedOption.data("discount");
 
             } else {
                 // projectSelect.addClass("border-danger");

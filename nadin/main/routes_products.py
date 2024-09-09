@@ -7,12 +7,14 @@ from zipfile import ZipFile
 import pandas as pd
 from flask import current_app, flash, redirect, render_template, request, send_file, url_for
 from flask_login import current_user, login_required
+from sqlalchemy.orm.attributes import flag_modified
 
 from nadin.extensions import db
 from nadin.main.forms import EditProductForm, UploadImagesForm, UploadProductsForm
 from nadin.main.routes import bp
 from nadin.models.hub import UserRoles, Vendor
 from nadin.models.product import Category, Product, ProductTag
+from nadin.models.project import ProjectPriceLevel
 from nadin.utils import first, flash_errors, role_forbidden
 
 ################################################################################
@@ -320,7 +322,13 @@ def edit_product(product_id):
 
         product.name = form.name.data.strip()[:128]
         product.sku = form.sku.data.strip()[:128]
-        product.price = form.price.data
+        price_level = ProjectPriceLevel[form.price_level.data]
+        if price_level == ProjectPriceLevel.online_store:
+            product.price = form.price.data
+        if product.prices is None:
+            product.prices = {}
+        product.prices[price_level.name] = float(form.price.data)
+        flag_modified(product, "prices")
         product.measurement = form.measurement.data.strip()[:128]
         product.description = form.description.data.strip()[:512]
         if form.images.data:
