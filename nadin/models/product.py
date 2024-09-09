@@ -87,15 +87,15 @@ class Product(SearchableMixin, db.Model):
     def images_list(self):
         return [image for image in (self.images or []) if image]
 
-    def get_price(self, price_level: ProjectPriceLevel) -> float:
+    def get_price(self, price_level: ProjectPriceLevel, discount: float = 0.0) -> float:
         if self.prices is not None and price_level.name in self.prices:
             try:
-                level_price = float(self.prices[price_level.name])
+                price = float(self.prices[price_level.name])
             except ValueError:
-                level_price = 0.0
-            if level_price > 0.0:
-                return level_price
-        return self.price
+                price = self.price
+        else:
+            price = self.price
+        return price * (1 - discount / 100)
 
     def to_dict(self):
         prices = self.prices if self.prices is not None else {}

@@ -9,59 +9,61 @@ from nadin.models.hub import User, UserRoles, Vendor
 from nadin.models.product import Category, Product
 
 
-def create_hub():
+@pytest.fixture(scope="session")
+def hub():
     hub = Vendor(id=1, name="Nadin", email="nadin@example.com")
     return hub
 
 
-def create_user():
+@pytest.fixture(scope="session")
+def user(hub):
     user = User(id=1, email="admin@example.com", role=UserRoles.admin)
     user.set_password("123456")
+    user.hub = hub
     return user
 
 
-def create_category():
+@pytest.fixture(scope="session")
+def category(hub):
     category = Category(id=1, name="Купажи/Травы", children=[])
+    category.hub = hub
     return category
 
 
-def create_product():
+@pytest.fixture(scope="session")
+def product(category, hub):
     product = Product(
         id=1,
         name="Ромашка упак. 100гр.",
         sku="1КМДОБ00-000001-01",
         price=244.36105,
         prices={
-            "exclusive": 5.0,
             "small_wholesale": 2.0,
-            "online_store": 244.36105,
             "distributor": 4.0,
             "large_wholesale": 3.0,
             "marketplace": 1.0,
-            "retail": 6.0,
-            "retail_promo": 7.0,
+            "chains_vat": 6.0,
+            "chains_vat_promo": 7.0,
+            "chains_no_vat": 8.0,
+            "chains_no_vat_promo": 9.0,
+            "msrp_chains": 10.0,
+            "msrp_retail": 11.0,
         },
         image=None,
         measurement="ШТ.",
         description=None,
         options=None,
     )
+    product.category = category
+    product.vendor = hub
     return product
 
 
 @pytest.fixture(scope="session")
-def app():
+def app(hub, user, category, product):
     app = create_app(FORCE_ENV_FOR_DYNACONF="testing")
     with app.app_context():
         db.create_all()
-        hub = create_hub()
-        user = create_user()
-        user.hub = hub
-        category = create_category()
-        category.hub = hub
-        product = create_product()
-        product.category = category
-        product.vendor = hub
         db.session.add(hub)
         db.session.add(user)
         db.session.add(category)
