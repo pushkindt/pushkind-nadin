@@ -298,8 +298,8 @@ class AddProjectForm(FlaskForm):
         choices=[(int(level), str(level)) for level in ProjectPriceLevel],
     )
     discount = DecimalField(
-        "Скидка",
-        validators=[InputRequired(message="Необходимо указать уровень скидку."), NumberRange(min=0, max=100)],
+        "Скидка (%)",
+        validators=[InputRequired(message="Необходимо указать уровень скидки."), NumberRange(min=0, max=100)],
         places=2,
         default=0.0,
     )
@@ -342,8 +342,8 @@ class EditProjectForm(FlaskForm):
         choices=[(int(level), str(level)) for level in ProjectPriceLevel],
     )
     discount = DecimalField(
-        "Скидка",
-        validators=[InputRequired(message="Необходимо указать уровень скидку."), NumberRange(min=0, max=100)],
+        "Скидка (%)",
+        validators=[InputRequired(message="Необходимо указать уровень скидки."), NumberRange(min=0, max=100)],
         places=2,
         default=0.0,
     )
