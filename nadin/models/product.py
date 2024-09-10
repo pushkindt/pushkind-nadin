@@ -1,5 +1,7 @@
 import json
 
+from sqlalchemy import not_
+
 from nadin.extensions import db
 from nadin.models.project import ProjectPriceLevel
 from nadin.models.search import SearchableMixin
@@ -45,7 +47,7 @@ class Category(db.Model):
         data = {
             "id": self.id,
             "name": self.name,
-            "children": self.children,
+            "children": [(c.id, c.name) for c in Category.query.filter(Category.id.in_(self.children or []))],
             "responsible": self.responsible,
             "functional_budget": self.responsible,
             "income_id": self.income_id,
@@ -53,6 +55,17 @@ class Category(db.Model):
             "code": self.code,
         }
         return data
+
+    @classmethod
+    def get_root_category(cls, hub_id: int) -> dict:
+        return {
+            "name": "",
+            "id": 0,
+            "children": [
+                (c.id, c.name)
+                for c in Category.query.filter(Category.hub_id == hub_id, not_(Category.name.like("%/%"))).all()
+            ],
+        }
 
     def __hash__(self):
         return self.id
@@ -103,7 +116,7 @@ class Product(SearchableMixin, db.Model):
         prices[ProjectPriceLevel.online_store.name] = self.price
         return prices
 
-    def to_dict(self):
+    def to_dict(self, price_level: ProjectPriceLevel = ProjectPriceLevel.online_store, discount: float = 0.0):
         return {
             "id": self.id,
             "vendor": self.vendor.name,
@@ -114,7 +127,7 @@ class Product(SearchableMixin, db.Model):
             "category": self.category.name,
             "description": self.description,
             "sku": self.sku,
-            "price": self.price,
+            "price": self.get_price(price_level, discount),
             "prices": self.get_prices,
             "measurement": self.measurement,
             "tags": self.tag_list(),

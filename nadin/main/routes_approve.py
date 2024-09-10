@@ -327,7 +327,7 @@ def SaveQuantity(order_id):
             if not product:
                 flash("Указанный товар не найден.")
                 return redirect(url_for("main.ShowOrder", order_id=order_id))
-            product = product.to_dict()
+            product = product.to_dict(current_user.price_level, current_user.discount)
             product["quantity"] = 0
             product["selectedOptions"] = [{"name": "Единицы", "value": product["measurement"]}]
             order.products.append(product)

@@ -25,7 +25,7 @@ def user(hub):
 
 @pytest.fixture(scope="session")
 def category(hub):
-    category = Category(id=1, name="Купажи/Травы", children=[])
+    category = Category(id=1, name="Купажи", children=[])
     category.hub = hub
     return category
 
@@ -97,6 +97,6 @@ def shopping_cart():
         '":{"exclusive":5.0,"small_wholesale":2.0,"online_store":244.36105,'
         '"distributor":4.0,"large_wholesale":3.0,"marketplace":1.0,"retail"'
         ':6.0,"retail_promo":7.0},"image":null,"measurement":"ШТ.","cat_id"'
-        ':1,"category":"Купажи/Травы","description":"","options":null,"tags'
+        ':1,"category":"Купажи","description":"","options":null,"tags'
         '":["ромашка","чай"]},"quantity":10,"comment":"asdf"}}}'
     )

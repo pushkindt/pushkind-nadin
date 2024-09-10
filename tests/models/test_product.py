@@ -1,5 +1,6 @@
 import pytest
 
+from nadin.models.product import Category
 from nadin.models.project import ProjectPriceLevel
 
 
@@ -13,3 +14,10 @@ def test_can_calculate_price_non_default(app, product):
 
 def test_can_calculate_price_non_existent(app, product):
     assert product.get_price(ProjectPriceLevel.exclusive) == pytest.approx(244.36105)
+
+
+def test_get_root_category(app, category, hub):
+    root = Category.get_root_category(hub.id)
+    assert root["name"] == ""
+    assert root["id"] == 0
+    assert root["children"] == [(category.id, category.name)]

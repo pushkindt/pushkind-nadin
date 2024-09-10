@@ -272,7 +272,7 @@ def DownloadProducts():
         return redirect(url_for("main.show_products"))
 
     products = Product.query.filter_by(vendor_id=vendor.id).all()
-    products = [p.to_dict() for p in products]
+    products = [p.to_dict(current_user.price_level, current_user.discount) for p in products]
     df = pd.json_normalize(products)
     if len(df.index) > 0:
         df.drop(["id", "image", "vendor"], axis="columns", inplace=True, errors="ignore")

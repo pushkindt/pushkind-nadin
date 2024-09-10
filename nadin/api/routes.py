@@ -1,20 +1,47 @@
 import math
 
+import sqlalchemy as sa
+from authlib.integrations.flask_oauth2 import current_token
 from flask import Blueprint, current_app, flash, g, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
-from sqlalchemy import not_
+from sqlalchemy import or_
 
 from nadin.api.auth import basic_auth
 from nadin.api.errors import error_response
 from nadin.api.forms import OrderForm
 from nadin.extensions import db
-from nadin.models.hub import User, UserRoles
+from nadin.models.hub import User, UserRoles, Vendor
 from nadin.models.order import Order, OrderEvent, OrderLimit
 from nadin.models.product import Category, Product, ProductTag
-from nadin.models.project import Project
+from nadin.models.project import Project, ProjectPriceLevel
+from nadin.oauth.server import require_oauth
 from nadin.utils import flash_errors
 
 bp = Blueprint("api", __name__)
+
+
+def get_hub_id() -> int:
+    if current_token:
+        return current_token.user.hub_id
+    elif "hub_id" in request.args:
+        return request.args.get("hub_id", type=int)
+    else:
+        hub = Vendor.query.filter(Vendor.hub_id == sa.null()).first()
+        return hub.id if hub else None
+
+
+def get_price_level() -> ProjectPriceLevel:
+    if current_token:
+        return current_token.user.price_level
+    else:
+        return ProjectPriceLevel.online_store
+
+
+def get_discount() -> float:
+    if current_token:
+        return current_token.user.discount
+    else:
+        return 0.0
 
 
 @bp.route("/daily/limits", methods=["GET"])
@@ -28,30 +55,41 @@ def daily_update_limits_current():
 
 
 @bp.route("/tags", methods=["GET"])
+@require_oauth(optional=True)
 def get_tags():
-    tags = set(tag.tag for tag in ProductTag.query.all() if tag.tag)
+    hub_id = get_hub_id()
+    tags = (
+        ProductTag.query.join(Product)
+        .join(Vendor, Product.vendor_id == Vendor.id)
+        .filter(or_(Vendor.hub_id == hub_id, Product.vendor_id == hub_id))
+        .all()
+    )
+    tags = set(tag.tag for tag in tags if tag.tag)
     response = jsonify(list(tags))
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
 
 @bp.route("/category/<int:category_id>", methods=["GET"])
+@require_oauth(optional=True)
 def get_category(category_id: int):
+
+    hub_id = get_hub_id()
+
     if category_id == 0:
-        category = {
-            "name": "",
-            "id": category_id,
-            "children": [(c.id, c.name) for c in Category.query.filter(not_(Category.name.like("%/%"))).all()],
-        }
+        category = Category.get_root_category(hub_id=hub_id)
     else:
-        category = Category.query.get_or_404(category_id).to_dict()
-        category["children"] = [(c.id, c.name) for c in Category.query.filter(Category.id.in_(category["children"]))]
+        category = Category.query.filter_by(hub_id=hub_id, id=category_id).first()
+        if category is None:
+            return error_response(404)
+        category = category.to_dict()
     response = jsonify(category)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
 
 @bp.route("/category/<int:category_id>/products", methods=["GET"])
+@require_oauth(optional=True)
 def get_category_products(category_id: int):
 
     tag = request.args.get("tag", type=str)
@@ -59,7 +97,13 @@ def get_category_products(category_id: int):
     sort_by = request.args.get("sort_by", default="name_asc", type=str)
     sort_by, order = sort_by.split("_", 1)
 
-    products = Product.query
+    hub_id = get_hub_id()
+    price_level = get_price_level()
+    discount = get_discount()
+
+    products = Product.query.join(Vendor, Product.vendor_id == Vendor.id).filter(
+        or_(Vendor.hub_id == hub_id, Product.vendor_id == hub_id)
+    )
 
     if not tag and not category_id:
         page = 1
@@ -70,7 +114,9 @@ def get_category_products(category_id: int):
     else:
 
         if category_id != 0:
-            category = Category.query.get_or_404(category_id)
+            category = Category.query.filter_by(hub_id=hub_id, id=category_id).first()
+            if category is None:
+                return error_response(404)
             products = products.join(Category, onclause=Category.id == Product.cat_id).filter(
                 Category.name.startswith(category.name)
             )
@@ -94,7 +140,12 @@ def get_category_products(category_id: int):
         pages = products.pages
         total = products.total
 
-    products = {"total": total, "page": page, "pages": pages, "products": [p.to_dict() for p in products]}
+    products = {
+        "total": total,
+        "page": page,
+        "pages": pages,
+        "products": [p.to_dict(price_level, discount) for p in products],
+    }
     response = jsonify(products)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
@@ -126,9 +177,13 @@ def search_projects():
 
 
 @bp.route("/products/search", methods=["GET"])
+@require_oauth(optional=True)
 def search_products():
     search_key = request.args.get("q", type=str, default="~")
     page = request.args.get("page", default=1, type=int)
+
+    price_level = get_price_level()
+    discount = get_discount()
 
     products, total = Product.search(search_key, page=page, per_page=current_app.config["MAX_PER_PAGE"])
 
@@ -142,7 +197,7 @@ def search_products():
         "total": total,
         "page": page,
         "pages": total_pages,
-        "products": [p.to_dict() for p in products],
+        "products": [p.to_dict(price_level, discount) for p in products],
     }
     response = jsonify(products)
     response.headers.add("Access-Control-Allow-Origin", "*")
@@ -150,9 +205,23 @@ def search_products():
 
 
 @bp.route("/product/<int:product_id>", methods=["GET"])
+@require_oauth(optional=True)
 def get_product(product_id: int):
-    product = Product.query.get_or_404(product_id).to_dict()
-    response = jsonify(product)
+
+    hub_id = get_hub_id()
+    price_level = get_price_level()
+    discount = get_discount()
+
+    product = (
+        Product.query.join(Vendor, Product.vendor_id == Vendor.id)
+        .filter(or_(Vendor.hub_id == hub_id, Product.vendor_id == hub_id))
+        .filter_by(id=product_id)
+        .first()
+    )
+    if not product:
+        return error_response(404)
+
+    response = jsonify(product.to_dict(price_level, discount))
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
