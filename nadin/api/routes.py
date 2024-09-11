@@ -1,8 +1,9 @@
 import math
+from functools import wraps
 
 import sqlalchemy as sa
 from authlib.integrations.flask_oauth2 import current_token
-from flask import Blueprint, current_app, flash, g, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, g, jsonify, make_response, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_
 
@@ -18,6 +19,21 @@ from nadin.oauth.server import require_oauth
 from nadin.utils import flash_errors
 
 bp = Blueprint("api", __name__)
+
+
+def cors_preflight_response(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if request.method == "OPTIONS":
+            response = make_response()
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            response.headers.add("Access-Control-Allow-Headers", "*")
+            response.headers.add("Access-Control-Allow-Methods", "*")
+            return response
+        response = fn(*args, **kwargs)
+        return response
+
+    return wrapper
 
 
 def get_hub_id() -> int:
@@ -54,9 +70,11 @@ def daily_update_limits_current():
     return "", 200
 
 
-@bp.route("/tags", methods=["GET"])
+@bp.route("/tags", methods=["GET", "OPTIONS"])
 @require_oauth(optional=True)
+@cors_preflight_response
 def get_tags():
+
     hub_id = get_hub_id()
     tags = (
         ProductTag.query.join(Product)
@@ -70,8 +88,9 @@ def get_tags():
     return response
 
 
-@bp.route("/category/<int:category_id>", methods=["GET"])
+@bp.route("/category/<int:category_id>", methods=["GET", "OPTIONS"])
 @require_oauth(optional=True)
+@cors_preflight_response
 def get_category(category_id: int):
 
     hub_id = get_hub_id()
@@ -88,8 +107,9 @@ def get_category(category_id: int):
     return response
 
 
-@bp.route("/category/<int:category_id>/products", methods=["GET"])
+@bp.route("/category/<int:category_id>/products", methods=["GET", "OPTIONS"])
 @require_oauth(optional=True)
+@cors_preflight_response
 def get_category_products(category_id: int):
 
     tag = request.args.get("tag", type=str)
@@ -151,8 +171,9 @@ def get_category_products(category_id: int):
     return response
 
 
-@bp.route("/projects/search", methods=["GET"])
+@bp.route("/projects/search", methods=["GET", "OPTIONS"])
 @login_required
+@cors_preflight_response
 def search_projects():
     search_key = request.args.get("q", type=str)
 
@@ -176,8 +197,9 @@ def search_projects():
     return jsonify(projects)
 
 
-@bp.route("/products/search", methods=["GET"])
+@bp.route("/products/search", methods=["GET", "OPTIONS"])
 @require_oauth(optional=True)
+@cors_preflight_response
 def search_products():
     search_key = request.args.get("q", type=str, default="~")
     page = request.args.get("page", default=1, type=int)
@@ -204,8 +226,9 @@ def search_products():
     return response
 
 
-@bp.route("/product/<int:product_id>", methods=["GET"])
+@bp.route("/product/<int:product_id>", methods=["GET", "OPTIONS"])
 @require_oauth(optional=True)
+@cors_preflight_response
 def get_product(product_id: int):
 
     hub_id = get_hub_id()
