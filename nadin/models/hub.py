@@ -28,16 +28,22 @@ class UserRoles(enum.IntEnum):
     purchaser = 4
     supervisor = 5
     vendor = 6
+    warehouse = 7
+    delivery = 8
+    finance = 9
 
     def __str__(self):
         pretty = [
             "Без роли",
             "Администратор",
-            "Инициатор",
-            "Валидатор",
-            "Закупщик",
-            "Наблюдатель",
+            "Клиент",
+            "Менеджер",
+            "Оператор",
+            "Руководитель",
             "Поставщик",
+            "Склад",
+            "Логистика",
+            "Бухгалтерия",
         ]
         return pretty[self.value]
 
