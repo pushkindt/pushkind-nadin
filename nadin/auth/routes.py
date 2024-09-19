@@ -178,7 +178,7 @@ def callback_oauth(authenticator: str):
         db.session.add(user)
     user.name = profile["name"]
     if user.role == UserRoles.initiative:
-        project = user.set_default_project(phone=profile["phone"])
+        project = user.set_default_project(phone=profile["phone_number"])
         if project:
             db.session.add(project)
     db.session.commit()
