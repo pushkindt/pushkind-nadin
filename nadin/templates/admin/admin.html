@@ -109,28 +109,8 @@
 											{{ forms['edit_category'].csrf_token(id=False) }}
 											{{ forms['edit_category'].category_id(class_ = 'd-none', hidden = '',
 											value=category.id, id=False) }}
-											{{ forms['edit_category'].responsible(class_ = 'form-control', id=False,
-											placeholder='Ответственный', value = category.responsible or '') }}
-										</div>
-										<div class="col">
-											{{ forms['edit_category'].functional_budget(class_ = 'form-control',
-											id=False, placeholder='ФДБ', value = category.functional_budget or '') }}
-										</div>
-										<div class="col">
 											{{ forms['edit_category'].code(class_ = 'form-control code', id=False,
 											placeholder='Код', value = category.code or '') }}
-										</div>
-									</div>
-									<div class="row py-1">
-										<div class="col">
-											{{ forms['edit_category'].income_statement(class_ = 'form-select
-											income_statement', id=False, placeholder='БДР', value =
-											category.income_statement or 0) }}
-										</div>
-										<div class="col">
-											{{ forms['edit_category'].cashflow_statement(class_ = 'form-select
-											cashflow_statement', id=False, placeholder='БДДС', value =
-											category.cashflow_statement or 0) }}
 										</div>
 									</div>
 									<div class="row py-1">
@@ -139,9 +119,11 @@
 										</div>
 									</div>
 									<div class="row py-1">
-										<div class="col text-center">
-											{{ forms['edit_category'].submit(id=False, class_='d-none btn btn-primary
-											my-1 text-white') }}
+										<div class="col text-start">
+											{{ forms['edit_category'].submit(id=False, class_='btn btn-primary
+											text-white') }}
+										</div>
+										<div class="col text-end">
 											<a class="btn btn-danger text-white"
 												href="{{url_for('admin.RemoveCategory', category_id=category.id)}}"
 												role="button"
@@ -157,69 +139,6 @@
 			</div>
 		</div>
 
-		<div class="accordion-item">
-			<h2 class="accordion-header" id="statementsFormHeading">
-				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-					data-bs-target="#statementsFormCollapse" aria-expanded="false"
-					aria-controls="statementsFormCollapse">
-					БДР и БДДС
-				</button>
-			</h2>
-			<div id="statementsFormCollapse" class="accordion-collapse collapse" aria-labelledby="statementsFormHeading"
-				data-bs-parent="#settingsFormsAccordion">
-				<div class="accordion-body">
-					<div class="row">
-						<div class="col">
-							<input class="form-control" id="statementsFilter" type="text" placeholder="Фильтр..">
-						</div>
-						<div class="col-auto">
-							<a class="btn btn-primary text-white" href="#" role="button" data-bs-toggle="modal"
-								data-bs-target="#addIncomeModal"><i class="bi bi-plus"></i>БДР</a>
-						</div>
-						<div class="col-auto">
-							<a class="btn btn-primary text-white" href="#" role="button" data-bs-toggle="modal"
-								data-bs-target="#addCashflowModal"><i class="bi bi-plus"></i>БДДС</a>
-						</div>
-					</div>
-					<div class="row d-none d-sm-flex fw-bold">
-						<div class="col overflow-hidden">
-							БДР
-						</div>
-						<div class="col overflow-hidden">
-							БДДС
-						</div>
-					</div>
-					<div class="row my-1 py-1 border-bottom">
-						<div class="col">
-							{% for income in incomes %}
-							<div class="row statement">
-								<div class="col">
-									<span class="d-sm-none fw-bold">БДР:</span>
-									{{ income.name }}
-									<a class="editIncomeButton" href="#" data-bs-toggle="modal"
-										data-bs-target="#editIncomeModal" data-id="{{ income.id }}"><i
-											class="bi bi-pencil"></i></a>
-								</div>
-							</div>
-							{% endfor %}
-						</div>
-						<div class="col">
-							{% for cashflow in cashflows %}
-							<div class="row statement">
-								<div class="col statement">
-									<span class="d-sm-none fw-bold">БДДС:</span>
-									{{ cashflow.name }}
-									<a class="editCashflowButton" href="#" data-bs-toggle="modal"
-										data-bs-target="#editCashflowModal" data-id="{{ cashflow.id }}"><i
-											class="bi bi-pencil"></i></a>
-								</div>
-							</div>
-							{% endfor %}
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
 	</div>
 </div>
 
@@ -254,114 +173,6 @@
 	</div>
 </div>
 
-<div class="modal fade" id="addIncomeModal" tabindex="-1" aria-labelledby="addIncomeModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="addIncomeModalLabel">ДОБАВИТЬ БДР</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<form method="POST" action="{{ url_for('admin.AddIncome') }}">
-				<div class="modal-body">
-					{{ forms['add_income'].csrf_token(id=False) }}
-					<div class="mb-3">
-						{{ forms['add_income'].income_name.label(id=False, class_='form-label', for='addIncomeName') }}
-						{{ forms['add_income'].income_name(id='addIncomeName', class_='form-control') }}
-					</div>
-				</div>
-				<div class="modal-footer">
-					{{ forms['add_income'].submit(id=False, class_='btn btn-primary text-white') }}
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
-
-<div class="modal fade" id="addCashflowModal" tabindex="-1" aria-labelledby="addCashflowModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="addCashflowModalLabel">ДОБАВИТЬ БДДС</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<form method="POST" action="{{ url_for('admin.AddCashflow') }}">
-				<div class="modal-body">
-					{{ forms['add_cashflow'].csrf_token(id=False) }}
-					<div class="mb-3">
-						{{ forms['add_cashflow'].cashflow_name.label(id=False, class_='form-label',
-						for='addCashflowName') }}
-						{{ forms['add_cashflow'].cashflow_name(id='addCashflowName', class_='form-control') }}
-					</div>
-				</div>
-				<div class="modal-footer">
-					{{ forms['add_cashflow'].submit(id=False, class_='btn btn-primary text-white') }}
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
-
-
-<div class="modal fade" id="editIncomeModal" tabindex="-1" aria-labelledby="editIncomeModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="editIncomeModalLabel">РЕДАКТИРОВАТЬ БДР</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<form method="POST" action="{{ url_for('admin.EditIncome') }}">
-				<div class="modal-body">
-					{{ forms['edit_income'].csrf_token(id=False) }}
-					{{ forms['edit_income'].income_id(id='editIncomeId', hidden='', class_='d-none') }}
-					<div class="mb-3">
-						{{ forms['edit_income'].income_name.label(id=False, class_='form-label', for='editIncomeName')
-						}}
-						{{ forms['edit_income'].income_name(id='editIncomeName', class_='form-control') }}
-					</div>
-				</div>
-				<div class="modal-footer">
-					{{ forms['edit_income'].submit(id=False, class_='btn btn-primary text-white') }}
-					<a class="btn btn-danger text-white" href="#" role="button" id="removeIncomeButton"
-						onclick="confirm('Вы действительно хотите удалить?')">Удалить</a>
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
-
-
-<div class="modal fade" id="editCashflowModal" tabindex="-1" aria-labelledby="editCashflowModalLabel"
-	aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="editCashflowModalLabel">РЕДАКТИРОВАТЬ БДДС</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<form method="POST" action="{{ url_for('admin.EditCashflow') }}">
-				<div class="modal-body">
-					{{ forms['edit_cashflow'].csrf_token(id=False) }}
-					{{ forms['edit_cashflow'].cashflow_id(id='editCashflowId', hidden='', class_='d-none') }}
-					<div class="mb-3">
-						{{ forms['edit_cashflow'].cashflow_name.label(id=False, class_='form-label',
-						for='editCashflowName') }}
-						{{ forms['edit_cashflow'].cashflow_name(id='editCashflowName', class_='form-control') }}
-					</div>
-				</div>
-				<div class="modal-footer">
-					{{ forms['edit_cashflow'].submit(id=False, class_='btn btn-primary text-white') }}
-					<a class="btn btn-danger text-white" href="#" role="button" id="removeCashflowButton"
-						onclick="confirm('Вы действительно хотите удалить?')">Удалить</a>
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
-
 
 {% endblock %}
 
@@ -369,85 +180,15 @@
 <script>
 	$(document).ready(function () {
 
-	var incomes = [{% for income in incomes %} {{ income | safe }}, {% endfor %}];
-
-	var cashflows = [{% for cashflow in cashflows %} {{ cashflow | safe }}, {% endfor %}];
-
 	var categories = [{% for category in categories %} {{ category | safe }}, {% endfor %}];
-
-
-	for (let i = 0; i < categories.length; i++) {
-		let cat = categories[i];
-		let form = $("#categoryForm" + cat["id"]);
-		let income_id = 0;
-		let cashflow_id = 0;
-
-		if (cat["income_id"] != null)
-			income_id = cat["income_id"];
-
-		if (cat["cashflow_id"] != null)
-			cashflow_id = cat["cashflow_id"];
-
-		form.find(".income_statement option[value='" + income_id + "']").prop("selected", true);
-		form.find(".cashflow_statement option[value='" + cashflow_id + "']").prop("selected", true);;
-	}
-
-
-	$(".editIncomeButton").click(function () {
-		let incomeId = Number($(this).data("id"));
-		$("#editIncomeId").val(incomeId);
-		$("#removeIncomeButton").prop("href", "{{ url_for('admin.RemoveIncome', income_id=0) }}".replace(0, incomeId));
-		incomes.some(function (income) {
-			if (income["id"] == incomeId) {
-				$("#editIncomeName").val(income["name"]);
-				return true;
-			}
-		});
-	});
-
-	$(".editCashflowButton").click(function () {
-		let cashflowId = Number($(this).data("id"));
-		$("#editCashflowId").val(cashflowId);
-		$("#removeCashflowButton").prop("href", "{{ url_for('admin.RemoveCashflow', cashflow_id=0) }}".replace(0, cashflowId));
-		cashflows.some(function (cashflow) {
-			if (cashflow["id"] == cashflowId) {
-				$("#editCashflowName").val(cashflow["name"]);
-				return true;
-			}
-		});
-	});
 
 
 	$("#categoryFilter").on("keyup", function () {
 		let value = $(this).val().toLowerCase();
-		$("#categoryList .row").filter(function () {
+		$("#categoryList>.row").filter(function () {
 			$(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
 		});
 	});
-
-	$("#statementsFilter").on("keyup", function () {
-		let value = $(this).val().toLowerCase();
-		$(".statement.row").filter(function () {
-			$(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
-		});
-	});
-
-	var focusOutTimer = null;
-	$(".categoryForm input, .categoryForm select").focus(function () {
-		if (focusOutTimer != null)
-			clearTimeout(focusOutTimer);
-		$(this).closest("form").find(":submit").removeClass("d-none");
-	});
-
-	$(".categoryForm input, .categoryForm select").focusout(function () {
-		focusOutTimer = setTimeout(() =>
-			$(this).closest("form").find(":submit").addClass("d-none"),
-			1000
-		);
-	});
-
-	$(".income_statement option[value='0']").prop("disabled", true);
-	$(".cashflow_statement option[value='0']").prop("disabled", true);
 
 	});
 </script>

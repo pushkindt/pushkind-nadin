@@ -23,13 +23,13 @@
                 href="{{ url_for('main.ShowProjects') }}">Клиенты</a>
         </li>
     {% endif %}
-    {% if current_user.role.name in ['admin', 'purchaser'] %}
+    {% if current_user.role.name in ['admin'] %}
         <li class="nav-item">
             <a class="nav-link {% if request.endpoint == 'main.show_vendors' %} active {% endif %}"
                 href="{{ url_for('main.show_vendors') }}">Поставщики</a>
         </li>
     {% endif %}
-    {% if current_user.role.name not in ['default', 'initiative', 'supervisor'] %}
+    {% if current_user.role.name in ['admin'] %}
         <li class="nav-item">
             <a class="nav-link {% if request.endpoint == 'main.show_products' %} active {% endif %}"
                 href="{{ url_for('main.show_products') }}">Товары</a>
@@ -42,7 +42,7 @@
     </li>
     {% endif %}
 
-    {% if current_user.role.name in ['admin', 'supervisor'] %}
+    {% if current_user.role.name in ['admin'] %}
     <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
             aria-expanded="false">Хабы</a>

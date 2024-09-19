@@ -30,22 +30,10 @@
 				ФИО
 			</div>
 			<div class="col overflow-hidden">
-				Телефон
-			</div>
-			<div class="col overflow-hidden">
 				Email
 			</div>
 			<div class="col overflow-hidden">
-				Роль
-			</div>
-			<div class="col overflow-hidden">
-				Адрес
-			</div>
-			<div class="col overflow-hidden">
 				Права
-			</div>
-			<div class="col overflow-hidden">
-				Заметка
 			</div>
 			<div class="col overflow-hidden">
 				Активность
@@ -83,17 +71,11 @@
 <script>
 	$(document).ready(function () {
 		//Scripts
-		{% if current_user.role.name in ['validator', 'admin', 'purchaser', 'initiative'] %}
-			var categoriesData = $("#about_user-categories");
+		{% if current_user.role.name not in ['initiative'] %}
 			var projectsData = $("#about_user-projects");
-		{% endif %}
-		{% if current_user.role.name in ['validator', 'purchaser', 'initiative'] %}
-			categoriesData.val({{ current_user.categories_list }});
 			projectsData.val({{ current_user.projects_list }});
-		{% endif %}
-		
-		{% if current_user.role.name in ['validator', 'admin', 'purchaser', 'initiative'] %}
-			categoriesData.selectize({});
+
+
 			projectsData.selectize({
 				valueField: 'id',
 				labelField: 'name',
@@ -114,19 +96,10 @@
 					});
 				},
 			});
-			selectizeCategories = categoriesData[0].selectize;
 			selectizeProjects = projectsData[0].selectize;
-
-			$('#selectAllCategories').click(function() {
-				selectizeCategories.setValue(Object.keys(selectizeCategories.options));
-			});
 
 			$('#selectAllProjects').click(function() {
 				selectizeProjects.setValue(Object.keys(selectizeProjects.options));
-			});
-
-			$('#selectNoneCategories').click(function() {
-				selectizeCategories.clear(false);
 			});
 
 			$('#selectNoneProjects').click(function() {
@@ -136,12 +109,8 @@
 			$('.projectsDropDown').click(function(e) {
 				selectizeProjects.focus();
 			});
-			
-			$('.categoriesDropDown').click(function(e) {
-				selectizeCategories.focus();
-			});
-			
 		{% endif %}
+
 		
 		{% if current_user.role.name == 'admin' %}
 			var users = [{% for user in users %}{{ user | safe }},{% endfor %}];
@@ -174,9 +143,6 @@
 					if (user["id"] == user_id) {
 						$("#about_user-id").text(user['id']);
 						$("#about_user-email").text(user['email']);
-						$("#about_user-phone").val(user["phone"]);
-						$("#about_user-position").val(user["position"]);
-						$("#about_user-location").val(user["location"]);
 						$("#about_user-full_name").val(user["name"]);
 						$("#about_user-email_new").prop("checked", user["email_new"]);
 						$("#about_user-email_modified").prop("checked", user["email_modified"]);
@@ -184,21 +150,14 @@
 						$("#about_user-email_approved").prop("checked", user["email_approved"]);
 						$("#about_user-email_comment").prop("checked", user["email_comment"]);
 						$("#role").val(user["role_id"]);
-						$("#note").val(user["note"]);
-						$("#birthday").val(user["birthday"]);
-						$("#dashboard_url").val(user["dashboard_url"]);
 						$("#removeUserButton").attr("href", "{{ url_for('main.RemoveUser', user_id='0') }}".replace("0", user_id));
-						if (user["role"] == "validator" || user["role"] == "purchaser" || user["role"] == "initiative") {
-							$("#userDataWrapper").show();
-							selectizeCategories.setValue(user["categories"]);
-							user["projects"].forEach(function (p) {
-								selectizeProjects.registerOption(p);
-							});
-							selectizeProjects.setValue(user["project_ids"]);
-						}
-						else {
-							HideUserData();
-						}
+
+						$("#userDataWrapper").show();
+						user["projects"].forEach(function (p) {
+							selectizeProjects.registerOption(p);
+						});
+						selectizeProjects.setValue(user["project_ids"]);
+
 						return true;
 					}
 				});

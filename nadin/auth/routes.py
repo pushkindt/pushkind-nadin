@@ -32,8 +32,10 @@ def login():
             flash("Некорректный логин или пароль.")
             return redirect(url_for("auth.login"))
         if user.role == UserRoles.initiative:
-            user.set_default_project()
-            db.session.commit()
+            project = user.set_default_project()
+            if project:
+                db.session.add(project)
+                db.session.commit()
         login_user(user, remember=form.remember_me.data)
         current_app.logger.info("%s logged", user.email)
         return redirect(next_page)
@@ -77,7 +79,7 @@ def signup():
         flash("Теперь пользователь может войти.")
         current_app.logger.info("%s registered", user.email)
         if current_user.is_authenticated and current_user.role == UserRoles.admin:
-            return redirect(url_for("main.ShowSettings"))
+            return redirect(url_for("main.show_settings"))
         return redirect(url_for("auth.login"))
 
     flash_errors(form)
@@ -161,7 +163,7 @@ def callback_oauth(authenticator: str):
         abort(404)
     try:
         token = oauth_client.authorize_access_token()
-    except:
+    except Exception:
         flash("Не удалось авторизоваться. Попробуйте позже.")
         return redirect(url_for("auth.login"))
 
@@ -175,12 +177,11 @@ def callback_oauth(authenticator: str):
         user.hub = Vendor.query.filter(Vendor.hub_id == sa.null()).first()
         db.session.add(user)
     user.name = profile["name"]
-    user.phone = profile["phone_number"]
     if user.role == UserRoles.initiative:
-        project = user.set_default_project()
+        project = user.set_default_project(phone=profile["phone"])
         if project:
             db.session.add(project)
     db.session.commit()
-    login_user(user)
+    login_user(user, remember=True)
     current_app.logger.info("%s logged", user.email)
     return redirect(next_page)

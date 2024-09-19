@@ -111,26 +111,6 @@
     </div>
     <div class="row">
         <div class="col">
-            {% if current_user.role.name in ['admin', 'initiative', 'validator', 'purchaser'] %}
-                <span class="fw-bold">Статья БДР:</span>
-                <a href="#approverSettingsModal" data-bs-toggle="modal">
-                    {{ order.income_statement.name or 'указать' }}
-                </a>
-                <br>
-                <span class="fw-bold">Статья БДДС:</span>
-                <a href="#approverSettingsModal" data-bs-toggle="modal">
-                    {{ order.cashflow_statement.name or 'указать' }}
-                </a>
-            {% else %}
-                <span class="fw-bold">Статья БДР:</span>
-                {{ order.income_statement.name or 'не указана' }}<br>
-                <span class="fw-bold">Статья БДДС:</span>
-                {{ order.cashflow_statement.name or 'не указана' }}
-            {% endif %}
-        </div>
-    </div>
-    <div class="row">
-        <div class="col">
             <span class="fw-bold">Инициатор:</span>
             {% set user = order.initiative %}
             {% include 'popovers/_user.popover.html' %}
@@ -140,7 +120,6 @@
 
     <div class="row">
         <div class="col">
-            <span class="fw-bold">Комментарии: </span>
             <ul class="list-unstyled">
                 {% for event in order.events|reverse %}
                     {% if event.type.name in ('commented', 'approved', 'disapproved') and event.data %}
@@ -293,38 +272,6 @@
                     </div>
                     <div class="modal-footer">
                         {{ initiative_form.submit(class_ = 'btn btn-primary text-white', id=False) }}
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-{% endif %}
-
-{% if current_user.role.name in ['admin', 'initiative', 'validator', 'purchaser'] %}
-
-    <div class="modal fade" id="approverSettingsModal" tabindex="-1" aria-labelledby="approverSettingsModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="approverSettingsModalLabel">ПАРАМЕТРЫ ЗАЯВКИ</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form method="POST" action="{{ url_for('main.SaveStatements', order_id = order.id) }}">
-                    <div class="modal-body">
-                        {{ approver_form.csrf_token(id=False) }}
-                        <div class="mb-3">
-                            {{ approver_form.income_statement.label(class_ = 'form-label') }}
-                            {{ approver_form.income_statement(class_ = 'form-select') }}
-                        </div>
-                        <div class="mb-3">
-                            {{ approver_form.cashflow_statement.label(class_ = 'form-label') }}
-                            {{ approver_form.cashflow_statement(class_ = 'form-select') }}
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        {{ approver_form.submit(class_ = 'btn btn-primary text-white', id=False) }}
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
                     </div>
                 </form>

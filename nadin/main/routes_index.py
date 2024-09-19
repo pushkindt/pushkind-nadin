@@ -49,45 +49,13 @@ def ShowIndex():
     orders = Order.query.filter_by(hub_id=current_user.hub_id)
 
     if filter_disapproved is None:
-        orders = orders.filter(~Order.status.in_([OrderStatus.not_approved, OrderStatus.cancelled]))
+        orders = orders.filter(~Order.status.in_([OrderStatus.returned, OrderStatus.cancelled]))
 
     if current_user.role == UserRoles.initiative:
         orders = orders.filter(Order.initiative_id == current_user.id)
 
     if filter_from > 0:
         orders = orders.filter(Order.create_timestamp > filter_from)
-
-    if current_user.role in [UserRoles.purchaser, UserRoles.validator]:
-
-        if filter_focus is None:
-            if current_user.role == UserRoles.validator:
-                orders = orders.filter(Order.status != OrderStatus.approved).filter(
-                    ~Order.user_approvals.any(OrderApproval.user_id == current_user.id)
-                )
-            elif current_user.role == UserRoles.purchaser:
-                orders = orders.filter(Order.dealdone.is_(False))
-            orders = orders.filter(~Order.children.any())
-
-        orders = orders.join(OrderCategory)
-        orders = orders.filter(OrderCategory.category_id.in_(cat.id for cat in current_user.categories))
-        orders = orders.join(Project)
-        orders = orders.filter(Project.id.in_(p.id for p in current_user.projects))
-
-    if current_user.role == UserRoles.supervisor:
-        orders = orders.filter(Project.enabled.is_(True))
-
-    if current_user.role == UserRoles.vendor:
-        vendor = Vendor.query.filter_by(hub_id=current_user.hub_id, email=current_user.email).first()
-        if vendor:
-            orders = orders.filter(
-                # Order.purchased == True,
-                Order.vendors.any(OrderVendor.vendor_id == vendor.id)
-            )
-        else:
-            orders = orders.filter(
-                # Order.purchased == True,
-                Order.vendors.any(OrderVendor.vendor_id.is_(None))
-            )
 
     orders = orders.order_by(Order.create_timestamp.desc())
 
@@ -140,11 +108,7 @@ def MergeOrders():
             return redirect(url_for("main.ShowIndex"))
 
         for order in orders[1:]:
-            if (
-                order.project_id != orders[0].project_id
-                or order.income_statement != orders[0].income_statement
-                or order.cashflow_statement != orders[0].cashflow_statement
-            ):
+            if order.project_id != orders[0].project_id:
                 flash("Нельзя объединять заявки с разными клиентами, БДДР или БДДС.")
                 return redirect(url_for("main.ShowIndex"))
 
@@ -186,8 +150,6 @@ def MergeOrders():
 
         order.products = [product for _, product in products.items()]
         order.total = sum(product["quantity"] * product["price"] for product in order.products)
-        order.income_id = orders[0].income_id
-        order.cashflow_id = orders[0].cashflow_id
         order.project_id = orders[0].project_id
         order.status = OrderStatus.new
         order.create_timestamp = int(now.timestamp())
@@ -224,8 +186,6 @@ def MergeOrders():
         db.session.add(event)
 
         db.session.commit()
-
-        order.update_positions()
 
         flash(f"Объединено заявок: {len(orders)}. Идентификатор новой заявки {order.number}")
 
@@ -282,26 +242,6 @@ def SaveOrders():
             ws.cell(row=i, column=6, value=len(order.products))
             ws.cell(row=i, column=7, value=str(order.status))
             ws.cell(row=i, column=8, value=order.initiative.name)
-            ws.cell(
-                row=i,
-                column=9,
-                value=order.income_statement.name if order.income_statement is not None else "",
-            )
-            ws.cell(
-                row=i,
-                column=10,
-                value=order.cashflow_statement.name if order.cashflow_statement is not None else "",
-            )
-            ws.cell(
-                row=i,
-                column=11,
-                value=", ".join(pos.position.name for pos in order.approvals if pos.approved is True),
-            )
-            ws.cell(
-                row=i,
-                column=12,
-                value=", ".join(pos.position.name for pos in order.approvals if pos.approved is False),
-            )
             ws.cell(
                 row=i,
                 column=13,

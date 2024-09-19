@@ -5,17 +5,8 @@ from flask_login import current_user, login_required
 from sqlalchemy.orm.attributes import flag_modified
 
 from nadin.extensions import db
-from nadin.main.forms import (
-    AddCashflowForm,
-    AddCategoryForm,
-    AddIncomeForm,
-    AppSettingsForm,
-    CategoryResponsibilityForm,
-    EditCashflowForm,
-    EditIncomeForm,
-)
+from nadin.main.forms import AddCategoryForm, AppSettingsForm, CategoryResponsibilityForm
 from nadin.models.hub import AppSettings, UserRoles
-from nadin.models.order import CashflowStatement, IncomeStatement
 from nadin.models.product import Category
 from nadin.utils import flash_errors, role_required
 
@@ -29,10 +20,6 @@ def ShowAdminPage():
     forms = {
         "add_category": AddCategoryForm(),
         "edit_category": CategoryResponsibilityForm(),
-        "add_income": AddIncomeForm(),
-        "add_cashflow": AddCashflowForm(),
-        "edit_income": EditIncomeForm(),
-        "edit_cashflow": EditCashflowForm(),
     }
 
     app_data = AppSettings.query.filter_by(hub_id=current_user.hub_id).first()
@@ -49,25 +36,14 @@ def ShowAdminPage():
 
     categories = Category.query.filter(Category.hub_id == current_user.hub_id).all()
 
-    incomes = IncomeStatement.query.filter(IncomeStatement.hub_id == current_user.hub_id)
-    incomes = incomes.order_by(IncomeStatement.name).all()
-    cashflows = CashflowStatement.query.filter(CashflowStatement.hub_id == current_user.hub_id)
-    cashflows = cashflows.order_by(CashflowStatement.name).all()
-
     forms["add_category"].parent.choices = [(c.id, c.name) for c in categories]
     forms["add_category"].parent.choices.insert(0, (0, "Выберите категорию..."))
-    forms["edit_category"].income_statement.choices = [(i.id, i.name) for i in incomes]
-    forms["edit_category"].cashflow_statement.choices = [(c.id, c.name) for c in cashflows]
-    forms["edit_category"].income_statement.choices.append((0, "Выберите БДР..."))
-    forms["edit_category"].cashflow_statement.choices.append((0, "Выберите БДДС..."))
     forms["edit_category"].process()
 
     return render_template(
         "admin/admin.html",
         forms=forms,
         categories=categories,
-        incomes=incomes,
-        cashflows=cashflows,
     )
 
 
@@ -105,20 +81,12 @@ def SaveAppSettings():
 @role_required([UserRoles.admin])
 def SaveCategoryResponsibility():
     form = CategoryResponsibilityForm()
-    incomes = IncomeStatement.query.filter_by(id=form.income_statement.data, hub_id=current_user.hub_id).all()
-    cashflows = CashflowStatement.query.filter_by(id=form.cashflow_statement.data, hub_id=current_user.hub_id).all()
-    form.income_statement.choices = [(i.id, i.name) for i in incomes]
-    form.cashflow_statement.choices = [(c.id, c.name) for c in cashflows]
     if form.validate_on_submit():
         category = Category.query.filter_by(id=form.category_id.data, hub_id=current_user.hub_id).first()
         if category is None:
             flash("Категория с таким идентификатором не найдена.")
         else:
-            category.responsible = form.responsible.data.strip()
-            category.functional_budget = form.functional_budget.data.strip()
             category.code = form.code.data.strip()
-            category.income_id = form.income_statement.data
-            category.cashflow_id = form.cashflow_statement.data
             if form.image.data:
                 f = form.image.data
                 file_name, file_ext = os.path.splitext(f.filename)
@@ -129,120 +97,6 @@ def SaveCategoryResponsibility():
 
             db.session.commit()
             flash("Категория успешно отредактирована.")
-    else:
-        flash_errors(form)
-    return redirect(url_for("admin.ShowAdminPage"))
-
-
-@bp.route("/income/add", methods=["POST"])
-@login_required
-@role_required([UserRoles.admin])
-def AddIncome():
-    form = AddIncomeForm()
-    if form.validate_on_submit():
-        income_name = form.income_name.data.strip()
-        income = IncomeStatement.query.filter_by(name=income_name, hub_id=current_user.hub_id).first()
-        if income is None:
-            income = IncomeStatement(name=income_name, hub_id=current_user.hub_id)
-            db.session.add(income)
-            db.session.commit()
-            flash(f'БДР "{income_name}" добавлен.')
-        else:
-            flash(f'БДР "{income_name}" уже существует.')
-    else:
-        flash_errors(form)
-    return redirect(url_for("admin.ShowAdminPage"))
-
-
-@bp.route("/cashflow/add", methods=["POST"])
-@login_required
-@role_required([UserRoles.admin])
-def AddCashflow():
-    form = AddCashflowForm()
-    if form.validate_on_submit():
-        cashflow_name = form.cashflow_name.data.strip()
-        cashflow = CashflowStatement.query.filter_by(name=cashflow_name, hub_id=current_user.hub_id).first()
-        if cashflow is None:
-            cashflow = CashflowStatement(name=cashflow_name, hub_id=current_user.hub_id)
-            db.session.add(cashflow)
-            db.session.commit()
-            flash(f'БДДС "{cashflow_name}" добавлен.')
-        else:
-            flash(f'БДДС "{cashflow_name}" уже существует.')
-    else:
-        flash_errors(form)
-    return redirect(url_for("admin.ShowAdminPage"))
-
-
-@bp.route("/income/remove/<int:income_id>")
-@login_required
-@role_required([UserRoles.admin])
-def RemoveIncome(income_id):
-    income = IncomeStatement.query.filter_by(id=income_id).first()
-    if income is not None:
-        db.session.delete(income)
-        db.session.commit()
-        flash(f'БДР "{income.name}" удален.')
-    else:
-        flash("Такой БДР не существует.")
-    return redirect(url_for("admin.ShowAdminPage"))
-
-
-@bp.route("/cashflow/remove/<int:cashflow_id>")
-@login_required
-@role_required([UserRoles.admin])
-def RemoveCashflow(cashflow_id):
-    cashflow = CashflowStatement.query.filter_by(id=cashflow_id).first()
-    if cashflow is not None:
-        db.session.delete(cashflow)
-        db.session.commit()
-        flash(f'БДДС "{cashflow.name}" удален.')
-    else:
-        flash("Такой БДДС не существует.")
-    return redirect(url_for("admin.ShowAdminPage"))
-
-
-@bp.route("/income/edit/", methods=["POST"])
-@login_required
-@role_required([UserRoles.admin])
-def EditIncome():
-    form = EditIncomeForm()
-    if form.validate_on_submit():
-        income = IncomeStatement.query.filter_by(id=form.income_id.data).first()
-        if income is not None:
-            income_name = form.income_name.data.strip()
-            existed = IncomeStatement.query.filter_by(name=income_name, hub_id=current_user.hub_id).first()
-            if existed is None or existed.id == income.id:
-                income.name = income_name
-                db.session.commit()
-                flash(f'БДР "{income_name}" изменён.')
-            else:
-                flash(f'БДР "{income_name}" уже существует.')
-        else:
-            flash("Такой БДР не существует.")
-    else:
-        flash_errors(form)
-    return redirect(url_for("admin.ShowAdminPage"))
-
-
-@bp.route("/cashflow/edit/", methods=["POST"])
-@login_required
-@role_required([UserRoles.admin])
-def EditCashflow():
-    form = EditCashflowForm()
-    if form.validate_on_submit():
-        cashflow = CashflowStatement.query.filter_by(id=form.cashflow_id.data).first()
-        if cashflow is not None:
-            cashflow_name = form.cashflow_name.data.strip()
-            existed = CashflowStatement.query.filter_by(name=cashflow_name, hub_id=current_user.hub_id).first()
-            if existed is None or existed.id == cashflow.id:
-                cashflow.name = cashflow_name
-                db.session.commit()
-                flash(f'БДДС "{cashflow_name}" изменён.')
-            else:
-                flash(f'БДДС "{cashflow_name}" уже существует.')
-        else:
-            flash("Такой БДДС не существует.")
     else:
         flash_errors(form)
     return redirect(url_for("admin.ShowAdminPage"))

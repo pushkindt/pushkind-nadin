@@ -3,16 +3,15 @@ from functools import wraps
 
 import sqlalchemy as sa
 from authlib.integrations.flask_oauth2 import current_token
-from flask import Blueprint, current_app, flash, g, jsonify, make_response, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, jsonify, make_response, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_
 
-from nadin.api.auth import basic_auth
 from nadin.api.errors import error_response
 from nadin.api.forms import OrderForm
 from nadin.extensions import db
 from nadin.models.hub import User, UserRoles, Vendor
-from nadin.models.order import Order, OrderEvent, OrderLimit
+from nadin.models.order import Order, OrderEvent
 from nadin.models.product import Category, Product, ProductTag
 from nadin.models.project import Project, ProjectPriceLevel
 from nadin.oauth.server import require_oauth
@@ -58,16 +57,6 @@ def get_discount() -> float:
         return current_token.user.discount
     else:
         return 0.0
-
-
-@bp.route("/daily/limits", methods=["GET"])
-@basic_auth.login_required
-def daily_update_limits_current():
-    user = User.query.get_or_404(g.user_id)
-    if user.role != UserRoles.admin:
-        return error_response(403)
-    OrderLimit.update_current(hub_id=user.hub_id)
-    return "", 200
 
 
 @bp.route("/tags", methods=["GET", "OPTIONS"])

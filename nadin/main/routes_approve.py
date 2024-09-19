@@ -10,29 +10,10 @@ from sqlalchemy import or_
 from sqlalchemy.orm.attributes import flag_modified
 
 from nadin.extensions import db
-from nadin.main.forms import (
-    ApproverForm,
-    ChangeQuantityForm,
-    InitiativeForm,
-    LeaveCommentForm,
-    OrderApprovalForm,
-    SplitOrderForm,
-)
+from nadin.main.forms import ChangeQuantityForm, InitiativeForm, LeaveCommentForm, OrderApprovalForm, SplitOrderForm
 from nadin.main.routes import bp
 from nadin.models.hub import AppSettings, User, UserRoles, Vendor
-from nadin.models.order import (
-    CashflowStatement,
-    EventType,
-    IncomeStatement,
-    Order,
-    OrderApproval,
-    OrderCategory,
-    OrderEvent,
-    OrderLimit,
-    OrderPosition,
-    OrderStatus,
-    OrderVendor,
-)
+from nadin.models.order import EventType, Order, OrderApproval, OrderCategory, OrderEvent, OrderStatus, OrderVendor
 from nadin.models.product import Category, Product
 from nadin.models.project import Project
 from nadin.utils import SendEmail1C, SendEmailNotification, flash_errors, role_forbidden, role_required
@@ -80,36 +61,13 @@ def ShowOrder(order_id):
     quantity_form = ChangeQuantityForm()
     comment_form = LeaveCommentForm()
     initiative_form = InitiativeForm()
-    approver_form = ApproverForm()
 
     comment_form.notify_reviewers.choices = [(r.id, r.name) for r in order.reviewers]
-
-    incomes = IncomeStatement.query.filter(IncomeStatement.hub_id == current_user.hub_id)
-    incomes = incomes.order_by(IncomeStatement.name).all()
-    cashflows = CashflowStatement.query.filter(CashflowStatement.hub_id == current_user.hub_id)
-    cashflows = cashflows.order_by(CashflowStatement.name).all()
 
     categories = Category.query.filter(Category.hub_id == current_user.hub_id).all()
 
     initiative_form.categories.choices = [(c.id, c.name) for c in categories]
     initiative_form.categories.default = order.categories_list
-
-    approver_form.income_statement.choices = [(i.id, i.name) for i in incomes]
-    approver_form.cashflow_statement.choices = [(c.id, c.name) for c in cashflows]
-
-    if order.income_statement is None:
-        approver_form.income_statement.choices.append((0, "Выберите БДР..."))
-        approver_form.income_statement.default = 0
-    else:
-        approver_form.income_statement.default = order.income_statement.id
-
-    if order.cashflow_statement is None:
-        approver_form.cashflow_statement.choices.append((0, "Выберите БДДС..."))
-        approver_form.cashflow_statement.default = 0
-    else:
-        approver_form.cashflow_statement.default = order.cashflow_statement.id
-
-    approver_form.process()
 
     if order.project:
         initiative_form.project.choices = [(order.project_id, order.project.name)]
@@ -125,7 +83,6 @@ def ShowOrder(order_id):
         approval_form=approval_form,
         quantity_form=quantity_form,
         initiative_form=initiative_form,
-        approver_form=approver_form,
         split_form=split_form,
     )
 
@@ -144,7 +101,7 @@ def SplitOrder(order_id):
         flash("Нельзя разделять заявки, которые были объединены или разделены.")
         return redirect(url_for("main.ShowIndex"))
 
-    if order.status in (OrderStatus.approved, OrderStatus.cancelled):
+    if order.status != OrderStatus.new:
         flash("Нельзя модифицировать согласованную или аннулированную заявку.")
         return redirect(url_for("main.ShowOrder", order_id=order_id))
 
@@ -178,8 +135,6 @@ def SplitOrder(order_id):
             now = datetime.now(tz=timezone.utc)
             new_order.products = product_list
             new_order.total = sum(product["quantity"] * product["price"] for product in new_order.products)
-            new_order.income_id = order.income_id
-            new_order.cashflow_id = order.cashflow_id
             new_order.project_id = order.project_id
             new_order.status = OrderStatus.new
             new_order.create_timestamp = int(now.timestamp())
@@ -203,7 +158,6 @@ def SplitOrder(order_id):
             )
             db.session.add(event)
             db.session.commit()
-            new_order.update_positions()
             SendEmailNotification("new", new_order)
 
         order.total = 0.0
@@ -216,13 +170,6 @@ def SplitOrder(order_id):
         )
         db.session.add(event)
         db.session.commit()
-
-        if order.project is not None and order.cashflow_statement is not None:
-            OrderLimit.update_current(
-                current_user.hub_id,
-                project_id=order.project_id,
-                cashflow_id=order.cashflow_id,
-            )
 
         flash(message_flash)
 
@@ -250,8 +197,6 @@ def DuplicateOrder(order_id):
 
     new_order.products = order.products
     new_order.total = order.total
-    new_order.income_id = order.income_id
-    new_order.cashflow_id = order.cashflow_id
     new_order.project_id = order.project_id
     new_order.status = OrderStatus.new
     new_order.create_timestamp = int(now.timestamp())
@@ -280,15 +225,6 @@ def DuplicateOrder(order_id):
     db.session.add(event)
     db.session.commit()
 
-    new_order.update_positions()
-
-    if order.project is not None and order.cashflow_statement is not None:
-        OrderLimit.update_current(
-            current_user.hub_id,
-            project_id=order.project_id,
-            cashflow_id=order.cashflow_id,
-        )
-
     flash(f"Заявка успешно клонирована. Номер новой заявки {new_order.number}. " "Вы перемещены в новую заявку.")
 
     SendEmailNotification("new", new_order)
@@ -306,7 +242,7 @@ def SaveQuantity(order_id):
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
 
-    if order.status in (OrderStatus.approved, OrderStatus.cancelled):
+    if order.status != OrderStatus.new:
         flash("Нельзя модифицировать согласованную или аннулированную заявку.")
         return redirect(url_for("main.ShowOrder", order_id=order_id))
 
@@ -360,13 +296,6 @@ def SaveQuantity(order_id):
         flag_modified(order, "products")
 
         db.session.commit()
-
-        if order.project is not None and order.cashflow_statement is not None:
-            OrderLimit.update_current(
-                current_user.hub_id,
-                project_id=order.project_id,
-                cashflow_id=order.cashflow_id,
-            )
 
         flash(f"Позиция {product['sku']} была изменена.")
 
@@ -435,7 +364,6 @@ def GetExcelReport1(order_id):
             ws.cell(i, 3).value = approval.timestamp.astimezone(
                 timezone(timedelta(hours=3), name="Europe/Moscow")
             ).strftime("%Y-%m-%d")
-            ws.cell(i, 4).value = approval.user.position.name
             ws.cell(i, 5).value = approval.user.name
 
     buffer = io.BytesIO()
@@ -490,7 +418,6 @@ def GetExcelReport2(order_id):
             ws.cell(i, 9).value = approval.timestamp.astimezone(
                 timezone(timedelta(hours=3), name="Europe/Moscow")
             ).strftime("%Y-%m-%d")
-            ws.cell(i, 10).value = approval.user.position.name
             ws.cell(i, 11).value = approval.user.name
 
     buffer = io.BytesIO()
@@ -577,8 +504,6 @@ def Prepare1CReport(order, excel_date):
                 ws.cell(i, 10).value = ""
                 ws.cell(i, 24).value = ""
 
-            ws.cell(i, 11).value = order.income_statement.name if order.income_statement is not None else ""
-            ws.cell(i, 12).value = order.cashflow_statement.name if order.cashflow_statement is not None else ""
             ws.cell(i, 15).value = "Непроектные МТР и СИЗ"
 
             # Measurement
@@ -610,7 +535,6 @@ def Prepare1CReport(order, excel_date):
                 ws.cell(i, 20).value = approval.timestamp.astimezone(
                     timezone(timedelta(hours=3), name="Europe/Moscow")
                 ).strftime("%Y-%m-%d")
-                ws.cell(i, 21).value = approval.user.position.name
                 ws.cell(i, 22).value = approval.user.name
         buffer = io.BytesIO()
         wb.save(buffer)
@@ -700,16 +624,11 @@ def SaveApproval(order_id):
 
         last_status = order.status
 
-        position_approval = OrderPosition.query.filter_by(
-            order_id=order_id, position_id=current_user.position_id
-        ).first()
-
         if form.product_id.data is None:
             OrderApproval.query.filter_by(order_id=order_id, user_id=current_user.id).delete()
 
             position_disapprovals = OrderApproval.query.filter_by(order_id=order_id)
             position_disapprovals = position_disapprovals.join(User)
-            position_disapprovals = position_disapprovals.filter(User.position_id == current_user.position_id).all()
 
             for disapproval in position_disapprovals:
                 db.session.delete(disapproval)
@@ -728,10 +647,6 @@ def SaveApproval(order_id):
                 data=message,
                 timestamp=datetime.now(tz=timezone.utc),
             )
-            if position_approval is not None:
-                position_approval.approved = True
-                position_approval.user = current_user
-                position_approval.timestamp = datetime.utcnow()
         else:
             OrderApproval.query.filter_by(order_id=order_id, user_id=current_user.id, product_id=None).delete()
             if form.product_id.data == 0:
@@ -749,10 +664,6 @@ def SaveApproval(order_id):
                     remark=message,
                 )
                 db.session.add(product_approval)
-                if position_approval is not None:
-                    position_approval.approved = False
-                    position_approval.user = current_user
-                    position_approval.timestamp = datetime.utcnow()
             else:
                 product = {}
                 for product in order.products:
@@ -782,17 +693,13 @@ def SaveApproval(order_id):
                     data=message,
                     timestamp=datetime.now(tz=timezone.utc),
                 )
-                if position_approval is not None:
-                    position_approval.approved = False
-                    position_approval.user = current_user
-                    position_approval.timestamp = datetime.utcnow()
         db.session.add(event)
         order.update_status()
         db.session.commit()
         flash("Согласование сохранено.")
 
         if order.status != last_status:
-            if order.status == OrderStatus.approved:
+            if order.status == OrderStatus.fulfilled:
                 SendEmailNotification("approved", order)
                 app_data = AppSettings.query.filter_by(hub_id=current_user.hub_id).first()
                 if app_data is not None and app_data.email_1C is not None and app_data.notify_1C is True:
@@ -800,85 +707,8 @@ def SaveApproval(order_id):
                     if data is not None:
                         SendEmail1C([app_data.email_1C], order, data.read())
 
-            if order.project is not None and order.cashflow_statement is not None:
-                OrderLimit.update_current(
-                    current_user.hub_id,
-                    project_id=order.project_id,
-                    cashflow_id=order.cashflow_id,
-                )
-
-            elif order.status == OrderStatus.not_approved:
+            elif order.status == OrderStatus.cancelled:
                 SendEmailNotification("disapproved", order)
-
-    else:
-        flash_errors(form)
-    return redirect(url_for("main.ShowOrder", order_id=order_id))
-
-
-@bp.route("/orders/statements/<int:order_id>", methods=["POST"])
-@login_required
-@role_required([UserRoles.admin, UserRoles.initiative, UserRoles.validator, UserRoles.purchaser])
-def SaveStatements(order_id):
-    order = GetOrder(order_id)
-    if order is None:
-        flash("Заявка с таким номером не найдена.")
-        return redirect(url_for("main.ShowIndex"))
-
-    if order.status in (OrderStatus.approved, OrderStatus.cancelled):
-        flash("Нельзя модифицировать согласованную или аннулированную заявку.")
-        return redirect(url_for("main.ShowOrder", order_id=order_id))
-
-    form = ApproverForm()
-
-    incomes = IncomeStatement.query.filter(IncomeStatement.hub_id == current_user.hub_id).all()
-    cashflows = CashflowStatement.query.filter(CashflowStatement.hub_id == current_user.hub_id)
-    cashflows = cashflows.all()
-
-    form.income_statement.choices = [(i.id, i.name) for i in incomes]
-    form.cashflow_statement.choices = [(c.id, c.name) for c in cashflows]
-
-    if form.validate_on_submit() is True:
-
-        income = IncomeStatement.query.filter_by(id=form.income_statement.data, hub_id=current_user.hub_id).first()
-        cashflow = CashflowStatement.query.filter_by(
-            id=form.cashflow_statement.data, hub_id=current_user.hub_id
-        ).first()
-
-        income_name_last = order.income_statement.name if order.income_statement is not None else "не указана"
-        cashflow_name_last = order.cashflow_statement.name if order.cashflow_statement is not None else "не указана"
-
-        if income_name_last != income.name:
-            message = f'статья БДР была "{income_name_last}" стала "{income.name}"'
-            order.income_statement = income
-            event = OrderEvent(
-                user_id=current_user.id,
-                order_id=order_id,
-                type=EventType.income_statement,
-                data=message,
-                timestamp=datetime.now(tz=timezone.utc),
-            )
-            db.session.add(event)
-        if cashflow_name_last != cashflow.name:
-            message = f'статья БДДС была "{cashflow_name_last}" стала "{cashflow.name}"'
-            order.cashflow_statement = cashflow
-            event = OrderEvent(
-                user_id=current_user.id,
-                order_id=order_id,
-                type=EventType.cashflow_statement,
-                data=message,
-                timestamp=datetime.now(tz=timezone.utc),
-            )
-            db.session.add(event)
-        db.session.commit()
-
-        if order.project is not None and order.cashflow_statement is not None:
-            OrderLimit.update_current(
-                current_user.hub_id,
-                project_id=order.project_id,
-                cashflow_id=order.cashflow_id,
-            )
-
-        flash("Статьи БДДР и БДДС успешно сохранены.")
 
     else:
         flash_errors(form)
@@ -894,7 +724,7 @@ def SaveParameters(order_id):
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
 
-    if order.status in (OrderStatus.approved, OrderStatus.cancelled):
+    if order.status != OrderStatus.new:
         flash("Нельзя модифицировать согласованную или аннулированную заявку.")
         return redirect(url_for("main.ShowOrder", order_id=order_id))
 
@@ -926,13 +756,7 @@ def SaveParameters(order_id):
         ).all()
         OrderApproval.query.filter_by(order_id=order.id).delete()
         db.session.commit()
-        order.update_positions(update_status=True)
-        if order.project is not None and order.cashflow_statement is not None:
-            OrderLimit.update_current(
-                current_user.hub_id,
-                project_id=order.project_id,
-                cashflow_id=order.cashflow_id,
-            )
+
         flash("Параметры заявки успешно сохранены.")
     else:
         flash_errors(form)

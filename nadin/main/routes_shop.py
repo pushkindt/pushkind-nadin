@@ -164,7 +164,6 @@ def shop_cart():
             order_number = Order.new_order_number(current_user.hub_id)
             now = datetime.now(tz=timezone.utc)
             categories = Category.query.filter(Category.id.in_(categories)).all()
-            cashflow_id, income_id = max((c.cashflow_id, c.income_id) for c in categories)
             order = Order(
                 number=order_number,
                 initiative_id=current_user.id,
@@ -175,13 +174,11 @@ def shop_cart():
                 vendors=list(set(order_vendors)),
                 total=sum(p["quantity"] * p["price"] for p in order_products),
                 status=OrderStatus.new,
-                cashflow_id=cashflow_id,
-                income_id=income_id,
             )
             db.session.add(order)
             order.categories = categories
             db.session.commit()
-            order.update_positions()
+
             if form.comment.data:
                 event = OrderEvent(
                     user_id=current_user.id,

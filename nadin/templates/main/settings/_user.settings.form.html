@@ -1,4 +1,4 @@
-<form method="POST" action="{{ url_for('main.ShowSettings') }}">
+<form method="POST" action="{{ url_for('main.save_settings') }}">
 	<div {% if current_user.role.name=="admin" %}class="modal-body" {% endif %}>
 		{{ user_form.csrf_token(id=False) }}
 		{{ user_form.user_id or '' }}
@@ -8,43 +8,40 @@
 				{{ user_form.about_user.full_name(class_='form-control', value=current_user.name or '') }}
 			</div>
 		</div>
+		{% if current_user.role.name == 'initiative' %}
 		<div class="row mb-3">
-			{{ user_form.about_user.phone.label(class_='col-md-2 col-form-label') }}
+			{{ user_form.project_name.label(class_='col-md-2 col-form-label') }}
 			<div class="col-md-10">
-				{{ user_form.about_user.phone(class_='form-control', value=current_user.phone or '') }}
+				{{ user_form.project_name(class_='form-control') }}
+				<small class="text-muted">{{ user_form.project_name.description }}</small>
 			</div>
 		</div>
 		<div class="row mb-3">
-			{{ user_form.about_user.position.label(class_='col-md-2 col-form-label') }}
+			{{ user_form.tin.label(class_='col-md-2 col-form-label') }}
 			<div class="col-md-10">
-				{{ user_form.about_user.position(class_='form-control', value=current_user.position.name or '') }}
+				{{ user_form.tin(class_='form-control') }}
 			</div>
 		</div>
 		<div class="row mb-3">
-			{{ user_form.about_user.location.label(class_='col-md-2 col-form-label') }}
+			{{ user_form.phone.label(class_='col-md-2 col-form-label') }}
 			<div class="col-md-10">
-				{{ user_form.about_user.location(class_='form-control', value=current_user.location or '') }}
+				{{ user_form.phone(class_='form-control') }}
 			</div>
 		</div>
+		<div class="row mb-3">
+			{{ user_form.legal_address.label(class_='col-md-2 col-form-label') }}
+			<div class="col-md-10">
+				{{ user_form.legal_address(class_='form-control') }}
+			</div>
+		</div>
+		<div class="row mb-3">
+			{{ user_form.shipping_address.label(class_='col-md-2 col-form-label') }}
+			<div class="col-md-10">
+				{{ user_form.shipping_address(class_='form-control') }}
+			</div>
+		</div>
+		{% endif %}
 		{% if current_user.role.name == 'admin' %}
-		<div class="row mb-3">
-			{{ user_form.note.label(class_='col-md-2 col-form-label') }}
-			<div class="col-md-10">
-				{{ user_form.note(class_='form-control') }}
-			</div>
-		</div>
-		<div class="row mb-3">
-			{{ user_form.birthday.label(class_='col-md-2 col-form-label') }}
-			<div class="col-md-10">
-				{{ user_form.birthday(class_='form-control') }}
-			</div>
-		</div>
-		<div class="row mb-3">
-			{{ user_form.dashboard_url.label(class_='col-md-2 col-form-label') }}
-			<div class="col-md-10">
-				{{ user_form.dashboard_url(class_='form-control') }}
-			</div>
-		</div>
 		<div class="row mb-3">
 			{{ user_form.role.label(class_='col-md-2 col-form-label') }}
 			<div class="col-md-10">
@@ -84,24 +81,16 @@
 				</div>
 			</div>
 		</div>
-		{% if current_user.role.name in ['validator', 'purchaser', 'admin', 'initiative'] %}
-		<div class="row mb-3" id="userDataWrapper">
-			<div class="col-12 fw-bold">Подписка</div>
-			<div class="col-md">
-				{{ user_form.about_user.projects.label(class_='form-label projectsDropDown') }}
-				<a class="projectsDropDown" href="#">добавить из списка</a>
-				{{ user_form.about_user.projects(class_='form-control', style="width:100%") }}
-				<a id="selectAllProjects" href="#">выделить все</a>
-				<a id="selectNoneProjects" href="#" class="text-danger">удалить все</a>
+		{% if current_user.role.name != "initiative" %}
+			<div class="row mb-3" id="userDataWrapper">
+				<div class="col">
+					{{ user_form.about_user.projects.label(class_='form-label projectsDropDown') }}
+					<a class="projectsDropDown" href="#">добавить из списка</a>
+					{{ user_form.about_user.projects(class_='form-control', style="width:100%") }}
+					<a id="selectAllProjects" href="#">выделить все</a>
+					<a id="selectNoneProjects" href="#" class="text-danger">удалить все</a>
+				</div>
 			</div>
-			<div class="col-md">
-				{{ user_form.about_user.categories.label(class_='form-label categoriesDropDown') }}
-				<a class="categoriesDropDown" href="#">добавить из списка</a>
-				{{ user_form.about_user.categories(class_='form-control', style="width:100%") }}
-				<a id="selectAllCategories" href="#">выделить все</a>
-				<a id="selectNoneCategories" href="#" class="text-danger">удалить все</a>
-			</div>
-		</div>
 		{% endif %}
 	</div>
 	{% if current_user.role.name == 'admin' %}

@@ -12,22 +12,8 @@ class Category(db.Model):
     name = db.Column(db.String(128), nullable=False, index=True)
     children = db.Column(db.JSON(), nullable=False)
     hub_id = db.Column(db.Integer, db.ForeignKey("vendor.id", ondelete="CASCADE"), nullable=False)
-    responsible = db.Column(db.String(128), nullable=True)
-    functional_budget = db.Column(db.String(128), nullable=True)
-    income_id = db.Column(  # БДР
-        db.Integer,
-        db.ForeignKey("income_statement.id", ondelete="SET NULL"),
-        nullable=True,
-    )
-    cashflow_id = db.Column(  # БДДС
-        db.Integer,
-        db.ForeignKey("cashflow_statement.id", ondelete="SET NULL"),
-        nullable=True,
-    )
     code = db.Column(db.String(128), nullable=True)
     image = db.Column(db.String(128), nullable=True)
-    income_statement = db.relationship("IncomeStatement")
-    cashflow_statement = db.relationship("CashflowStatement")
     hub = db.relationship("Vendor", back_populates="categories")
     products = db.relationship(
         "Product",
@@ -48,10 +34,6 @@ class Category(db.Model):
             "id": self.id,
             "name": self.name,
             "children": [(c.id, c.name) for c in Category.query.filter(Category.id.in_(self.children or []))],
-            "responsible": self.responsible,
-            "functional_budget": self.responsible,
-            "income_id": self.income_id,
-            "cashflow_id": self.cashflow_id,
             "code": self.code,
         }
         return data

@@ -3,14 +3,13 @@ import io
 from flask import Response, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
 from openpyxl import Workbook
-from sqlalchemy import and_, or_
+from sqlalchemy import or_
 
 from nadin.extensions import db
 from nadin.main.forms import UserRolesForm, UserSettingsForm
 from nadin.main.routes import bp
-from nadin.models.hub import Position, User, UserRoles, Vendor
-from nadin.models.order import Order, OrderApproval, OrderCategory, OrderPosition, OrderStatus
-from nadin.models.product import Category
+from nadin.models.hub import User, UserRoles, Vendor
+from nadin.models.order import Order, OrderApproval, OrderCategory, OrderStatus
 from nadin.models.project import Project
 from nadin.utils import flash_errors, role_forbidden, role_required
 
@@ -19,123 +18,110 @@ from nadin.utils import flash_errors, role_forbidden, role_required
 ################################################################################
 
 
-def RemoveExcessivePosition():
-    validators_positions = (
-        Position.query.join(
-            User,
-            and_(Position.id == User.position_id, User.role == UserRoles.validator),
-            isouter=True,
-        )
-        .filter(User.position_id.is_(None))
-        .all()
-    )
-    position_ids = [p.id for p in validators_positions]
-    OrderPosition.query.filter(OrderPosition.position_id.in_(position_ids)).delete()
-    users_positions = (
-        Position.query.join(User, Position.id == User.position_id, isouter=True)
-        .filter(User.position_id.is_(None))
-        .all()
-    )
-    position_ids = [p.id for p in users_positions]
-    Position.query.filter(Position.id.in_(position_ids)).delete()
-    db.session.commit()
-
-
-@bp.route("/settings/", methods=["GET", "POST"])
+@bp.route("/settings/", methods=["GET"])
 @login_required
 @role_forbidden([UserRoles.default, UserRoles.vendor])
-def ShowSettings():
-    projects = Project.query
-    if current_user.role != UserRoles.admin:
-        projects = projects.filter_by(enabled=True)
-    projects = projects.filter_by(hub_id=current_user.hub_id)
-    projects = projects.order_by(Project.name).all()
+def show_settings():
 
-    categories = Category.query.filter(Category.hub_id == current_user.hub_id).all()
+    if current_user.role == UserRoles.initiative and len(current_user.projects) == 0:
+        project = current_user.set_default_project()
+        if project:
+            db.session.add(project)
+            db.session.commit()
+
+    if current_user.role == UserRoles.admin:
+        user_form = UserRolesForm()
+        users = User.query.filter(or_(User.role == UserRoles.default, User.hub_id == current_user.hub_id))
+        users = users.order_by(User.name, User.email).all()
+    else:
+        users = []
+        user_form = UserSettingsForm()
+        if len(current_user.projects) > 0:
+            project = current_user.projects[0]
+            user_form.project_name.data = project.name
+            user_form.phone.data = project.phone
+            user_form.tin.data = project.tin
+            user_form.legal_address.data = project.legal_address
+            user_form.shipping_address.data = project.shipping_address
+
+    user_form.about_user.full_name.data = current_user.name
+    user_form.about_user.email_new.data = current_user.email_new
+    user_form.about_user.email_modified.data = current_user.email_modified
+    user_form.about_user.email_disapproved.data = current_user.email_disapproved
+    user_form.about_user.email_approved.data = current_user.email_approved
+    user_form.about_user.email_comment.data = current_user.email_comment
+    user_form.about_user.projects.choices = [(p.id, p.name) for p in current_user.projects]
+
+    return render_template("main/settings/settings.html", user_form=user_form, users=users)
+
+
+@bp.route("/settings/", methods=["POST"])
+@login_required
+@role_forbidden([UserRoles.default, UserRoles.vendor])
+def save_settings():
+
+    if current_user.role == UserRoles.initiative and len(current_user.projects) == 0:
+        project = current_user.set_default_project()
+        if project:
+            db.session.add(project)
+            db.session.commit()
+
     if current_user.role == UserRoles.admin:
         user_form = UserRolesForm()
     else:
         user_form = UserSettingsForm()
 
-    if current_user.role in [UserRoles.admin, UserRoles.purchaser, UserRoles.validator, UserRoles.initiative]:
-        user_form.about_user.categories.choices = [(c.id, c.name) for c in categories]
+    if current_user.role == UserRoles.initiative:
+        projects = current_user.projects
     else:
-        user_form.about_user.categories.choices = []
-    user_form.about_user.projects.choices = [(p.id, p.name) for p in current_user.projects]
+        projects = Project.query
+        if current_user.role != UserRoles.admin:
+            projects = projects.filter_by(enabled=True)
+        projects = projects.filter_by(hub_id=current_user.hub_id)
+        projects = projects.order_by(Project.name).all()
 
-    if user_form.submit.data:
-        user_form.about_user.projects.choices = [(p.id, p.name) for p in projects]
-        if user_form.validate_on_submit():
-            if current_user.role == UserRoles.admin:
-                user = User.query.filter(User.id == user_form.user_id.data).first()
-                if user is None:
-                    flash("Пользователь не найден.")
-                    return redirect(url_for("main.ShowSettings"))
-                user.hub_id = current_user.hub_id
-                user.role = user_form.role.data
-                user.note = user_form.note.data
-                user.birthday = user_form.birthday.data
-                user.dashboard_url = user_form.dashboard_url.data
-            else:
-                user = current_user
+    user_form.about_user.projects.choices = [(p.id, p.name) for p in projects]
 
-            old_position = user.position
-            old_role = user.role
-
-            if user_form.about_user.position.data is not None and user_form.about_user.position.data != "":
-                position_name = user_form.about_user.position.data.strip().lower()
-                position = Position.query.filter_by(name=position_name, hub_id=user.hub_id).first()
-                if position is None:
-                    position = Position(name=position_name, hub_id=user.hub_id)
-                user.position = position
-            else:
-                user.position = None
-
-            if user.role in [UserRoles.purchaser, UserRoles.validator, UserRoles.initiative]:
-                if user_form.about_user.categories.data is not None and len(user_form.about_user.categories.data) > 0:
-                    user.categories = Category.query.filter(Category.id.in_(user_form.about_user.categories.data)).all()
-                else:
-                    user.categories = []
-                if user_form.about_user.projects.data is not None and len(user_form.about_user.projects.data) > 0:
-                    user.projects = Project.query.filter(Project.id.in_(user_form.about_user.projects.data)).all()
-                else:
-                    user.projects = []
-            else:
-                user.categories = []
-                user.projects = []
-
-            user.phone = user_form.about_user.phone.data
-            user.location = user_form.about_user.location.data
-            user.email_new = user_form.about_user.email_new.data
-            user.email_modified = user_form.about_user.email_modified.data
-            user.email_disapproved = user_form.about_user.email_disapproved.data
-            user.email_approved = user_form.about_user.email_approved.data
-            user.email_comment = user_form.about_user.email_comment.data
-            user.name = user_form.about_user.full_name.data.strip()
-            db.session.commit()
-
-            if old_position != user.position:
-                RemoveExcessivePosition()
-
-            if UserRoles.validator in (user.role, old_role):
-                for order in Order.query.filter(
-                    Order.hub_id == current_user.hub_id,
-                    Order.status != OrderStatus.approved,
-                ).all():
-                    order.update_positions()
-
-            flash("Данные успешно сохранены.")
+    if user_form.validate_on_submit():
+        if current_user.role == UserRoles.admin:
+            user = User.query.filter(User.id == user_form.user_id.data).first()
+            if user is None:
+                flash("Пользователь не найден.")
+                return redirect(url_for("main.show_settings"))
+            user.hub_id = current_user.hub_id
+            user.role = user_form.role.data
         else:
-            flash_errors(user_form.about_user)
-            if isinstance(user_form, UserRolesForm):
-                flash_errors(user_form)
-        return redirect(url_for("main.ShowSettings"))
+            user = current_user
 
-    if current_user.role == UserRoles.admin:
-        users = User.query.filter(or_(User.role == UserRoles.default, User.hub_id == current_user.hub_id))
-        users = users.order_by(User.name, User.email).all()
-        return render_template("main/settings/settings.html", user_form=user_form, users=users)
-    return render_template("main/settings/settings.html", user_form=user_form)
+        if user_form.about_user.projects.data:
+            user.projects = Project.query.filter(Project.id.in_(user_form.about_user.projects.data)).all()
+        elif user.role != UserRoles.initiative:
+            user.projects = []
+
+        user.email_new = user_form.about_user.email_new.data
+        user.email_modified = user_form.about_user.email_modified.data
+        user.email_disapproved = user_form.about_user.email_disapproved.data
+        user.email_approved = user_form.about_user.email_approved.data
+        user.email_comment = user_form.about_user.email_comment.data
+        user.name = user_form.about_user.full_name.data.strip()
+
+        if user.role == UserRoles.initiative and isinstance(user_form, UserSettingsForm):
+            project_name = user_form.project_name.data.strip() if user_form.project_name.data else current_user.name
+            user.projects[0].name = project_name
+            user.projects[0].phone = user_form.phone.data.strip()
+            user.projects[0].tin = user_form.tin.data.strip()
+            user.projects[0].legal_address = user_form.legal_address.data.strip()
+            user.projects[0].shipping_address = user_form.shipping_address.data.strip()
+            user.projects[0].contact = user.name
+
+        db.session.commit()
+
+        flash("Данные успешно сохранены.")
+    else:
+        flash_errors(user_form)
+        flash_errors(user_form.about_user)
+
+    return redirect(url_for("main.show_settings"))
 
 
 @bp.route("/users/remove/<int:user_id>")
@@ -148,7 +134,7 @@ def RemoveUser(user_id):
     ).first()
     if user is None:
         flash("Пользователь не найден.")
-        return redirect(url_for("main.ShowSettings"))
+        return redirect(url_for("main.show_settings"))
 
     for order in user.orders:
         order.initiative_id = current_user.id
@@ -157,16 +143,8 @@ def RemoveUser(user_id):
     db.session.delete(user)
     db.session.commit()
 
-    RemoveExcessivePosition()
-
-    if user.role in [UserRoles.purchaser, UserRoles.validator]:
-        for order in Order.query.filter(
-            Order.hub_id == current_user.hub_id, Order.status != OrderStatus.approved
-        ).all():
-            order.update_positions()
-
     flash("Пользователь успешно удалён.")
-    return redirect(url_for("main.ShowSettings"))
+    return redirect(url_for("main.show_settings"))
 
 
 @bp.route("/users/download")
@@ -205,21 +183,13 @@ def DownloadUsers():
 
     for i, user in enumerate(users, start=2):
         ws.cell(i, 1).value = user.name
-        ws.cell(i, 2).value = user.phone
         ws.cell(i, 3).value = user.email
-        ws.cell(i, 4).value = user.position.name if user.position is not None else ""
-        ws.cell(i, 5).value = user.location
         ws.cell(i, 6).value = user.role
-        ws.cell(i, 7).value = user.note
         ws.cell(i, 8).value = user.last_seen
         ws.cell(i, 9).value = user.registered
-        ws.cell(i, 15).value = user.birthday
-        ws.cell(i, 16).value = (
-            f'=HYPERLINK("{user.dashboard_url}", "{url_for("main.dashboard_redirect", user_id=user.id)}")'
-        )
 
         # Orders which user is initiative for
-        orders = Order.query.filter_by(initiative_id=user.id, status=OrderStatus.approved).all()
+        orders = Order.query.filter_by(initiative_id=user.id).all()
         ws.cell(i, 10).value = len(orders)
         ws.cell(i, 11).value = sum(o.total for o in orders)
 
@@ -238,14 +208,11 @@ def DownloadUsers():
                 Order.hub_id == current_user.hub_id,
                 or_(
                     Order.status == OrderStatus.new,
-                    Order.status == OrderStatus.partly_approved,
-                    Order.status == OrderStatus.modified,
+                    Order.status == OrderStatus.unpayed,
                 ),
                 ~Order.user_approvals.any(OrderApproval.user_id == user.id),
                 ~Order.children.any(),
             )
-            orders = orders.join(OrderPosition)
-            orders = orders.filter_by(position_id=user.position_id)
             orders = orders.join(OrderCategory)
             orders = orders.filter(OrderCategory.category_id.in_([cat.id for cat in user.categories]))
             orders = orders.join(Project)

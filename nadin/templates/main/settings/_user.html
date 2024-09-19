@@ -2,35 +2,15 @@
 	<div class="row">
 		<div class="col-sm overflow-hidden">
 			<span class="d-sm-none fw-bold">ФИО:</span>
-			{% if user.dashboard_url %}
-			<a href="{{user.dashboard_url}}">{{ user.name or '' }}</a>
-			{% else %}
 			{{ user.name or '' }}
-			{% endif %}
-		</div>
-		<div class="col-sm overflow-hidden">
-			<span class="d-sm-none fw-bold">Телефон:</span>
-			{{ user.phone or '' }}
 		</div>
 		<div class="col-sm overflow-hidden">
 			<span class="d-sm-none fw-bold">Email:</span>
 			{{ user.email }}
 		</div>
 		<div class="col-sm overflow-hidden">
-			<span class="d-sm-none fw-bold">Роль:</span>
-			{{ user.position.name if user.position }}
-		</div>
-		<div class="col-sm overflow-hidden">
-			<span class="d-sm-none fw-bold">Адрес:</span>
-			{{ user.location or '' }}
-		</div>
-		<div class="col-sm overflow-hidden">
 			<span class="d-sm-none fw-bold">Права:</span>
 			{{ user.role }}
-		</div>
-		<div class="col-sm overflow-hidden">
-			<span class="d-sm-none fw-bold">Заметка:</span>
-			{{ user.note or '' }}
 		</div>
 		<div class="col-sm overflow-hidden">
 			<span class="d-sm-none fw-bold">Активность:</span>
