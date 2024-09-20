@@ -14,7 +14,7 @@ from nadin.utils import get_filter_timestamps, role_forbidden
 
 @bp.route("/history/", methods=["GET", "POST"])
 @login_required
-@role_forbidden([UserRoles.default, UserRoles.vendor])
+@role_forbidden([UserRoles.default, UserRoles.vendor, UserRoles.initiative])
 def ShowHistory():
     dates = get_filter_timestamps()
     filter_from = request.args.get("from", default=dates["recently"], type=int)

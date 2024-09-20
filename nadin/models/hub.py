@@ -120,22 +120,24 @@ class User(UserMixin, db.Model):
             return Vendor.query.filter_by(hub_id=None).all()
         return [self.hub]
 
-    def set_default_project(self, phone: str = None) -> Optional[Project]:
+    def set_initiative_project(self, phone: str = None):
         """
         Sets the user's project to be the one with the same email or phone
         Should only be used for initiatives
         """
-        if len(self.projects) > 0:
-            return None
+        if self.role != UserRoles.initiative or len(self.projects) > 0:
+            return
         if phone:
             check_condition = sa.or_(Project.email == self.email, Project.phone == phone)
         else:
             check_condition = Project.email == self.email
         project = Project.query.filter_by(hub_id=self.hub_id).filter(check_condition).first()
         if not project:
-            project = Project(hub_id=self.hub_id, email=self.email, phone=phone, name=self.name, contact=self.name)
+            project_name = self.name if self.name else self.email
+            project = Project(hub_id=self.hub_id, email=self.email, phone=phone, name=project_name, contact=self.name)
+            db.session.add(project)
         self.projects = [project]
-        return project
+        db.session.commit()
 
     @property
     def default_project(self) -> Optional[Project]:

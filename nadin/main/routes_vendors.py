@@ -16,7 +16,7 @@ from nadin.utils import flash_errors, role_forbidden, role_required
 
 @bp.route("/vendors/", methods=["GET", "POST"])
 @login_required
-@role_forbidden([UserRoles.default, UserRoles.vendor])
+@role_required([UserRoles.admin])
 def show_vendors():
     store_form = AddVendorForm()
     stores = Vendor.query.filter(Vendor.hub_id == current_user.hub_id).all()

@@ -108,7 +108,7 @@ def projects_excel_to_df(excel_file) -> tuple[pd.DataFrame, pd.DataFrame]:
 @bp.route("/projects/", methods=["GET"])
 @bp.route("/projects/show", methods=["GET"])
 @login_required
-@role_forbidden([UserRoles.default, UserRoles.vendor])
+@role_forbidden([UserRoles.default, UserRoles.vendor, UserRoles.initiative])
 def ShowProjects():
 
     show_add_project = request.args.get("add_project", default=False, type=bool)
@@ -194,7 +194,7 @@ def ShowProjects():
 
 @bp.route("/project/add", methods=["POST"])
 @login_required
-@role_forbidden([UserRoles.default, UserRoles.vendor])
+@role_forbidden([UserRoles.default, UserRoles.vendor, UserRoles.initiative])
 def AddProject():
     form = AddProjectForm()
     if form.validate_on_submit():
@@ -228,7 +228,7 @@ def AddProject():
 
 @bp.route("/project/remove/<int:project_id>")
 @login_required
-@role_forbidden([UserRoles.default, UserRoles.vendor])
+@role_forbidden([UserRoles.default, UserRoles.vendor, UserRoles.initiative])
 def RemoveProject(project_id):
     project = Project.query.filter_by(id=project_id).first()
     if project is not None:
@@ -242,7 +242,7 @@ def RemoveProject(project_id):
 
 @bp.route("/project/edit/", methods=["POST"])
 @login_required
-@role_forbidden([UserRoles.default, UserRoles.vendor])
+@role_forbidden([UserRoles.default, UserRoles.vendor, UserRoles.initiative])
 def EditProject():
     form = EditProjectForm()
     if form.validate_on_submit():
@@ -272,7 +272,7 @@ def EditProject():
 
 @bp.route("/projects/upload", methods=["POST"])
 @login_required
-@role_forbidden([UserRoles.default, UserRoles.initiative, UserRoles.supervisor])
+@role_forbidden([UserRoles.default, UserRoles.vendor, UserRoles.initiative])
 def UploadProjects():
     form = UploadProjectsForm()
     if form.validate_on_submit():

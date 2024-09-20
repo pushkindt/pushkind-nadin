@@ -7,27 +7,37 @@ from nadin import create_app
 from nadin.extensions import db
 from nadin.models.hub import User, UserRoles, Vendor
 from nadin.models.product import Category, Product
+from nadin.models.project import Project, ProjectPriceLevel
 
 
 @pytest.fixture(scope="session")
 def hub():
-    hub = Vendor(id=1, name="Nadin", email="nadin@example.com")
-    return hub
+    vendor = Vendor(id=1, name="Nadin", email="nadin@example.com")
+    return vendor
 
 
 @pytest.fixture(scope="session")
-def user(hub):
-    user = User(id=1, email="admin@example.com", role=UserRoles.admin)
-    user.set_password("123456")
-    user.hub = hub
-    return user
+def users(hub):
+    usrs = []
+    for role in UserRoles:
+        user = User(id=role.value, name=role.name, email=f"{role.name}@example.com", role=role)
+        user.set_password("123456")
+        user.hub = hub
+        usrs.append(user)
+    return usrs
+
+
+@pytest.fixture(scope="session")
+def project(hub):
+    prj = Project(id=1, name="Nadin", hub=hub, price_level=ProjectPriceLevel.online_store)
+    return prj
 
 
 @pytest.fixture(scope="session")
 def category(hub):
-    category = Category(id=1, name="Купажи", children=[])
-    category.hub = hub
-    return category
+    cat = Category(id=1, name="Купажи", children=[])
+    cat.hub = hub
+    return cat
 
 
 @pytest.fixture(scope="session")
@@ -60,12 +70,13 @@ def product(category, hub):
 
 
 @pytest.fixture(scope="session")
-def app(hub, user, category, product):
+def app(hub, users, category, product):
     app = create_app(FORCE_ENV_FOR_DYNACONF="testing")
     with app.app_context():
         db.create_all()
         db.session.add(hub)
-        db.session.add(user)
+        for user in users:
+            db.session.add(user)
         db.session.add(category)
         db.session.add(product)
         db.session.commit()

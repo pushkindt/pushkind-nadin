@@ -31,11 +31,7 @@ def login():
         if user is None or not user.check_password(form.password.data):
             flash("Некорректный логин или пароль.")
             return redirect(url_for("auth.login"))
-        if user.role == UserRoles.initiative:
-            project = user.set_default_project()
-            if project:
-                db.session.add(project)
-                db.session.commit()
+        user.set_initiative_project()
         login_user(user, remember=form.remember_me.data)
         current_app.logger.info("%s logged", user.email)
         return redirect(next_page)
@@ -177,10 +173,7 @@ def callback_oauth(authenticator: str):
         user.hub = Vendor.query.filter(Vendor.hub_id == sa.null()).first()
         db.session.add(user)
     user.name = profile["name"]
-    if user.role == UserRoles.initiative:
-        project = user.set_default_project(phone=profile["phone_number"])
-        if project:
-            db.session.add(project)
+    user.set_initiative_project(phone=profile["phone_number"])
     db.session.commit()
     login_user(user, remember=True)
     current_app.logger.info("%s logged", user.email)

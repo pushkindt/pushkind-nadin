@@ -23,12 +23,6 @@ from nadin.utils import flash_errors, role_forbidden, role_required
 @role_forbidden([UserRoles.default, UserRoles.vendor])
 def show_settings():
 
-    if current_user.role == UserRoles.initiative and len(current_user.projects) == 0:
-        project = current_user.set_default_project()
-        if project:
-            db.session.add(project)
-            db.session.commit()
-
     if current_user.role == UserRoles.admin:
         user_form = UserRolesForm()
         users = User.query.filter(or_(User.role == UserRoles.default, User.hub_id == current_user.hub_id))
@@ -36,7 +30,8 @@ def show_settings():
     else:
         users = []
         user_form = UserSettingsForm()
-        if len(current_user.projects) > 0:
+        if current_user.role == UserRoles.initiative:
+            current_user.set_initiative_project()
             project = current_user.projects[0]
             user_form.project_name.data = project.name
             user_form.phone.data = project.phone
@@ -60,12 +55,6 @@ def show_settings():
 @role_forbidden([UserRoles.default, UserRoles.vendor])
 def save_settings():
 
-    if current_user.role == UserRoles.initiative and len(current_user.projects) == 0:
-        project = current_user.set_default_project()
-        if project:
-            db.session.add(project)
-            db.session.commit()
-
     if current_user.role == UserRoles.admin:
         user_form = UserRolesForm()
     else:
@@ -73,6 +62,7 @@ def save_settings():
 
     if current_user.role == UserRoles.initiative:
         projects = current_user.projects
+        current_user.set_initiative_project()
     else:
         projects = Project.query
         if current_user.role != UserRoles.admin:
@@ -90,13 +80,15 @@ def save_settings():
                 return redirect(url_for("main.show_settings"))
             user.hub_id = current_user.hub_id
             user.role = user_form.role.data
+            user.set_initiative_project()
         else:
             user = current_user
 
-        if user_form.about_user.projects.data:
-            user.projects = Project.query.filter(Project.id.in_(user_form.about_user.projects.data)).all()
-        elif user.role != UserRoles.initiative:
-            user.projects = []
+        if user.role != UserRoles.initiative:
+            if user_form.about_user.projects.data:
+                user.projects = Project.query.filter(Project.id.in_(user_form.about_user.projects.data)).all()
+            else:
+                user.projects = []
 
         user.email_new = user_form.about_user.email_new.data
         user.email_modified = user_form.about_user.email_modified.data

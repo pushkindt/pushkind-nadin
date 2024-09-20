@@ -116,13 +116,23 @@
 			var users = [{% for user in users %}{{ user | safe }},{% endfor %}];
 
 			function HideUserData() {
-				selectizeCategories.clear(false);
-				selectizeProjects.clear(false);
-				categoriesData.val(null);
-				projectsData.val(null);
-				projectsData.removeAttr('value');
-				categoriesData.removeAttr('value');
-				$("#userDataWrapper").hide();
+				if ($("#role").val() == 2) {
+					selectizeProjects.clear(false);
+					projectsData.val(null);
+					projectsData.removeAttr('value');
+					$("#userDataWrapper").hide();
+				} else {
+					let user_id = Number($("#about_user-id").text());
+					users.some(function (user) {
+						if (user["id"] == user_id) {
+							$("#userDataWrapper").show();
+							user["projects"].forEach(function (p) {
+								selectizeProjects.registerOption(p);
+							});
+							selectizeProjects.setValue(user["project_ids"]);
+						}
+					});
+				}
 			}
 
 
@@ -152,12 +162,15 @@
 						$("#role").val(user["role_id"]);
 						$("#removeUserButton").attr("href", "{{ url_for('main.RemoveUser', user_id='0') }}".replace("0", user_id));
 
-						$("#userDataWrapper").show();
-						user["projects"].forEach(function (p) {
-							selectizeProjects.registerOption(p);
-						});
-						selectizeProjects.setValue(user["project_ids"]);
-
+						if (user["role_id"] != 2){
+							$("#userDataWrapper").show();
+							user["projects"].forEach(function (p) {
+								selectizeProjects.registerOption(p);
+							});
+							selectizeProjects.setValue(user["project_ids"]);
+						}
+						else
+							HideUserData();
 						return true;
 					}
 				});
