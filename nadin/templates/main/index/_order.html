@@ -39,52 +39,32 @@
 			</span>
 		</div>
 {% endif %}
-	<div class="col-sm-2 overflow-hidden">
-		<span class="d-sm-none fw-bold">Категории:</span>
-		{% for cat in order.categories %}
-			{{ cat.code or '' }}<br>
-		{% endfor %}
+	<div class="col-sm-1 overflow-hidden">
+		<span class="d-sm-none fw-bold">Позиций:</span>
+		{{ order.products | length }}
 	</div>
-	<div class="col-sm-3 overflow-hidden">
-		<span class="d-sm-none fw-bold">Инициатор:</span>
-		<span class="fw-bold">
-			{{ order.project.name }}
-		</span>
-		<br>
-		<small>{{ order.initiative.name or "" }}</small>
+	<div class="col-sm-1 overflow-hidden">
+		<span class="d-sm-none fw-bold">Сумма:</span>
+		{{ "{:,.2f}".format(order.total) }}
 	</div>
-	<div class="col col-sm overflow-hidden">
-		<span class="d-sm-none fw-bold">Согласен:</span>
-		{% for appr in order.approvals %}
-			{% if appr.approved is sameas true %}
-				{{ appr.position.name }}<br>
-			{% endif %}
-		{% endfor %}
+	<div class="col-sm-1 overflow-hidden">
+		<span class="d-sm-none fw-bold">Цены:</span>
+		{{ order.project.price_level }}
+	</div>
+	<div class="col-sm-1 overflow-hidden">
+		<span class="d-sm-none fw-bold">Скидка:</span>
+		{{ "{:,.2%}".format(order.project.discount or 0.0) }}
 	</div>
 	<div class="col col-sm overflow-hidden">
-		<span class="d-sm-none fw-bold">Не согласен:</span>
-		<span class="text-danger">
-			{% set positions = order.user_approvals|rejectattr('product_id','none')|map(attribute='user')|map(attribute='position')|map(attribute='name')|unique %}
-			{% for position in positions %}
-				{{ position }}<br>
-			{% endfor %}
-		</span>
+		{{ order.project.name }}<br>
+		{{ order.project.contact }}<br>
+		{{ order.project.email }}<br>
+		{{ order.project.phone }}
 	</div>
 	<div class="col col-sm overflow-hidden">
-		<span class="d-sm-none fw-bold">Ожидаем:</span>
-		{% if order['status'].name == 'not_approved' %}
-			Инициатор<br>
-			устраняет<br>
-			замечания
-		{% else %}
-			{% for appr in order.approvals %}
-				{% if appr.approved is sameas false %}
-					{{ appr.position.name }}<br>
-				{% endif %}
-			{% endfor %}
-		{% endif %}
+		{{ order.project.shipping_address }}
 	</div>
-	<div class="col-sm-1 overflow-hidden fs-7 py-1">
+	<div class="col col-sm overflow-hidden fs-7 py-1">
 		<span class="d-sm-none fw-bold">Статус:</span>
 		{% include '_order.status.html' %}
 	</div>

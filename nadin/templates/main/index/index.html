@@ -57,29 +57,7 @@
             {% endif %}
         </div>
     </div>
-    <div class="row bg-light d-none d-sm-flex border">
-        <div class="col-1 overflow-hidden">
-            Заявка
-        </div>
-        <div class="col-2 overflow-hidden">
-            Категории
-        </div>		
-        <div class="col-3 overflow-hidden">
-            Инициатор
-        </div>
-        <div class="col overflow-hidden">
-            Согласен
-        </div>
-        <div class="col overflow-hidden">
-            Не&nbsp;согласен
-        </div>
-        <div class="col overflow-hidden">
-            Ожидаем
-        </div>
-        <div class="col-1 overflow-hidden">
-            Статус
-        </div>
-    </div>
+    {% include 'main/index/_order.header.html' %}
     <div id="orderList">
         {% for order in orders %}
             {% include 'main/index/_order.html' %}
