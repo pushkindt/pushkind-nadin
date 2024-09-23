@@ -94,7 +94,7 @@ def MergeOrders():
 
         for order in orders[1:]:
             if order.project_id != orders[0].project_id:
-                flash("Нельзя объединять заявки с разными клиентами, БДДР или БДДС.")
+                flash("Нельзя объединять заявки с разными клиентами.")
                 return redirect(url_for("main.ShowIndex"))
 
         products = {}
@@ -129,13 +129,15 @@ def MergeOrders():
         order_number = Order.new_order_number(current_user.hub_id)
         order = Order(number=order_number)
         db.session.add(order)
-        order.initiative = current_user
+        order.initiative = current_user.to_dict()
+        order.initiative_id = current_user.id
 
         now = datetime.now(tz=timezone.utc)
 
         order.products = [product for _, product in products.items()]
         order.total = sum(product["quantity"] * product["price"] for product in order.products)
         order.project_id = orders[0].project_id
+        order.project = orders[0].project
         order.status = OrderStatus.new
         order.create_timestamp = int(now.timestamp())
 
@@ -211,8 +213,8 @@ def SaveOrders():
         ws["F1"] = "Позиций"
         ws["G1"] = "Статус"
         ws["H1"] = "Инициатор"
-        ws["I1"] = "Статья БДР"
-        ws["J1"] = "Статья БДДС"
+        ws["I1"] = ""
+        ws["J1"] = ""
         ws["K1"] = "Кем согласована"
         ws["L1"] = "Ждём согласования"
         ws["M1"] = "Категории"

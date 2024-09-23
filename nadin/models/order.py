@@ -183,8 +183,8 @@ class Order(db.Model):
         primaryjoin=id == OrderRelationship.c.child_id,
         secondaryjoin=id == OrderRelationship.c.order_id,
     )
-    initiative = db.relationship("User", back_populates="orders")
-    project = db.relationship("Project", back_populates="orders")
+    initiative = db.Column(db.JSON(), nullable=False)
+    project = db.Column(db.JSON(), nullable=False)
 
     @property
     def dealdone_comment(self):
@@ -256,11 +256,13 @@ class Order(db.Model):
         order = cls()
         order.number = cls.new_order_number(user.hub_id)
         order.initiative_id = user.id
+        order.initiative = user.to_dict()
         order.hub_id = user.hub_id
         order.create_timestamp = datetime.timestamp(datetime.now(tz=timezone.utc))
         order.status = OrderStatus.new
         if len(user.projects) == 1:
-            order.project = user.projects[0]
+            order.project = user.projects[0].to_dict()
+            order.project_id = user.projects[0].id
 
         products = Product.query.filter(Product.id.in_(int(p_id) for p_id in data.items.keys())).all()
         if not products:

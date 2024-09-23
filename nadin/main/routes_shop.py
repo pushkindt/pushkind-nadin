@@ -174,6 +174,8 @@ def shop_cart():
                 vendors=list(set(order_vendors)),
                 total=sum(p["quantity"] * p["price"] for p in order_products),
                 status=OrderStatus.new,
+                initiative=current_user.to_dict(),
+                project=project.to_dict(),
             )
             db.session.add(order)
             order.categories = categories

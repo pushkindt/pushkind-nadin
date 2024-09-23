@@ -369,12 +369,6 @@
                     {%if order.project is sameas none %}
                         <span>Клиент не указан.</span>
                     {%endif%}
-                    {%if order.income_statement is sameas none %}
-                        <span>Статья БДР не указана.</span>
-                    {%endif%}
-                    {%if order.cashflow_statement is sameas none %}
-                        <span>Статья БДДС не указана.</span>
-                    {%endif%}
                     {%if 'no_measurements' in glob %}
                         <span>Единицы измерения не указаны.</span>
                     {%endif%}
@@ -414,12 +408,6 @@
                 <div class="form-text text-danger">
                     {%if order.project is sameas none %}
                         <span>Клиент не указан.</span>
-                    {%endif%}
-                    {%if order.income_statement is sameas none %}
-                        <span>Статья БДР не указана.</span>
-                    {%endif%}
-                    {%if order.cashflow_statement is sameas none %}
-                        <span>Статья БДДС не указана.</span>
                     {%endif%}
                     {%if 'no_measurements' in glob %}
                         <span>Единицы измерения не указаны.</span>

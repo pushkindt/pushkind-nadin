@@ -107,7 +107,7 @@ class User(UserMixin, db.Model):
         lazy="dynamic",
         passive_deletes=True,
     )
-    orders = db.relationship("Order", back_populates="initiative")
+    orders = db.relationship("Order")
     hub = db.relationship("Vendor", back_populates="users", foreign_keys=[hub_id])
 
     @property

@@ -65,8 +65,8 @@ class Project(SearchableMixin, db.Model):
     )
     uid = db.Column(db.String(128), nullable=True)
     tin = db.Column(db.String(128), nullable=True)  # taxpayer identification number
-    phone = db.Column(db.String(128), nullable=True, unique=True)
-    email = db.Column(db.String(128), nullable=True, unique=True)
+    phone = db.Column(db.String(128), nullable=True)
+    email = db.Column(db.String(128), nullable=True)
     contact = db.Column(db.String(128), nullable=True)
     note = db.Column(db.Text, nullable=True)
     legal_address = db.Column(db.Text, nullable=True)
@@ -81,7 +81,7 @@ class Project(SearchableMixin, db.Model):
     discount = db.Column(db.Float, nullable=False, default=0.0, server_default="0.0")
 
     hub = db.relationship("Vendor", back_populates="projects")
-    orders = db.relationship("Order", back_populates="project")
+    orders = db.relationship("Order")
     order_history = db.relationship(
         "ProjectOrderHistory",
         back_populates="project",
