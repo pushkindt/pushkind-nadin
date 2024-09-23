@@ -39,12 +39,7 @@ def ShowIndex():
     dates.pop("annually")
     dates["недавно"] = dates.pop("recently")
 
-    orders = Order.query.filter_by(hub_id=current_user.hub_id)
-
-    if current_user.projects:
-        orders = orders.filter(Order.project_id.in_(current_user.projects_list))
-    elif current_user.role == UserRoles.initiative:
-        orders = orders.filter(Order.initiative_id == current_user.id)
+    orders = Order.get_by_access(current_user)
 
     if filter_disapproved is None:
         orders = orders.filter(~Order.status.in_([OrderStatus.returned, OrderStatus.cancelled]))

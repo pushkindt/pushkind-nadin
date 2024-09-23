@@ -29,16 +29,8 @@ def intersect(a, b):
 
 
 def GetOrder(order_id):
-    order = Order.query.filter_by(id=order_id, hub_id=current_user.hub_id)
-    if current_user.role == UserRoles.initiative:
-        order = order.filter_by(initiative_id=current_user.id)
-    elif current_user.role == UserRoles.vendor:
-        vendor = Vendor.query.filter_by(hub_id=current_user.hub_id, email=current_user.email).first()
-        order = order.filter(
-            # Order.purchased == True,
-            Order.vendors.any(OrderVendor.vendor_id == vendor.id)
-        )
-    order = order.first()
+    order = Order.get_by_access(current_user)
+    order = order.filter(Order.id == order_id).first()
     return order
 
 

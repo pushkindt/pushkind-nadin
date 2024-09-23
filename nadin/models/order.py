@@ -1,10 +1,11 @@
 import enum
 from datetime import datetime, timezone
+from typing import Optional
 
 from sqlalchemy.sql import expression, func
 
 from nadin.extensions import db
-from nadin.models.hub import AppSettings, User, UserProject, UserRoles
+from nadin.models.hub import AppSettings, User, UserProject, UserRoles, Vendor
 from nadin.models.product import Product
 from nadin.models.shopping_cart import ApiShoppingCartModel
 
@@ -296,6 +297,19 @@ class Order(db.Model):
 
         order.total = sum(p["price"] * p["quantity"] for p in order.products)
         return order
+
+    @classmethod
+    def get_by_access(cls, user: User):
+        orders = Order.query.filter_by(hub_id=user.hub_id)
+        if user.role == UserRoles.vendor:
+            vendor = Vendor.query.filter_by(hub_id=user.hub_id, email=user.email).first()
+            vendor_id = vendor.id if vendor else None
+            orders = orders.filter(Order.vendors.any(OrderVendor.vendor_id == vendor_id))
+        elif user.projects:
+            orders = orders.filter(Order.project_id.in_(user.projects_list))
+        elif user.role == UserRoles.initiative:
+            orders = orders.filter(Order.initiative_id == user.id)
+        return orders
 
 
 class OrderCategory(db.Model):
