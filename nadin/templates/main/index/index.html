@@ -10,9 +10,9 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             {% for d in dates %}
-                <a href="{{ url_for('main.ShowIndex', from=dates[d], focus=filter_focus, disapproved=filter_disapproved) }}" class="text-decoration-none badge {% if filter_from == dates[d] %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}">{{ d }}</a>
+                <a href="{{ url_for('main.ShowIndex', from=dates[d], disapproved=filter_disapproved) }}" class="text-decoration-none badge {% if filter_from == dates[d] %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}">{{ d }}</a>
             {% endfor %}
-            <a href="{{ url_for('main.ShowIndex', from=0, focus=filter_focus, disapproved=filter_disapproved) }}" class="text-decoration-none badge {% if filter_from == 0 %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}">все</a>
+            <a href="{{ url_for('main.ShowIndex', from=0, disapproved=filter_disapproved) }}" class="text-decoration-none badge {% if filter_from == 0 %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}">все</a>
         </div>
     </div>
     <div class="row justify-content-center">
@@ -26,20 +26,6 @@
                         </label>
                     </div>
                 </div>
-                {% if current_user.role.name in ['validator', 'purchaser'] %}
-                    <div class="col">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="filterFocus" {%if not filter_focus %}checked{% endif %}>
-                            <label class="form-check-label" for="filterFocus">
-                                {% if current_user.role.name == 'validator' %}
-                                    Показывать только заявки, которые я должен согласовать
-                                {% else %}
-                                    Показывать только не законтрактованные заявки
-                                {% endif %}
-                            </label>
-                        </div>
-                    </div>
-                {% endif %}
             </div>
         </div>
     </div>
@@ -96,21 +82,7 @@
     {{ save_form.orders(id="saveOrders", class_="d-none") }}
 </form>
 
-{% if alert %}
-    <div class="modal" tabindex="-1" id="alertModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Предупреждение</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>{{ alert }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-{% endif %}
+{% include 'main/index/alert.html' %}
 
 {% endblock %}
 
@@ -155,18 +127,11 @@
 
         var isMerging = false;
 
-        $("#filterFocus").change(function () {
-            if (this.checked)
-                document.location.href = "{{ url_for('main.ShowIndex', from=filter_from, disapproved=filter_disapproved) | safe }}";
-            else
-                document.location.href = "{{ url_for('main.ShowIndex', from=filter_from, focus=True, disapproved=filter_disapproved) | safe }}";
-        });
-
         $("#filterDisapproved").change(function () {
             if (this.checked)
-                document.location.href = "{{ url_for('main.ShowIndex', from=filter_from, focus=filter_focus, disapproved=True) | safe }}";
+                document.location.href = "{{ url_for('main.ShowIndex', from=filter_from, disapproved=True) | safe }}";
             else
-                document.location.href = "{{ url_for('main.ShowIndex', from=filter_from, focus=filter_focus) | safe }}";
+                document.location.href = "{{ url_for('main.ShowIndex', from=filter_from) | safe }}";
         });
 
         $("#saveOrdersButton").click(function () {

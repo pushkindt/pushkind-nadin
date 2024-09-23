@@ -10,7 +10,7 @@ from nadin.extensions import db
 from nadin.main.forms import MergeOrdersForm, SaveOrdersForm
 from nadin.main.routes import bp
 from nadin.models.hub import AppSettings, UserRoles, Vendor
-from nadin.models.order import EventType, Order, OrderApproval, OrderCategory, OrderEvent, OrderStatus, OrderVendor
+from nadin.models.order import EventType, Order, OrderEvent, OrderStatus
 from nadin.models.product import Category
 from nadin.models.project import Project
 from nadin.utils import SendEmailNotification, flash_errors, get_filter_timestamps, role_forbidden, role_required
@@ -39,20 +39,15 @@ def ShowIndex():
     dates.pop("annually")
     dates["недавно"] = dates.pop("recently")
 
-    if current_user.role in [UserRoles.purchaser, UserRoles.validator]:
-        filter_focus = request.args.get("focus", default=None, type=str)
-        if filter_focus is not None:
-            filter_focus = True
-    else:
-        filter_focus = None
-
     orders = Order.query.filter_by(hub_id=current_user.hub_id)
+
+    if current_user.projects:
+        orders = orders.filter(Order.project_id.in_(current_user.projects_list))
+    elif current_user.role == UserRoles.initiative:
+        orders = orders.filter(Order.initiative_id == current_user.id)
 
     if filter_disapproved is None:
         orders = orders.filter(~Order.status.in_([OrderStatus.returned, OrderStatus.cancelled]))
-
-    if current_user.role == UserRoles.initiative:
-        orders = orders.filter(Order.initiative_id == current_user.id)
 
     if filter_from > 0:
         orders = orders.filter(Order.create_timestamp > filter_from)
@@ -60,8 +55,6 @@ def ShowIndex():
     orders = orders.order_by(Order.create_timestamp.desc())
 
     orders = orders.all()
-    projects = Project.query.filter_by(hub_id=current_user.hub.id).all()
-    categories = Category.query.filter_by(hub_id=current_user.hub.id).all()
     merge_form = MergeOrdersForm()
     save_form = SaveOrdersForm(orders=[order.id for order in orders])
 
@@ -72,10 +65,7 @@ def ShowIndex():
         "main/index/index.html",
         orders=orders,
         dates=dates,
-        projects=projects,
-        categories=categories,
         filter_from=filter_from,
-        filter_focus=filter_focus,
         filter_disapproved=filter_disapproved,
         merge_form=merge_form,
         save_form=save_form,
