@@ -32,11 +32,6 @@ def GetOrder(order_id):
     order = Order.query.filter_by(id=order_id, hub_id=current_user.hub_id)
     if current_user.role == UserRoles.initiative:
         order = order.filter_by(initiative_id=current_user.id)
-    elif current_user.role in [UserRoles.purchaser, UserRoles.validator]:
-        order = order.join(OrderCategory).filter(
-            OrderCategory.category_id.in_([cat.id for cat in current_user.categories])
-        )
-        order = order.join(Project).filter(Project.id.in_([p.id for p in current_user.projects]))
     elif current_user.role == UserRoles.vendor:
         vendor = Vendor.query.filter_by(hub_id=current_user.hub_id, email=current_user.email).first()
         order = order.filter(
