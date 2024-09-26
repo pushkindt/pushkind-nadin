@@ -155,6 +155,10 @@ class User(UserMixin, db.Model):
         default_project = self.default_project
         return default_project.discount if default_project else 0.0
 
+    @property
+    def role_pretty(self):
+        return str(self.role)
+
     def __hash__(self):
         return self.id
 
@@ -183,6 +187,7 @@ class User(UserMixin, db.Model):
             "email": self.email,
             "role": self.role.name,
             "role_id": int(self.role),
+            "role_pretty": self.role_pretty,
             "name": self.name if self.name is not None else "",
             "hub_id": self.hub_id,
             "email_new": self.email_new,
