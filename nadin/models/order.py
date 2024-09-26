@@ -97,7 +97,7 @@ class OrderStatus(enum.IntEnum):
         return pretty[self.value]
 
     def color(self):
-        colors = ["white", "danger", "warning", "success", "secondary", "danger"]
+        colors = ["white", "primary", "info", "info", "info", "success", "secondary", "danger"]
         return colors[self.value]
 
 
