@@ -57,7 +57,7 @@ def ShowOrder(order_id):
     initiative_form.categories.default = order.categories_list
 
     if order.project:
-        initiative_form.project.choices = [(order.project_id, order.project.name)]
+        initiative_form.project.choices = [(order.project_id, order.project["name"])]
         initiative_form.project.default = order.project_id
         initiative_form.process()
 
