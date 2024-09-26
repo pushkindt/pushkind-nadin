@@ -32,65 +32,7 @@
             {% include '_order.status.html' %}
         </div>
         <div class="col-auto">
-            <div class="dropdown">
-                <a class="dropdown-toggle" href="#" role="button" id="orderActionsLink" data-bs-toggle="dropdown" aria-expanded="false">
-                    Действия с заявкой
-                </a>
-                <ul class="dropdown-menu bg-light" aria-labelledby="orderActionsLink">
-                    <li class="dropdown-item">
-                        <i class="bi bi-pencil"></i>
-                        {% if current_user.role.name in ['admin', 'initiative', 'validator', 'purchaser'] %}
-                            <a class="leaveComment" href="#" data-bs-toggle="modal" data-bs-target="#leaveCommentModal" data-target="comment">комментировать</a>
-                        {% else %}
-                            <span class="text-secondary">комментировать</span>
-                        {% endif %}
-                    </li>
-                    <li class="dropdown-item">
-                        <i class="bi bi-files"></i>
-                        {% if current_user.role.name in ['admin', 'initiative', 'purchaser'] %}
-                            <a href="{{ url_for('main.DuplicateOrder', order_id = order.id) }}" onclick="return confirm('Клонировать заявку?')">клонировать</a>
-                        {% else %}
-                            <span class="text-secondary">клонировать</span>
-                        {% endif %}
-                    </li>
-                    <li class="dropdown-item">
-                        <i class="bi bi-layout-split"></i>
-                        {% if current_user.role.name in ['admin', 'initiative', 'purchaser'] %}
-                            <a href="#" id="startSplitting">разделить</a>
-                        {% else %}
-                            <span class="text-secondary">разделить</span>
-                        {% endif %}
-                    </li>
-                    <li class="dropdown-item">
-                        <i class="bi bi-download"></i>
-                        <a href="#" data-bs-toggle="modal" data-bs-target="#excelModal">скачать</a>
-                    </li>
-                    <li class="dropdown-item">
-                        <i class="bi bi-envelope"></i>
-                        {% if current_user.role.name in ['admin', 'purchaser'] %}
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#sendModal">отправить</a>
-                        {% else %}
-                            <span class="text-secondary">отправить</span>
-                        {% endif %}
-                    </li>
-                    <li class="dropdown-item">
-                        <i class="bi bi-check-circle"></i>
-                        {% if current_user.role.name in ['admin', 'purchaser'] %}
-                            <a class="leaveComment" href="#" data-bs-toggle="modal" data-bs-target="#leaveCommentModal"  data-target="dealdone">законтрактовать</a>
-                        {% else %}
-                            <span class="text-secondary">законтрактовать</span>
-                        {% endif %}
-                    </li>
-                    <li class="dropdown-item">
-                        <i class="bi bi-x-circle"></i>
-                        {% if current_user.role.name in ['admin', 'initiative'] %}
-                            <a class="leaveComment" href="#" data-bs-toggle="modal" data-bs-target="#leaveCommentModal"  data-target="cancel">аннулировать</a>
-                        {% else %}
-                            <span class="text-secondary">аннулировать</span>
-                        {% endif %}
-                    </li>
-                </ul>
-            </div>
+            {% include 'main/approve/menu.html' %}
         </div>
     </div>
     <div class="row">
@@ -450,7 +392,7 @@
 
 {% if current_user.role.name in ['admin', 'initiative', 'purchaser'] %}
 
-    <form id="splitForm" class="d-none" method="POST" action="{{ url_for('main.SplitOrder', order_id = order.id) }}">
+    <form id="splitForm" class="d-none" method="POST" action="{{ url_for('main.split_order', order_id = order.id) }}">
         <div class="fixed-top">
             <div class="container">
                 <div class="row bg-dark text-white py-1">

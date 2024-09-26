@@ -71,7 +71,7 @@ def ShowIndex():
 @bp.route("/orders/merge/", methods=["POST"])
 @login_required
 @role_required([UserRoles.admin, UserRoles.initiative, UserRoles.purchaser])
-def MergeOrders():
+def merge_orders():
     form = MergeOrdersForm()
     if form.validate_on_submit():
         orders_list = form.orders.data

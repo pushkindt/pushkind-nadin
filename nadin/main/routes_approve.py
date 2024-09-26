@@ -72,7 +72,7 @@ def show_order(order_id):
 @bp.route("/orders/split/<int:order_id>", methods=["POST"])
 @login_required
 @role_required([UserRoles.admin, UserRoles.initiative, UserRoles.purchaser])
-def SplitOrder(order_id):
+def split_order(order_id):
 
     order = get_order(order_id)
     if order is None:
@@ -114,10 +114,12 @@ def SplitOrder(order_id):
             new_order = Order(number=new_order_number)
             db.session.add(new_order)
             new_order.initiative_id = order.initiative_id
+            new_order.initiative = order.initiative
             now = datetime.now(tz=timezone.utc)
             new_order.products = product_list
             new_order.total = sum(product["quantity"] * product["price"] for product in new_order.products)
             new_order.project_id = order.project_id
+            new_order.project = order.project
             new_order.status = OrderStatus.new
             new_order.create_timestamp = int(now.timestamp())
             new_order.hub_id = order.hub_id
@@ -163,7 +165,7 @@ def SplitOrder(order_id):
 @bp.route("/orders/duplicate/<int:order_id>")
 @login_required
 @role_required([UserRoles.admin, UserRoles.initiative, UserRoles.purchaser])
-def DuplicateOrder(order_id):
+def duplicate_order(order_id):
     order = get_order(order_id)
     if order is None:
         flash("Заявка с таким номером не найдена.")
@@ -173,13 +175,15 @@ def DuplicateOrder(order_id):
     new_order = Order(number=order_number)
     db.session.add(new_order)
 
-    new_order.initiative = current_user
+    new_order.initiative = current_user.to_dict()
+    new_order.initiative_id = current_user.id
 
     now = datetime.now(tz=timezone.utc)
 
     new_order.products = order.products
     new_order.total = order.total
     new_order.project_id = order.project_id
+    new_order.project = order.project
     new_order.status = OrderStatus.new
     new_order.create_timestamp = int(now.timestamp())
 
@@ -205,6 +209,7 @@ def DuplicateOrder(order_id):
         timestamp=datetime.now(tz=timezone.utc),
     )
     db.session.add(event)
+
     db.session.commit()
 
     flash(f"Заявка успешно клонирована. Номер новой заявки {new_order.number}. " "Вы перемещены в новую заявку.")
@@ -246,6 +251,8 @@ def save_quantity(order_id):
                 flash("Указанный товар не найден.")
                 return redirect(url_for("main.show_order", order_id=order_id))
             product = product.to_dict(current_user.price_level, current_user.discount)
+            product["categoryId"] = product["cat_id"]
+            product["imageUrl"] = product["image"]
             product["quantity"] = 0
             product["selectedOptions"] = [{"name": "Единицы", "value": product["measurement"]}]
             order.products.append(product)

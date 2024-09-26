@@ -56,7 +56,7 @@
 </div>
 
 {% if current_user.role.name in ['admin', 'initiative', 'purchaser'] %}
-    <form id="mergeForm" class="d-none" method="POST" action="{{ url_for('main.MergeOrders') }}">
+    <form id="mergeForm" class="d-none" method="POST" action="{{ url_for('main.merge_orders') }}">
         <div class="fixed-top">
             <div class="container">
                 <div class="row bg-dark text-white py-1">

@@ -112,7 +112,9 @@ class User(UserMixin, db.Model):
 
     @property
     def projects_list(self):
-        return [p.id for p in self.projects]
+        with db.session.no_autoflush:
+            result = db.session.query(UserProject.project_id).filter(UserProject.user_id == self.id).all()
+        return [p[0] for p in result]
 
     @property
     def hub_list(self):
@@ -188,7 +190,6 @@ class User(UserMixin, db.Model):
             "email_disapproved": self.email_disapproved,
             "email_approved": self.email_approved,
             "email_comment": self.email_comment,
-            "projects": [p.to_dict() for p in self.projects],
             "project_ids": self.projects_list,
         }
         return data
