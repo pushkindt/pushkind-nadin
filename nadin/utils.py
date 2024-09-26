@@ -103,7 +103,7 @@ def SendEmailNotification(kind, order, recipients_id=None, data=None):
     for recipient in recipients:
         current_app.logger.info('"%s" email about order %s has been sent to %s', kind, order.number, recipient.email)
         token = recipient.get_jwt_token(expires_in=86400)
-        next_page = url_for("main.ShowOrder", order_id=order.id)
+        next_page = url_for("main.show_order", order_id=order.id)
         SendEmail(
             f"Уведомление по заявке #{order.number}",
             sender=(current_app.config["MAIL_SENDERNAME"], current_app.config["ADMINS"][0]),

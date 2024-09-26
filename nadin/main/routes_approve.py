@@ -13,7 +13,7 @@ from nadin.extensions import db
 from nadin.main.forms import ChangeQuantityForm, InitiativeForm, LeaveCommentForm, OrderApprovalForm, SplitOrderForm
 from nadin.main.routes import bp
 from nadin.models.hub import AppSettings, User, UserRoles, Vendor
-from nadin.models.order import EventType, Order, OrderApproval, OrderCategory, OrderEvent, OrderStatus, OrderVendor
+from nadin.models.order import EventType, Order, OrderApproval, OrderEvent, OrderStatus
 from nadin.models.product import Category, Product
 from nadin.models.project import Project
 from nadin.utils import SendEmail1C, SendEmailNotification, flash_errors, role_forbidden, role_required
@@ -28,7 +28,7 @@ def intersect(a, b):
     return set(a).intersection(set(b))
 
 
-def GetOrder(order_id):
+def get_order(order_id):
     order = Order.get_by_access(current_user)
     order = order.filter(Order.id == order_id).first()
     return order
@@ -37,9 +37,9 @@ def GetOrder(order_id):
 @bp.route("/orders/<int:order_id>")
 @login_required
 @role_forbidden([UserRoles.default])
-def ShowOrder(order_id):
+def show_order(order_id):
 
-    order = GetOrder(order_id)
+    order = get_order(order_id)
     if order is None:
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
@@ -51,14 +51,9 @@ def ShowOrder(order_id):
 
     comment_form.notify_reviewers.choices = [(r.id, r.name) for r in order.reviewers]
 
-    categories = Category.query.filter(Category.hub_id == current_user.hub_id).all()
-
-    initiative_form.categories.choices = [(c.id, c.name) for c in categories]
-    initiative_form.categories.default = order.categories_list
-
     if order.project:
-        initiative_form.project.choices = [(order.project_id, order.project["name"])]
-        initiative_form.project.default = order.project_id
+        initiative_form.project.choices = [(order.project["id"], order.project["name"])]
+        initiative_form.project.default = order.project["id"]
         initiative_form.process()
 
     split_form = SplitOrderForm()
@@ -79,7 +74,7 @@ def ShowOrder(order_id):
 @role_required([UserRoles.admin, UserRoles.initiative, UserRoles.purchaser])
 def SplitOrder(order_id):
 
-    order = GetOrder(order_id)
+    order = get_order(order_id)
     if order is None:
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
@@ -90,14 +85,14 @@ def SplitOrder(order_id):
 
     if order.status != OrderStatus.new:
         flash("Нельзя модифицировать согласованную или аннулированную заявку.")
-        return redirect(url_for("main.ShowOrder", order_id=order_id))
+        return redirect(url_for("main.show_order", order_id=order_id))
 
     form = SplitOrderForm()
     if form.validate_on_submit():
         product_ids = form.products.data
         if not isinstance(product_ids, list) or len(product_ids) == 0:
             flash("Некорректный список позиции.")
-            return redirect(url_for("main.ShowOrder", order_id=order_id))
+            return redirect(url_for("main.show_order", order_id=order_id))
 
         product_lists = [[], []]
 
@@ -109,7 +104,7 @@ def SplitOrder(order_id):
 
         if len(product_lists[0]) == 0 or len(product_lists[1]) == 0:
             flash("Некорректный список позиции.")
-            return redirect(url_for("main.ShowOrder", order_id=order_id))
+            return redirect(url_for("main.show_order", order_id=order_id))
 
         message_flash = "заявка разделена на заявки"
 
@@ -169,7 +164,7 @@ def SplitOrder(order_id):
 @login_required
 @role_required([UserRoles.admin, UserRoles.initiative, UserRoles.purchaser])
 def DuplicateOrder(order_id):
-    order = GetOrder(order_id)
+    order = get_order(order_id)
     if order is None:
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
@@ -216,22 +211,22 @@ def DuplicateOrder(order_id):
 
     SendEmailNotification("new", new_order)
 
-    return redirect(url_for("main.ShowOrder", order_id=new_order.id))
+    return redirect(url_for("main.show_order", order_id=new_order.id))
 
 
 @bp.route("/orders/quantity/<int:order_id>", methods=["POST"])
 @login_required
 @role_required([UserRoles.admin, UserRoles.initiative, UserRoles.purchaser])
-def SaveQuantity(order_id):
+def save_quantity(order_id):
 
-    order = GetOrder(order_id)
+    order = get_order(order_id)
     if order is None:
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
 
     if order.status != OrderStatus.new:
         flash("Нельзя модифицировать согласованную или аннулированную заявку.")
-        return redirect(url_for("main.ShowOrder", order_id=order_id))
+        return redirect(url_for("main.show_order", order_id=order_id))
 
     form = ChangeQuantityForm()
     if form.validate_on_submit():
@@ -249,7 +244,7 @@ def SaveQuantity(order_id):
             )
             if not product:
                 flash("Указанный товар не найден.")
-                return redirect(url_for("main.ShowOrder", order_id=order_id))
+                return redirect(url_for("main.show_order", order_id=order_id))
             product = product.to_dict(current_user.price_level, current_user.discount)
             product["quantity"] = 0
             product["selectedOptions"] = [{"name": "Единицы", "value": product["measurement"]}]
@@ -276,7 +271,7 @@ def SaveQuantity(order_id):
             db.session.delete(approval)
 
         order.total = sum(p["quantity"] * p["price"] for p in order.products)
-        order.status = OrderStatus.modified
+        order.status = OrderStatus.new
 
         if idx in range(len(order.products)) and form.product_quantity.data == 0:
             order.products.pop(idx)
@@ -288,14 +283,14 @@ def SaveQuantity(order_id):
 
     else:
         flash_errors(form)
-    return redirect(url_for("main.ShowOrder", order_id=order_id))
+    return redirect(url_for("main.show_order", order_id=order_id))
 
 
 @bp.route("/orders/excel1/<int:order_id>")
 @login_required
 @role_forbidden([UserRoles.default])
 def GetExcelReport1(order_id):
-    order = GetOrder(order_id)
+    order = get_order(order_id)
     if order is None:
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
@@ -367,7 +362,7 @@ def GetExcelReport1(order_id):
 @login_required
 @role_forbidden([UserRoles.default])
 def GetExcelReport2(order_id):
-    order = GetOrder(order_id)
+    order = get_order(order_id)
     if order is None:
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
@@ -421,14 +416,14 @@ def GetExcelReport2(order_id):
 @login_required
 @role_required([UserRoles.admin, UserRoles.purchaser])
 def SetDealDone(order_id):
-    order = GetOrder(order_id)
+    order = get_order(order_id)
     if order is None:
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
 
     if order.status == OrderStatus.cancelled:
         flash("Нельзя модифицировать аннулированную заявку.")
-        return redirect(url_for("main.ShowOrder", order_id=order_id))
+        return redirect(url_for("main.show_order", order_id=order_id))
 
     form = LeaveCommentForm()
     form.notify_reviewers.choices = [(r.id, r.name) for r in order.reviewers]
@@ -439,7 +434,7 @@ def SetDealDone(order_id):
         db.session.commit()
     else:
         flash_errors(form)
-    return redirect(url_for("main.ShowOrder", order_id=order_id))
+    return redirect(url_for("main.show_order", order_id=order_id))
 
 
 def Prepare1CReport(order, excel_date):
@@ -534,7 +529,7 @@ def Prepare1CReport(order, excel_date):
 @login_required
 @role_forbidden([UserRoles.default])
 def GetExcelReport1C(order_id):
-    order = GetOrder(order_id)
+    order = get_order(order_id)
     if order is None:
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
@@ -550,7 +545,7 @@ def GetExcelReport1C(order_id):
     data = Prepare1CReport(order, excel_date)
     if data is None:
         flash("Не удалось получить выгрузку.")
-        return redirect(url_for("main.ShowOrder", order_id=order_id))
+        return redirect(url_for("main.show_order", order_id=order_id))
     if excel_send is False:
         return Response(
             data,
@@ -575,21 +570,21 @@ def GetExcelReport1C(order_id):
         flash(f"Заявка отправлена на {app_data.email_1C}")
     else:
         flash("Email для отправки в 1С не настроен администратором.")
-    return redirect(url_for("main.ShowOrder", order_id=order_id))
+    return redirect(url_for("main.show_order", order_id=order_id))
 
 
 @bp.route("/orders/approval/<int:order_id>", methods=["POST"])
 @login_required
 @role_required([UserRoles.validator])
 def SaveApproval(order_id):
-    order = GetOrder(order_id)
+    order = get_order(order_id)
     if order is None:
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
 
     if order.status == OrderStatus.cancelled:
         flash("Нельзя модифицировать аннулированную заявку.")
-        return redirect(url_for("main.ShowOrder", order_id=order_id))
+        return redirect(url_for("main.show_order", order_id=order_id))
 
     form = OrderApprovalForm()
     if form.validate_on_submit():
@@ -607,7 +602,7 @@ def SaveApproval(order_id):
 
         if user_approval is not None:
             flash("Вы уже выполнили это действие.")
-            return redirect(url_for("main.ShowOrder", order_id=order_id))
+            return redirect(url_for("main.show_order", order_id=order_id))
 
         last_status = order.status
 
@@ -658,7 +653,7 @@ def SaveApproval(order_id):
                         break
                 else:
                     flash("Указанный позиция не найдена в заявке.")
-                    return redirect(url_for("main.ShowOrder", order_id=order_id))
+                    return redirect(url_for("main.show_order", order_id=order_id))
                 product_approval = OrderApproval.query.filter_by(
                     order_id=order_id,
                     user_id=current_user.id,
@@ -699,21 +694,21 @@ def SaveApproval(order_id):
 
     else:
         flash_errors(form)
-    return redirect(url_for("main.ShowOrder", order_id=order_id))
+    return redirect(url_for("main.show_order", order_id=order_id))
 
 
 @bp.route("/orders/parameters/<int:order_id>", methods=["POST"])
 @login_required
 @role_required([UserRoles.admin, UserRoles.initiative, UserRoles.validator, UserRoles.purchaser])
 def SaveParameters(order_id):
-    order = GetOrder(order_id)
+    order = get_order(order_id)
     if order is None:
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
 
     if order.status != OrderStatus.new:
         flash("Нельзя модифицировать согласованную или аннулированную заявку.")
-        return redirect(url_for("main.ShowOrder", order_id=order_id))
+        return redirect(url_for("main.show_order", order_id=order_id))
 
     form = InitiativeForm()
 
@@ -747,14 +742,14 @@ def SaveParameters(order_id):
         flash("Параметры заявки успешно сохранены.")
     else:
         flash_errors(form)
-    return redirect(url_for("main.ShowOrder", order_id=order_id))
+    return redirect(url_for("main.show_order", order_id=order_id))
 
 
 @bp.route("/orders/comment/<int:order_id>", methods=["POST"])
 @login_required
 @role_required([UserRoles.admin, UserRoles.initiative, UserRoles.validator, UserRoles.purchaser])
 def LeaveComment(order_id):
-    order = GetOrder(order_id)
+    order = get_order(order_id)
     if order is None:
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
@@ -765,21 +760,21 @@ def LeaveComment(order_id):
         db.session.commit()
     else:
         flash_errors(form)
-    return redirect(url_for("main.ShowOrder", order_id=order_id))
+    return redirect(url_for("main.show_order", order_id=order_id))
 
 
 @bp.route("/orders/process/<int:order_id>")
 @login_required
 @role_required([UserRoles.admin, UserRoles.purchaser])
 def ProcessHubOrder(order_id):
-    order = GetOrder(order_id)
+    order = get_order(order_id)
     if order is None:
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
 
     if order.status == OrderStatus.cancelled:
         flash("Нельзя отправить поставщику аннулированную заявку.")
-        return redirect(url_for("main.ShowOrder", order_id=order_id))
+        return redirect(url_for("main.show_order", order_id=order_id))
 
     message = "Заявка была отправлена поставщикам: "
     message += ", ".join(vendor.name for vendor in order.vendors)
@@ -797,21 +792,21 @@ def ProcessHubOrder(order_id):
 
     flash(message)
 
-    return redirect(url_for("main.ShowOrder", order_id=order_id))
+    return redirect(url_for("main.show_order", order_id=order_id))
 
 
 @bp.route("/orders/cancel/<int:order_id>", methods=["POST"])
 @login_required
 @role_required([UserRoles.admin, UserRoles.initiative])
 def CancelOrder(order_id):
-    order = GetOrder(order_id)
+    order = get_order(order_id)
     if order is None:
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
 
     if order.status == OrderStatus.cancelled:
         flash("Нельзя аннулировать аннулированную заявку.")
-        return redirect(url_for("main.ShowOrder", order_id=order_id))
+        return redirect(url_for("main.show_order", order_id=order_id))
 
     form = LeaveCommentForm()
     form.notify_reviewers.choices = [(r.id, r.name) for r in order.reviewers]
@@ -823,4 +818,4 @@ def CancelOrder(order_id):
         flash("Заявка аннулирована.")
     else:
         flash_errors(form)
-    return redirect(url_for("main.ShowOrder", order_id=order_id))
+    return redirect(url_for("main.show_order", order_id=order_id))

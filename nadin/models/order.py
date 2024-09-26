@@ -205,7 +205,7 @@ class Order(db.Model):
         if self.project is None:
             return []
         validators = (
-            User.query.filter_by(role=UserRoles.validator)
+            User.query.filter_by(role=UserRoles.validator, hub_id=self.hub_id)
             .join(UserProject)
             .filter(UserProject.project_id == self.project_id)
         )
@@ -216,7 +216,7 @@ class Order(db.Model):
         if self.project is None:
             return []
         purchasers = (
-            User.query.filter_by(role=UserRoles.purchaser)
+            User.query.filter_by(role=UserRoles.purchaser, hub_id=self.hub_id)
             .join(UserProject)
             .filter(UserProject.project_id == self.project_id)
         )

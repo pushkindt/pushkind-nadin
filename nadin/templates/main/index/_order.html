@@ -5,7 +5,7 @@
 			{{ order.number }}<br>
 			<small>разделена на</small><br>
 			{% for child in order.children %}
-				<a class="text-decoration-none" href="{{ url_for('main.ShowOrder', order_id=child.id) }}">
+				<a class="text-decoration-none" href="{{ url_for('main.show_order', order_id=child.id) }}">
 					{{ child.number }}
 				</a><br>
 			{% endfor %}
@@ -16,7 +16,7 @@
 		<div class="col-sm-1 overflow-hidden">
 			{{ order.number }}<br>
 			<small>объединена в</small><br>
-			<a class="text-decoration-none" href="{{ url_for('main.ShowOrder', order_id=order.children[0].id) }}">
+			<a class="text-decoration-none" href="{{ url_for('main.show_order', order_id=order.children[0].id) }}">
 				{{ order.children[0].number }}
 			</a>
 		</div>
@@ -25,7 +25,7 @@
 	<div class="row"><div class="col"><div class="row">
 	<div class="col-sm-1 overflow-hidden">
 		<span class="d-sm-none fw-bold">Заявка:</span>
-		<a class="text-decoration-none" href="{{ url_for('main.ShowOrder', order_id=order.id) }}">{{ order.number }}</a>
+		<a class="text-decoration-none" href="{{ url_for('main.show_order', order_id=order.id) }}">{{ order.number }}</a>
 		<br>
 		<span class="text-muted">
 			{{ moment(order.create_date).format() }}
@@ -36,7 +36,7 @@
 		<div class="row"><div class="col"><div class="row">
 		<div class="col-sm-1 overflow-hidden">
 			<span class="d-sm-none fw-bold">Заявка:</span>
-			<a class="text-decoration-none" href="{{ url_for('main.ShowOrder', order_id=order.id) }}">{{ order.number }}</a>
+			<a class="text-decoration-none" href="{{ url_for('main.show_order', order_id=order.id) }}">{{ order.number }}</a>
 			<br>
 			<span class="text-muted">
 				{{ moment(order.create_date).format() }}
