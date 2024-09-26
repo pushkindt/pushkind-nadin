@@ -292,13 +292,13 @@ class AddProjectForm(FlaskForm):
     note = TextAreaField("Заметка")
     price_level = SelectField(
         "Уровень цен",
-        validators=[InputRequired(message="Необходимо указать уровень цен.")],
+        validators=[Optional()],
         coerce=int,
         choices=[(int(level), str(level)) for level in ProjectPriceLevel],
     )
     discount = DecimalField(
         "Скидка (%)",
-        validators=[InputRequired(message="Необходимо указать уровень скидки."), NumberRange(min=0, max=100)],
+        validators=[Optional(), NumberRange(min=0, max=100)],
         places=2,
         default=0.0,
     )
@@ -336,13 +336,13 @@ class EditProjectForm(FlaskForm):
     enabled = BooleanField("Включить клиент")
     price_level = SelectField(
         "Уровень цен",
-        validators=[InputRequired(message="Необходимо указать уровень цен.")],
+        validators=[Optional()],
         coerce=int,
         choices=[(int(level), str(level)) for level in ProjectPriceLevel],
     )
     discount = DecimalField(
         "Скидка (%)",
-        validators=[InputRequired(message="Необходимо указать уровень скидки."), NumberRange(min=0, max=100)],
+        validators=[Optional(), NumberRange(min=0, max=100)],
         places=2,
         default=0.0,
     )

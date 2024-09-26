@@ -69,7 +69,7 @@
     </div>
 </div>
 
-
+{% if projects.items | length %}
 <div class="container bg-white border rounded my-2">
     <div class="row d-none d-sm-flex fw-bold">
         <div class="col-2 overflow-hidden">
@@ -171,6 +171,7 @@
         </ul>
     </nav>
 </div>
+{% endif %}
 
 <div class="modal fade" id="addProjectModal" tabindex="-1" aria-labelledby="addProjectModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -219,14 +220,16 @@
                         {{ forms['add_project'].note.label(id=False, class_='form-label', for='addProjectNote') }}
                         {{ forms['add_project'].note(id='addProjectNote', class_='form-control') }}
                     </div>
-                    <div class="mb-3">
-                        {{ forms['add_project'].price_level.label(id=False, class_='form-label', for='addProjectPriceLevel') }}
-                        {{ forms['add_project'].price_level(id='addProjectPriceLevel', class_='form-select') }}
-                    </div>
-                    <div class="mb-3">
-                        {{ forms['add_project'].discount.label(id=False, class_='form-label', for='addProjectDiscount') }}
-                        {{ forms['add_project'].discount(id='addProjectDiscount', class_='form-control') }}
-                    </div>
+                    {% if current_user.role.name in ["admin", "validator", "supervisor"] %}
+                        <div class="mb-3">
+                            {{ forms['add_project'].price_level.label(id=False, class_='form-label', for='addProjectPriceLevel') }}
+                            {{ forms['add_project'].price_level(id='addProjectPriceLevel', class_='form-select') }}
+                        </div>
+                        <div class="mb-3">
+                            {{ forms['add_project'].discount.label(id=False, class_='form-label', for='addProjectDiscount') }}
+                            {{ forms['add_project'].discount(id='addProjectDiscount', class_='form-control') }}
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="modal-footer">
                     {{ forms['add_project'].submit(id=False, class_='btn btn-primary text-white') }}
@@ -285,19 +288,21 @@
                         {{ forms['edit_project'].note.label(id=False, class_='form-label', for='editProjectNote') }}
                         {{ forms['edit_project'].note(id='editProjectNote', class_='form-control') }}
                     </div>
-                    <div class="mb-3">
-                        {{ forms['edit_project'].price_level.label(id=False, class_='form-label', for='editProjectPriceLevel') }}
-                        {{ forms['edit_project'].price_level(id='editProjectPriceLevel', class_='form-select') }}
-                    </div>
-                    <div class="mb-3">
-                        {{ forms['edit_project'].discount.label(id=False, class_='form-label', for='editProjectDiscount') }}
-                        {{ forms['edit_project'].discount(id='editProjectDiscount', class_='form-control') }}
-                    </div>
-                    <div class="mb-3 form-check">
-                        {{ forms['edit_project'].enabled(id='editProjectEnabled',class_='form-check-input') }}
-                        {{ forms['edit_project'].enabled.label(id=False, class_='form-check-label',
-                        for='editProjectEnabled') }}
-                    </div>
+                    {% if current_user.role.name in ["admin", "validator", "supervisor"] %}
+                        <div class="mb-3">
+                            {{ forms['edit_project'].price_level.label(id=False, class_='form-label', for='editProjectPriceLevel') }}
+                            {{ forms['edit_project'].price_level(id='editProjectPriceLevel', class_='form-select') }}
+                        </div>
+                        <div class="mb-3">
+                            {{ forms['edit_project'].discount.label(id=False, class_='form-label', for='editProjectDiscount') }}
+                            {{ forms['edit_project'].discount(id='editProjectDiscount', class_='form-control') }}
+                        </div>
+                        <div class="mb-3 form-check">
+                            {{ forms['edit_project'].enabled(id='editProjectEnabled',class_='form-check-input') }}
+                            {{ forms['edit_project'].enabled.label(id=False, class_='form-check-label',
+                            for='editProjectEnabled') }}
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="modal-footer">
                     {{ forms['edit_project'].submit(id=False, class_='btn btn-primary text-white') }}

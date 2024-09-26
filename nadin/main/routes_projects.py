@@ -213,8 +213,8 @@ def AddProject():
                 legal_address=form.legal_address.data,
                 shipping_address=form.shipping_address.data,
                 note=form.note.data,
-                price_level=form.price_level.data,
-                discount=form.discount.data,
+                price_level=form.price_level.data or ProjectPriceLevel.online_store,
+                discount=form.discount.data or 0.0,
             )
             db.session.add(project)
             db.session.commit()
@@ -259,8 +259,8 @@ def EditProject():
             project.legal_address = form.legal_address.data
             project.shipping_address = form.shipping_address.data
             project.note = form.note.data
-            project.price_level = form.price_level.data
-            project.discount = form.discount.data
+            project.price_level = form.price_level.data or ProjectPriceLevel.online_store
+            project.discount = form.discount.data or 0.0
             db.session.commit()
             flash(f"Клиент {project_name} изменён.")
         else:
