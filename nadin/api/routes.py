@@ -3,19 +3,19 @@ from functools import wraps
 
 import sqlalchemy as sa
 from authlib.integrations.flask_oauth2 import current_token
-from flask import Blueprint, current_app, flash, jsonify, make_response, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, jsonify, make_response, request
 from flask_login import current_user, login_required
+from pydantic import ValidationError
 from sqlalchemy import or_
 
 from nadin.api.errors import error_response
-from nadin.api.forms import OrderForm
 from nadin.extensions import db
-from nadin.models.hub import User, UserRoles, Vendor
+from nadin.models.hub import UserRoles, Vendor
 from nadin.models.order import Order, OrderEvent
 from nadin.models.product import Category, Product, ProductTag
 from nadin.models.project import Project, ProjectPriceLevel
+from nadin.models.shopping_cart import ApiShoppingCartModel
 from nadin.oauth.server import require_oauth
-from nadin.utils import flash_errors
 
 bp = Blueprint("api", __name__)
 
@@ -238,32 +238,35 @@ def get_product(product_id: int):
     return response
 
 
-@bp.route("/order", methods=["POST"])
+@bp.route("/order", methods=["POST", "OPTIONS"])
+@cors_preflight_response
+@require_oauth()
 def create_order():
-    form = OrderForm()
-    if form.validate_on_submit():
 
-        user = User.query.filter_by(email=form.email.data.lower()).first()
+    try:
+        cart = ApiShoppingCartModel.model_validate(request.get_json())
+    except ValidationError as exc:
+        return error_response(400, str(exc))
 
-        if not user:
-            flash("Пользователь не найден.")
-            return render_template("api/order_error.html", return_url=request.referrer)
+    try:
+        order = Order.from_api_request(current_token.user, cart)
+    except ValueError as exc:
+        return error_response(400, str(exc))
 
-        try:
-            order = Order.from_api_request(form.email.data, form.cart.data)
-        except ValueError as e:
-            flash(str(e))
-            return render_template("api/order_error.html", return_url=request.referrer)
+    db.session.add(order)
+    db.session.commit()
 
-        db.session.add(order)
+    if cart.comment:
+        comment = OrderEvent(data=cart.comment, user_id=order.initiative_id, order_id=order.id)
+        db.session.add(comment)
         db.session.commit()
 
-        if form.comment.data:
-            comment = OrderEvent(data=form.comment.data, user_id=order.initiative_id, order_id=order.id)
-            db.session.add(comment)
-            db.session.commit()
-
-        flash(f"Заказ #{order.number} успешно оформлен")
-        return redirect(url_for("main.ShowIndex"))
-    flash_errors(form)
-    return render_template("api/order_error.html", return_url=request.referrer)
+    response = jsonify(
+        {
+            "id": order.id,
+            "number": order.number,
+            "status": order.status.name,
+        }
+    )
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response

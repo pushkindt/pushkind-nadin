@@ -27,4 +27,5 @@ class ApiOrderItemModel(BaseModel):
 
 
 class ApiShoppingCartModel(BaseModel):
+    comment: Optional[str] = Field(None, description="Комментарий")
     items: dict[str, ApiOrderItemModel] = Field(..., description="Товары")

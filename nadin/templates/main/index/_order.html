@@ -60,10 +60,14 @@
 		{{ "{:,.2%}".format(order.project.discount or 0.0) }}
 	</div>
 	<div class="col col-sm overflow-hidden">
-		{{ order.project.name }}<br>
-		{{ order.project.contact }}<br>
-		{{ order.project.email }}<br>
-		{{ order.project.phone }}
+		{% if not order.project_id or not order.project %}
+			<span class="text-danger fw-bold">клиент не указан</span>
+		{% else %}
+			{{ order.project.name }}<br>
+			{{ order.project.contact }}<br>
+			{{ order.project.email }}<br>
+			{{ order.project.phone }}
+		{% endif %}
 	</div>
 	<div class="col col-sm overflow-hidden">
 		{{ order.project.shipping_address or "" }}

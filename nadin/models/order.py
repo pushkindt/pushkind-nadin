@@ -1,6 +1,5 @@
 import enum
 from datetime import datetime, timezone
-from typing import Optional
 
 from sqlalchemy.sql import expression, func
 
@@ -247,11 +246,7 @@ class Order(db.Model):
         return f"{count}"
 
     @classmethod
-    def from_api_request(cls, email: str, data: ApiShoppingCartModel):
-
-        user = User.query.filter_by(email=email).filter(User.role != UserRoles.default).first()
-        if user is None:
-            raise ValueError("User not found")
+    def from_api_request(cls, user: User, cart: ApiShoppingCartModel):
 
         order = cls()
         order.number = cls.new_order_number(user.hub_id)
@@ -263,8 +258,10 @@ class Order(db.Model):
         if len(user.projects) == 1:
             order.project = user.projects[0].to_dict()
             order.project_id = user.projects[0].id
+        else:
+            order.project = {}
 
-        products = Product.query.filter(Product.id.in_(int(p_id) for p_id in data.items.keys())).all()
+        products = Product.query.filter(Product.id.in_(int(p_id) for p_id in cart.items.keys())).all()
         if not products:
             raise ValueError("Products not found")
 
@@ -274,7 +271,7 @@ class Order(db.Model):
         for product in products:
             order_categories.add(product.cat_id)
             order_vendors.add(product.vendor_id)
-            cart_item = data.items[str(product.id)]
+            cart_item = cart.items[str(product.id)]
             order_product = {
                 "id": product.id,
                 "quantity": cart_item.quantity,

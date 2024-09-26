@@ -9,7 +9,6 @@ from nadin.auth.email import send_password_reset_email, send_user_registered_ema
 from nadin.auth.forms import LoginForm, RegistrationForm, ResetPasswordForm, ResetPasswordRequestForm
 from nadin.extensions import db, oauth_ext
 from nadin.models.hub import User, UserRoles, Vendor
-from nadin.models.oauth import OAuth2AuthorizationCode, OAuth2Token
 from nadin.utils import flash_errors
 
 bp = Blueprint("auth", __name__)
@@ -84,8 +83,6 @@ def signup():
 
 @bp.route("/logout/")
 def logout():
-    OAuth2Token.query.filter(OAuth2Token.user_id == current_user.id).delete()
-    OAuth2AuthorizationCode.query.filter(OAuth2AuthorizationCode.user_id == current_user.id).delete()
     logout_user()
     db.session.commit()
     return redirect(url_for("auth.login"))
