@@ -28,28 +28,8 @@
             {% endif %}
         </li>
         <li class="dropdown-item">
-            <i class="bi bi-download"></i>
-            <a href="#" data-bs-toggle="modal" data-bs-target="#excelModal">скачать</a>
-        </li>
-        <li class="dropdown-item">
-            <i class="bi bi-envelope"></i>
-            {% if current_user.role.name in ['admin', 'purchaser'] %}
-                <a href="#" data-bs-toggle="modal" data-bs-target="#sendModal">отправить</a>
-            {% else %}
-                <span class="text-secondary">отправить</span>
-            {% endif %}
-        </li>
-        <li class="dropdown-item">
-            <i class="bi bi-check-circle"></i>
-            {% if current_user.role.name in ['admin', 'purchaser'] %}
-                <a class="leaveComment" href="#" data-bs-toggle="modal" data-bs-target="#leaveCommentModal"  data-target="dealdone">законтрактовать</a>
-            {% else %}
-                <span class="text-secondary">законтрактовать</span>
-            {% endif %}
-        </li>
-        <li class="dropdown-item">
             <i class="bi bi-x-circle"></i>
-            {% if current_user.role.name in ['admin', 'initiative'] %}
+            {% if current_user.role.name in ['admin', 'initiative', 'purchaser'] %}
                 <a class="leaveComment" href="#" data-bs-toggle="modal" data-bs-target="#leaveCommentModal"  data-target="cancel">аннулировать</a>
             {% else %}
                 <span class="text-secondary">аннулировать</span>

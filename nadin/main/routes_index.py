@@ -1,9 +1,7 @@
-import io
 from datetime import datetime, timezone
 
-from flask import Response, current_app, flash, redirect, render_template, request, url_for
+from flask import current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
-from openpyxl import Workbook
 
 from nadin.email import SendEmail
 from nadin.extensions import db
@@ -12,7 +10,6 @@ from nadin.main.routes import bp
 from nadin.models.hub import AppSettings, UserRoles, Vendor
 from nadin.models.order import EventType, Order, OrderEvent, OrderStatus
 from nadin.models.product import Category
-from nadin.models.project import Project
 from nadin.utils import SendEmailNotification, flash_errors, get_filter_timestamps, role_forbidden, role_required
 
 ################################################################################
@@ -179,72 +176,6 @@ def merge_orders():
         SendEmailNotification("new", order)
     else:
         flash_errors(form)
-    return redirect(url_for("main.ShowIndex"))
-
-
-@bp.route("/orders/save/", methods=["POST"])
-@login_required
-@role_forbidden([UserRoles.default])
-def SaveOrders():
-    form = SaveOrdersForm()
-    if form.validate_on_submit():
-        orders_list = form.orders.data
-        if not isinstance(orders_list, list):
-            flash("Некорректный список заявок.")
-            return redirect(url_for("main.ShowIndex"))
-
-        orders = []
-
-        orders = Order.query.filter(Order.id.in_(orders_list), Order.hub_id == current_user.hub_id)
-        if current_user.role == UserRoles.initiative:
-            orders = orders.filter(Order.initiative_id == current_user.id)
-
-        orders = orders.all()
-
-        wb = Workbook()
-
-        ws = wb.active
-
-        ws["A1"] = "Номер"
-        ws["B1"] = "Дата"
-        ws["C1"] = "Клиент"
-        ws["D1"] = ""
-        ws["E1"] = "Сумма"
-        ws["F1"] = "Позиций"
-        ws["G1"] = "Статус"
-        ws["H1"] = "Инициатор"
-        ws["I1"] = ""
-        ws["J1"] = ""
-        ws["K1"] = "Кем согласована"
-        ws["L1"] = "Ждём согласования"
-        ws["M1"] = "Категории"
-
-        for i, order in enumerate(orders, start=2):
-            ws.cell(row=i, column=1, value=order.number)
-            ws.cell(row=i, column=2, value=datetime.fromtimestamp(order.create_timestamp))
-            if order.project is not None:
-                ws.cell(row=i, column=3, value=order.project.name)
-
-            ws.cell(row=i, column=5, value=order.total)
-            ws.cell(row=i, column=6, value=len(order.products))
-            ws.cell(row=i, column=7, value=str(order.status))
-            ws.cell(row=i, column=8, value=order.initiative.name)
-            ws.cell(
-                row=i,
-                column=13,
-                value=", ".join([cat.name for cat in order.categories]),
-            )
-
-        buffer = io.BytesIO()
-        wb.save(buffer)
-        buffer.seek(0)
-        return Response(
-            buffer,
-            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            headers={"Content-Disposition": "attachment;filename=export.xlsx"},
-        )
-
-    flash_errors(form)
     return redirect(url_for("main.ShowIndex"))
 
 

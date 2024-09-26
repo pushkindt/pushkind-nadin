@@ -286,84 +286,6 @@
 
 {% endif %}
 
-<div class="modal fade" id="excelModal" tabindex="-1" aria-labelledby="excelModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="excelModalLabel">СКАЧАТЬ</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <select class="form-select" id="excelModalSelect">
-                    <option selected disabled value="0">Выбор формата...</option>
-                    <option value="3">для 1С</option>
-                    <option value="2">простая таблица</option>
-                    <option value="1">инвест заявка</option>
-                </select>
-                <form class="d-none" action="" method="GET" id="excelModalForm">
-                    <div class="my-1">
-                        <label class="form-label" for="excelModalDate">Дата поставки</label>
-                        <input type="date" class="form-control" name="date" id="excelModalDate" disabled>
-                    </div>
-                    <button type="submit" class="btn btn-primary my-1 text-white">Скачать</button>
-                </form>
-                <div class="form-text text-danger">
-                    {%if order.project is sameas none %}
-                        <span>Клиент не указан.</span>
-                    {%endif%}
-                    {%if 'no_measurements' in glob %}
-                        <span>Единицы измерения не указаны.</span>
-                    {%endif%}
-                </div>
-                <div class="form-text text-info d-none" id="excelNotification">
-                    Файл сохранён в папку загрузки.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="sendModal" tabindex="-1" aria-labelledby="sendModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="sendModalLabel">ОТПРАВИТЬ</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <select class="form-select" id="sendModalSelect">
-                    <option selected disabled value="0">Выбор формата...</option>
-                    <option value="2">в 1С</option>
-                    <option value="1">поставщику</option>
-                </select>
-                <form class="d-none" action="" method="GET" id="sendModalForm">
-                    <div class="my-1">
-                        <label class="form-label" for="sendModalDate">Дата поставки</label>
-                        <input type="date" class="form-control" name="date" id="sendModalDate" disabled>
-                        <input type="checkbox" class="d-none" name="send" id="sendModalCheck" disabled checked>
-                    </div>
-                    <button type="submit" class="btn btn-primary my-1 text-white">Отправить</button>
-                </form>
-                <div class="form-text text-danger">
-                    {%if order.project is sameas none %}
-                        <span>Клиент не указан.</span>
-                    {%endif%}
-                    {%if 'no_measurements' in glob %}
-                        <span>Единицы измерения не указаны.</span>
-                    {%endif%}
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
 <div class="modal fade" id="remarksModal" tabindex="-1" aria-labelledby="remarksModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -433,64 +355,6 @@
             let val = Number($(this).val());
             $(this).removeClass("border-danger");
 
-        });
-
-        $("#excelModalSelect").change(function () {
-            let excelModalForm = $("#excelModalForm");
-            let excelModalDate = $("#excelModalDate");
-            excelModalForm.removeClass("d-none");
-            if ($(this).val() == 1) {
-                excelModalDate.closest("div").addClass("d-none");
-                excelModalDate.prop("disabled", true);
-                excelModalDate.prop("required", null);
-                excelModalForm.prop("action", "{{ url_for('main.GetExcelReport1', order_id = order.id) }}");
-            }
-            else if ($(this).val() == 2) {
-                excelModalDate.closest("div").addClass("d-none");
-                excelModalDate.prop("disabled", true);
-                excelModalDate.prop("required", null);
-                excelModalForm.prop("action", "{{ url_for('main.GetExcelReport2', order_id = order.id) }}");
-            }
-            else if ($(this).val() == 3) {
-                excelModalDate.closest("div").removeClass("d-none");
-                excelModalDate.prop("disabled", null);
-                excelModalDate.prop("required", true);
-                excelModalForm.prop("action", "{{ url_for('main.GetExcelReport1C', order_id = order.id) }}");
-            }
-            else {
-                excelModalForm.addClass("d-none");
-            }
-        });
-
-        $("#excelModalForm").submit(function () {
-            setTimeout(() => $("#excelNotification").removeClass("d-none"), 1000);
-        });
-
-        $("#sendModalSelect").change(function () {
-
-            let sendModalForm = $("#sendModalForm");
-            let sendModalDate = $("#sendModalDate");
-            let sendModalCheck = $("#sendModalCheck");
-            sendModalForm.removeClass("d-none");
-            if ($(this).val() == 1) {
-                sendModalDate.closest("div").addClass("d-none");
-                sendModalDate.prop("disabled", true);
-                sendModalDate.prop("required", null);
-                sendModalCheck.prop("disabled", true);
-                sendModalCheck.prop("required", null);
-                sendModalForm.prop("action", "{{ url_for('main.ProcessHubOrder', order_id = order.id) }}");
-            }
-            else if ($(this).val() == 2) {
-                sendModalDate.closest("div").removeClass("d-none");
-                sendModalDate.prop("disabled", null);
-                sendModalDate.prop("required", true);
-                sendModalCheck.prop("disabled", null);
-                sendModalCheck.prop("required", true);
-                sendModalForm.prop("action", "{{ url_for('main.GetExcelReport1C', order_id = order.id) }}");
-            }
-            else {
-                sendModalForm.addClass("d-none");
-            }
         });
 
         $(".showRemarks").click(function () {
@@ -642,10 +506,6 @@
                 if (target == 'comment'){
                     $("#leaveCommentModalLabel").text('ОСТАВИТЬ КОММЕНТАРИЙ');
                     $("#leaveCommentForm").attr('action', "{{url_for('main.LeaveComment', order_id=order.id)}}")
-                }
-                else if (target == 'dealdone'){
-                    $("#leaveCommentModalLabel").text('ЗАКОНТРАКТОВАТЬ');
-                    $("#leaveCommentForm").attr('action', "{{url_for('main.SetDealDone', order_id=order.id)}}")
                 }
                 else if (target == 'cancel'){
                     $("#leaveCommentModalLabel").text('АННУЛИРОВАТЬ');

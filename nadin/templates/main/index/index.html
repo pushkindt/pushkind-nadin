@@ -37,7 +37,6 @@
             Выбрано заявок: <span id="orderCount"></span> на сумму <span id="orderTotal"></span> млн руб.
         </div>
         <div class="col text-end">
-            <a href="#" id="saveOrdersButton">скачать</a><br>
             {% if current_user.role.name in ['admin', 'initiative', 'purchaser'] %}
                 <a href="#" id="startMerging">объединить</a>
             {% endif %}
@@ -77,11 +76,6 @@
     </form>
 {% endif %}
 
-<form id="saveForm" class="d-none" method="POST" action="{{ url_for('main.SaveOrders') }}">
-    {{ save_form.csrf_token(id=False) }}
-    {{ save_form.orders(id="saveOrders", class_="d-none") }}
-</form>
-
 {% include 'main/index/alert.html' %}
 
 {% endblock %}
@@ -107,7 +101,6 @@
             orderTotal /= 1000000;
             document.getElementById("orderCount").textContent = order_list.length;
             document.getElementById("orderTotal").textContent = orderTotal.toFixed(2);
-            document.getElementById("saveOrders").value = JSON.stringify(order_list);
         }
 
         InstantiatePagination("orderList", "order", "orderPagination", 50, 'orderFilter');
@@ -132,10 +125,6 @@
                 document.location.href = "{{ url_for('main.ShowIndex', from=filter_from, disapproved=True) | safe }}";
             else
                 document.location.href = "{{ url_for('main.ShowIndex', from=filter_from) | safe }}";
-        });
-
-        $("#saveOrdersButton").click(function () {
-            $("#saveForm").submit()
         });
 
         {% if current_user.role.name in ['admin', 'initiative', 'purchaser'] %}
