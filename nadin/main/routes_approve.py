@@ -508,8 +508,8 @@ def ProcessHubOrder(order_id):
 
 @bp.route("/orders/cancel/<int:order_id>", methods=["POST"])
 @login_required
-@role_required([UserRoles.admin, UserRoles.initiative])
-def CancelOrder(order_id):
+@role_required([UserRoles.admin, UserRoles.initiative, UserRoles.purchaser])
+def cancel_order(order_id):
     order = get_order(order_id)
     if order is None:
         flash("Заявка с таким номером не найдена.")

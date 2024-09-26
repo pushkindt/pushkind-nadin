@@ -126,22 +126,24 @@
             </button>
         </div>
     </div>
-    <div class="collapse" id="addProductFormCollapse">
-        <div class="row my-1 py-1 bg-white rounded">
-            <div class="col">
-                <select aria-label="Product search" id="productSearch">
-                    <option value="" disabled selected>Добавить товар...</option>
-                </select>
-            </div>
-            <div class="col-sm-2">
-                <form id="addProductQuantityForm" class="changeQuantityForm" action="{{ url_for('main.save_quantity', order_id=order.id) }}" method="POST">
-                    {{ quantity_form.csrf_token(id=False) }}
-                    {{ quantity_form.product_id(class_='d-none', hidden='', value='', id='addProductQuantityFormProductId') }}
-                    <input id='addProductQuantityFormProductQuantity' disabled name="product_quantity" type="number" class="form-control" min="0" step="1" aria-label="Количество" value="">
-                </form>
+    {% if current_user.role.name in ['initiative', 'purchaser', 'admin'] %}
+        <div class="collapse" id="addProductFormCollapse">
+            <div class="row my-1 py-1 bg-white rounded">
+                <div class="col">
+                    <select aria-label="Product search" id="productSearch">
+                        <option value="" disabled selected>Добавить товар...</option>
+                    </select>
+                </div>
+                <div class="col-sm-2">
+                    <form id="addProductQuantityForm" class="changeQuantityForm" action="{{ url_for('main.save_quantity', order_id=order.id) }}" method="POST">
+                        {{ quantity_form.csrf_token(id=False) }}
+                        {{ quantity_form.product_id(class_='d-none', hidden='', value='', id='addProductQuantityFormProductId') }}
+                        <input id='addProductQuantityFormProductQuantity' disabled name="product_quantity" type="number" class="form-control" min="0" step="1" aria-label="Количество" value="">
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
+    {% endif %}
     <div class="row">
         <div class="col">
             Всего позиций: {{ order.products|length }}
@@ -364,7 +366,7 @@
             });
         });
 
-        {% if current_user.role.name == 'admin' or current_user.id == order.initiative_id %}
+        {% if current_user.role.name in ['admin', 'purchaser'] or current_user.id == order.initiative_id %}
             var focusOutTimer = null;
             $(".changeQuantityForm input").on("keyup change", function(){
                 if (focusOutTimer != null)
@@ -509,7 +511,7 @@
                 }
                 else if (target == 'cancel'){
                     $("#leaveCommentModalLabel").text('АННУЛИРОВАТЬ');
-                    $("#leaveCommentForm").attr('action', "{{url_for('main.CancelOrder', order_id=order.id)}}")
+                    $("#leaveCommentForm").attr('action', "{{url_for('main.cancel_order', order_id=order.id)}}")
                 }
             });
 
