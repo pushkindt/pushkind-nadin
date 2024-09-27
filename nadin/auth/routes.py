@@ -36,7 +36,7 @@ def login():
         return redirect(next_page)
 
     flash_errors(form)
-    return render_template("auth/login.html", form=form)
+    return render_template("auth/login.html", form=form, next_page=next_page)
 
 
 @bp.route("/login/<token>/", methods=["GET"])
