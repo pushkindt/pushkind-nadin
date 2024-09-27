@@ -63,11 +63,6 @@ class InitiativeForm(FlaskForm):
         validators=[DataRequired(message="Название клиента - обязательное поле.")],
         coerce=int,
     )
-    categories = SelectMultipleField(
-        "Категории",
-        validators=[DataRequired(message="Категории заявки - обязательное поле.")],
-        coerce=int,
-    )
     submit = SubmitField("Сохранить")
 
 

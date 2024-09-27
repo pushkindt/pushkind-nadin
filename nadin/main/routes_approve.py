@@ -47,8 +47,14 @@ def show_order(order_id):
 
     comment_form.notify_reviewers.choices = [(r.id, r.name) for r in order.reviewers]
 
+    if len(current_user.projects) > 0:
+        projects = current_user.projects
+    else:
+        projects = Project.query.filter(Project.hub_id == current_user.hub_id).order_by(Project.name).all()
+
+    initiative_form.project.choices = [(p.id, p.name) for p in projects]
+
     if order.project:
-        initiative_form.project.choices = [(order.project["id"], order.project["name"])]
         initiative_form.project.default = order.project["id"]
         initiative_form.process()
 
@@ -410,7 +416,7 @@ def SaveApproval(order_id):
 
 @bp.route("/orders/parameters/<int:order_id>", methods=["POST"])
 @login_required
-@role_required([UserRoles.admin, UserRoles.initiative, UserRoles.validator, UserRoles.purchaser])
+@role_required([UserRoles.admin, UserRoles.initiative, UserRoles.purchaser])
 def SaveParameters(order_id):
     order = get_order(order_id)
     if order is None:
@@ -424,15 +430,13 @@ def SaveParameters(order_id):
     form = InitiativeForm()
 
     projects = Project.query.filter(Project.hub_id == current_user.hub_id).order_by(Project.name).all()
-    categories = Category.query.filter(Category.hub_id == current_user.hub_id).all()
 
-    form.categories.choices = [(c.id, c.name) for c in categories]
     form.project.choices = [(p.id, p.name) for p in projects]
 
     if form.validate_on_submit() is True:
         new_project = Project.query.filter_by(id=form.project.data, hub_id=current_user.hub_id).first()
         if new_project is not None and (order.project is None or order.project_id != new_project.id):
-            message = f'Клиент изменён «{order.project.name if order.project else ""}» на «{new_project.name}»'
+            message = f'Клиент изменён «{order.project['name'] if order.project else ""}» на «{new_project.name}»'
             event = OrderEvent(
                 user_id=current_user.id,
                 order_id=order_id,
@@ -441,12 +445,9 @@ def SaveParameters(order_id):
                 timestamp=datetime.now(tz=timezone.utc),
             )
             db.session.add(event)
-            order.project = new_project
+            order.project = new_project.to_dict()
+            order.project_id = new_project.id
 
-        order.categories = Category.query.filter(
-            Category.id.in_(form.categories.data),
-            Category.hub_id == current_user.hub_id,
-        ).all()
         OrderApproval.query.filter_by(order_id=order.id).delete()
         db.session.commit()
 

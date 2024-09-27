@@ -260,6 +260,7 @@ class Order(db.Model):
             order.project_id = user.projects[0].id
         else:
             order.project = {}
+            order.project_id = None
 
         products = Product.query.filter(Product.id.in_(int(p_id) for p_id in cart.items.keys())).all()
         if not products:

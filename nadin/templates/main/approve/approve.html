@@ -38,7 +38,7 @@
     <div class="row">
         <div class="col">
             {% if current_user.role.name in ['admin', 'initiative', 'validator', 'purchaser'] %}
-                {% if order.project %}
+                {% if order.project_id and order.project %}
                     <span class="fw-bold">Клиент:</span>
                     <a href="#initiativeSettingsModal" data-bs-toggle="modal">{{ order.project.name }}</a><br>
                 {% else %}
@@ -209,10 +209,6 @@
                             {{ initiative_form.project.label(class_ = 'form-label') }}
                             {{ initiative_form.project(class_ = 'form-control') }}
                         </div>
-                        <div class="mb-3 {% if current_user.role.name != 'admin' %}d-none{% endif %}">
-                            {{ initiative_form.categories.label(class_ = 'form-label') }}
-                            {{ initiative_form.categories(class_ = 'form-control') }}
-                        </div>
                     </div>
                     <div class="modal-footer">
                         {{ initiative_form.submit(class_ = 'btn btn-primary text-white', id=False) }}
@@ -344,21 +340,31 @@
 <script>
     $(document).ready(function () {
 
-        $("#project option[value='0']").prop("disabled", true);
+    {% if current_user.role.name in ['admin', 'purchaser'] %}
+        const projectSelect = $("#project");
 
-        $("#income_statement option[value='0']").prop("disabled", true);
-        $("#cashflow_statement option[value='0']").prop("disabled", true);
-
-        $("#exportSubmit").click(function () {
-            setTimeout(() => $("#exportNotification").removeClass("d-none"), 1000);
+        projectSelect.selectize({
+            maxItems:1,
+            valueField: 'id',
+            labelField: 'name',
+            searchField: 'name',
+            options: [],
+            create: false,
+            load: function(query, callback) {
+                if (!query.length) return callback();
+                $.ajax({
+                    url: '{{url_for("api.search_projects", q="0")}}'.replace('0', encodeURIComponent(query)),
+                    type: 'GET',
+                    error: function() {
+                        callback();
+                    },
+                    success: function(res) {
+                        callback(res.slice(0, 20));
+                    }
+                });
+            },
         });
-
-        $("#project").change(function () {
-            let val = Number($(this).val());
-            $(this).removeClass("border-danger");
-
-        });
-
+    {% endif %}
         $(".showRemarks").click(function () {
             let productId = $(this).data("id");
             $(".remarkListItem").filter(function () {
