@@ -4,7 +4,7 @@ from pathlib import Path
 from authlib.integrations.flask_oauth2 import current_token
 from authlib.jose import JsonWebKey, KeySet
 from flask import Blueprint, current_app, jsonify, redirect, render_template, request, url_for
-from flask_login import current_user, login_required
+from flask_login import current_user, login_required, logout_user
 from werkzeug.security import gen_salt
 
 from nadin.extensions import db
@@ -157,5 +157,7 @@ def logout():
     db.session.commit()
     post_logout_redirect_uri = request.args.get("post_logout_redirect_uri")
     if not post_logout_redirect_uri:
-        post_logout_redirect_uri = url_for("main.ShowIndex")
+        post_logout_redirect_uri = url_for("auth.login")
+    if current_user.is_authenticated:
+        logout_user()
     return redirect(post_logout_redirect_uri)

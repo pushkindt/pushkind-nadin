@@ -84,7 +84,6 @@ def signup():
 @bp.route("/logout/")
 def logout():
     logout_user()
-    db.session.commit()
     return redirect(url_for("auth.login"))
 
 
