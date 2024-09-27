@@ -12,7 +12,7 @@ default:
   max_per_page: 20
   openid_private_key: private.pem
   openid_public_key: public.pem
-  login_view: auth.login_oauth
+  login_view: auth.login
 
 local:
   login_view: auth.login
