@@ -1,7 +1,7 @@
 {% if 'selectedOptions' not in product %}
 {% set _ = glob.update({'no_measurements':True}) %}
 {% endif %}
-<div class="row my-1 py-1 bg-white rounded selectable {% if product['id'] in order.user_approvals|map(attribute='product_id')|list %}border border-danger{%endif%}"
+<div class="row my-1 py-1 bg-white rounded {% if product['id'] in order.user_approvals|map(attribute='product_id')|list %}border border-danger{%endif%}"
     data-id="{{ product.id }}">
     <div class="col-auto">
         <img src="{{ product['imageUrl'] or config['PLACEHOLDER_IMAGE'] }}" height="96" width="96" alt="thumbnail">

@@ -37,7 +37,7 @@
     </div>
     <div class="row">
         <div class="col">
-            {% if current_user.role.name in ['admin', 'initiative', 'validator', 'purchaser'] %}
+            {% if current_user.role.name in ['admin', 'initiative', 'purchaser'] %}
                 {% if order.project_id and order.project %}
                     <span class="fw-bold">Клиент:</span>
                     <a href="#initiativeSettingsModal" data-bs-toggle="modal">{{ order.project.name }}</a><br>

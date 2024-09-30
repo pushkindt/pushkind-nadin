@@ -49,12 +49,10 @@ def show_order(order_id):
 
     if len(current_user.projects) > 0:
         projects = current_user.projects
-    else:
-        projects = Project.query.filter(Project.hub_id == current_user.hub_id).order_by(Project.name).all()
-
-    initiative_form.project.choices = [(p.id, p.name) for p in projects]
+        initiative_form.project.choices = [(p.id, p.name) for p in projects]
 
     if order.project:
+        initiative_form.project.choices.append((order.project["id"], order.project["name"]))
         initiative_form.project.default = order.project["id"]
         initiative_form.process()
 
@@ -311,9 +309,8 @@ def SaveApproval(order_id):
     form = OrderApprovalForm()
     if form.validate_on_submit():
 
-        message = form.comment.data.strip()
-        if len(message) == 0:
-            message = None
+        message = form.comment.data.strip() or None
+
 
         user_approval = OrderApproval.query.filter_by(
             user_id=current_user.id,
@@ -351,6 +348,7 @@ def SaveApproval(order_id):
                 data=message,
                 timestamp=datetime.now(tz=timezone.utc),
             )
+            order.status = OrderStatus.authorized
         else:
             OrderApproval.query.filter_by(order_id=order_id, user_id=current_user.id, product_id=None).delete()
             if form.product_id.data == 0:
@@ -368,6 +366,7 @@ def SaveApproval(order_id):
                     remark=message,
                 )
                 db.session.add(product_approval)
+                order.status = OrderStatus.cancelled
             else:
                 product = {}
                 for product in order.products:
@@ -397,16 +396,16 @@ def SaveApproval(order_id):
                     data=message,
                     timestamp=datetime.now(tz=timezone.utc),
                 )
+                order.status = OrderStatus.clarification
         db.session.add(event)
-        order.update_status()
         db.session.commit()
         flash("Согласование сохранено.")
 
         if order.status != last_status:
-            if order.status == OrderStatus.fulfilled:
+            if order.status == OrderStatus.new:
                 SendEmailNotification("approved", order)
 
-            elif order.status == OrderStatus.cancelled:
+            elif order.status in [OrderStatus.cancelled, OrderStatus.clarification]:
                 SendEmailNotification("disapproved", order)
 
     else:
@@ -499,7 +498,7 @@ def ProcessHubOrder(order_id):
         timestamp=datetime.now(tz=timezone.utc),
     )
     db.session.add(event)
-    order.purchased = True
+
     db.session.commit()
 
     flash(message)

@@ -5,25 +5,7 @@
 {% else %}
 	{% if order['status'].name == 'new' %}
 		<span class="badge bg-white text-secondary border fw-normal" title="Статус">{{ order.status }}</span>
-	{% elif order['status'].name == 'partly_approved' %}
-		<span class="badge bg-{{order['status'].color()}} fw-normal" title="Согласовали">
-			{{ order.approvals|selectattr('approved')|list|length }}
-			из
-			{{ order.approvals|length }}
-		</span>
 	{% else %}
 		<span class="badge bg-{{order['status'].color()}} fw-normal" title="Статус">{{ order.status }}</span>
-	{% endif %}
-	{% if order.over_limit %}
-		<span class="badge bg-white text-danger border border-danger fw-normal" title="Превышен лимит">сверх лимита</span>
-	{% endif %}
-	{% if order.purchased %}
-		<span class="badge bg-white text-dark border fw-normal" title="Отправлена поставщику"><i class="bi bi-envelope"></i></span>
-	{% endif %}
-	{% if order.exported %}
-		<span class="badge bg-white text-dark border fw-normal" title="Отправлена в 1С">1C</span>
-	{% endif %}
-	{% if order.dealdone %}
-		<span class="badge bg-white text-dark border fw-normal" title="{{order.dealdone_comment or 'законтрактовано'}}">законтрактовано</span>
 	{% endif %}
 {% endif %}

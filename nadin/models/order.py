@@ -82,6 +82,8 @@ class OrderStatus(enum.IntEnum):
     fulfilled = 5
     cancelled = 6
     returned = 7
+    clarification = 8
+    authorized = 9
 
     def __str__(self):
         pretty = [
@@ -93,11 +95,13 @@ class OrderStatus(enum.IntEnum):
             "Получен",
             "Отменён",
             "Возврат",
+            "Уточнение",
+            "Авторизован",
         ]
         return pretty[self.value]
 
     def color(self):
-        colors = ["white", "primary", "info", "info", "info", "success", "secondary", "danger"]
+        colors = ["white", "primary", "info", "info", "info", "success", "danger", "danger", "warning", "primary"]
         return colors[self.value]
 
 
@@ -153,12 +157,7 @@ class Order(db.Model):
     )
     project_id = db.Column(db.Integer, db.ForeignKey("project.id", ondelete="SET NULL"), nullable=True)
     hub_id = db.Column(db.Integer, db.ForeignKey("vendor.id", ondelete="CASCADE"), nullable=False)
-    purchased = db.Column(db.Boolean, nullable=False, default=False, server_default=expression.false())
-    exported = db.Column(db.Boolean, nullable=False, default=False, server_default=expression.false())
-    dealdone = db.Column(db.Boolean, nullable=False, default=False, server_default=expression.false())
-    over_limit = db.Column(db.Boolean, nullable=False, default=False, server_default=expression.false())
-    dealdone_responsible_name = db.Column(db.String(128))
-    dealdone_responsible_comment = db.Column(db.String(128))
+
     categories = db.relationship("Category", secondary="order_category")
     vendors = db.relationship("Vendor", secondary="order_vendor")
     hub = db.relationship("Vendor", back_populates="orders")
@@ -184,17 +183,6 @@ class Order(db.Model):
     )
     initiative = db.Column(db.JSON(), nullable=False)
     project = db.Column(db.JSON(), nullable=False)
-
-    @property
-    def dealdone_comment(self):
-        if self.dealdone is False:
-            return None
-        event = (
-            OrderEvent.query.filter_by(order_id=self.id, type=EventType.dealdone)
-            .order_by(OrderEvent.timestamp.desc())
-            .first()
-        )
-        return event.data if event else None
 
     @property
     def categories_list(self):
