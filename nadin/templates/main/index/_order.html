@@ -63,10 +63,10 @@
 		{% if not order.project_id or not order.project %}
 			<span class="text-danger fw-bold">клиент не указан</span>
 		{% else %}
-			{{ order.project.name or "" }}<br>
-			{{ order.project.contact or "" }}<br>
-			{{ order.project.email or "" }}<br>
-			{{ order.project.phone or "" }}
+			{% if order.project.name %}{{ order.project.name }}<br>{% endif %}
+			{% if order.project.contact and order.project.contact != order.project.name %}{{ order.project.contact }}<br>{% endif %}
+			{% if order.project.email %}{{ order.project.email }}<br>{% endif %}
+			{% if order.project.phone %}{{ order.project.phone }}<br>{% endif %}
 		{% endif %}
 	</div>
 	<div class="col col-sm overflow-hidden">
