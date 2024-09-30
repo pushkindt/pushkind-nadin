@@ -57,7 +57,7 @@
 	</div>
 	<div class="col-sm-1 overflow-hidden">
 		<span class="d-sm-none fw-bold">Скидка:</span>
-		{{ "{:,.2%}".format(order.project.discount/100.0 or 0.0) }}
+		{{ "{:,.2%}".format(order.project.get(discount, 0.0)/100.0 or 0.0) }}
 	</div>
 	<div class="col col-sm overflow-hidden">
 		{% if not order.project_id or not order.project %}
