@@ -50,6 +50,8 @@ def show_order(order_id):
     if len(current_user.projects) > 0:
         projects = current_user.projects
         initiative_form.project.choices = [(p.id, p.name) for p in projects]
+    else:
+        initiative_form.project.choices = []
 
     if order.project:
         initiative_form.project.choices.append((order.project["id"], order.project["name"]))

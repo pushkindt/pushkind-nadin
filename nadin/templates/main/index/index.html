@@ -3,20 +3,15 @@
 {% block content %}
 <div class="container my-2">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <input class="form-control" id="orderFilter" type="text" placeholder="Фильтр..">
-        </div>
-    </div>
-    <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-auto">
             {% for d in dates %}
                 <a href="{{ url_for('main.ShowIndex', from=dates[d], disapproved=filter_disapproved) }}" class="text-decoration-none badge {% if filter_from == dates[d] %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}">{{ d }}</a>
             {% endfor %}
             <a href="{{ url_for('main.ShowIndex', from=0, disapproved=filter_disapproved) }}" class="text-decoration-none badge {% if filter_from == 0 %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}">все</a>
         </div>
     </div>
-    <div class="row justify-content-center">
-        <div class="col-md-8 fs-7">
+    <div class="row">
+        <div class="col fs-7">
             <div class="row">
                 <div class="col">
                     <div class="form-check form-check-inline">
@@ -29,7 +24,6 @@
             </div>
         </div>
     </div>
-
 </div>
 <div class="container">
     <div class="row my-2 fs-7">
@@ -85,33 +79,6 @@
 <script>
     $(document).ready(() => {
 
-        const orderFilter = document.getElementById("orderFilter");
-        const orderList = document.getElementById("orderList");
-
-        const updateVisibleOrdersTotal = () => {
-            const orderRows = orderList.querySelectorAll(".order");
-            let order_list = [];
-            let orderTotal = 0;
-            orderRows.forEach((orderRow) => {
-                if (orderFilter.value.length === 0 || !orderRow.classList.contains("d-none")) {
-                    order_list.push(orderRow.dataset.id);
-                    orderTotal += Number(orderRow.dataset.total);
-                }
-            });
-            orderTotal /= 1000000;
-            document.getElementById("orderCount").textContent = order_list.length;
-            document.getElementById("orderTotal").textContent = orderTotal.toFixed(2);
-        }
-
-        InstantiatePagination("orderList", "order", "orderPagination", 50, 'orderFilter');
-        updateVisibleOrdersTotal();
-
-        const pages = document.querySelectorAll("#orderPagination li");
-        pages.forEach(page => {
-            page.addEventListener("click", updateVisibleOrdersTotal);
-        })
-
-
         let alertModal = document.getElementById('alertModal');
         if (alertModal){
             alertModal = new bootstrap.Modal(alertModal, {});
@@ -148,23 +115,6 @@
 
         {% endif %}
 
-        orderFilter.addEventListener("keyup", () => {
-            let filterValue = orderFilter.value.toLowerCase();
-            const orderRows = orderList.querySelectorAll(".order");
-            if (filterValue.length > 0){
-                orderRows.forEach((orderRow) => {
-                    const show = orderRow.textContent.toLowerCase().indexOf(filterValue) > -1;
-                    if (show)
-                        orderRow.classList.remove("d-none")
-                    else
-                        orderRow.classList.add("d-none");
-                });
-            } else {
-                const page = document.querySelector("#orderPagination li.active");
-                page.click();
-            }
-            updateVisibleOrdersTotal();
-        });
 
         $(".selectable").click(function (event) {
             let orderId = $(this).attr('data-id');
