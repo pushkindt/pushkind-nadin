@@ -14,12 +14,6 @@
 
 <div class="container my-2">
     <div class="row gx-1 justify-content-center">
-        <div class="col-md-6 mb-1">
-            <form method="GET">
-                <input type="hidden" name="vendor_id" value="{{vendor_id}}">
-                <input class="form-control" name="search" id="searchInput" type="search" placeholder="Поиск.." value={{search_key or ''}}>
-            </form>
-        </div>
         {% if current_user.role.name != 'vendor' %}
         <div class="col-md-3 mb-1">
             <select class="form-select" aria-label="Vendor select" id="vendorSelect">
@@ -37,8 +31,6 @@
                 {% endfor %}
             </select>
         </div>
-    </div>
-    <div class="row gx-1 justify-content-center">
         <div class="col-auto">
             <a class="btn btn-primary text-white" href="{{url_for('main.DownloadProducts', vendor_id=vendor_id)}}">
                 <i class="bi bi-cloud-download"></i>

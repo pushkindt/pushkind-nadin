@@ -19,14 +19,6 @@
 
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <form method="GET" action="{{url_for('main.shop_search')}}">
-                <input class="form-control" name="search" id="searchInput" type="search" placeholder="Поиск.." value={{search_key or ''}}>
-            </form>
-        </div>
-    </div>
-
-    <div class="row justify-content-center">
-        <div class="col-md-8">
             {% set glob={} %}
             {% for vendor in vendors %}
                 {% if vendor_id == vendor.id %}
