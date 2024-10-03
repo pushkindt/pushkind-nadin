@@ -13,6 +13,7 @@ default:
   openid_private_key: private.pem
   openid_public_key: public.pem
   login_view: auth.login
+  moment_default_format: YYYY-MM-DD
 
 local:
   login_view: auth.login
