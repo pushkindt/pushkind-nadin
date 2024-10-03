@@ -13,89 +13,85 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav">
-                {% if current_user.role.name in ['admin', 'purchaser'] %}
+                    {% if current_user.role.name in ['admin', 'purchaser'] %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint in ('main.shop_categories', 'main.shop_search', 'main.shop_products', 'main.shop_cart') %} active {% endif %}"
+                                href="{{ url_for('main.shop_categories') }}">Заказать</a>
+                        </li>
+                    {% endif %}
+                    {% if current_user.role.name in ['initiative'] %}
+                        <li class="nav-item">
+                            <a class="nav-link"
+                                href="https://map.pushkind.com/">Заказать</a>
+                        </li>
+                    {% endif %}
+                    {% if current_user.role.name not in ['default', 'vendor', 'initiative'] %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'main.ShowProjects' %} active {% endif %}"
+                                href="{{ url_for('main.ShowProjects') }}">Клиенты</a>
+                        </li>
+                    {% endif %}
+                    {% if current_user.role.name in ['admin'] %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'main.show_vendors' %} active {% endif %}"
+                                href="{{ url_for('main.show_vendors') }}">Поставщики</a>
+                        </li>
+                    {% endif %}
+                    {% if current_user.role.name in ['admin'] %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'main.show_products' %} active {% endif %}"
+                                href="{{ url_for('main.show_products') }}">Товары</a>
+                        </li>
+                    {% endif %}
+                    {% if current_user.role.name not in ['default', 'vendor', 'initiative'] %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint in ('main.shop_categories', 'main.shop_search', 'main.shop_products', 'main.shop_cart') %} active {% endif %}"
-                            href="{{ url_for('main.shop_categories') }}">Заказать</a>
+                        <a class="nav-link {% if request.endpoint == 'main.ShowHistory' %} active {% endif %}"
+                            href="{{ url_for('main.ShowHistory') }}">История</a>
                     </li>
-                {% endif %}
-                {% if current_user.role.name in ['initiative'] %}
-                    <li class="nav-item">
-                        <a class="nav-link"
-                            href="https://map.pushkind.com/">Заказать</a>
-                    </li>
-                {% endif %}
-                {% if current_user.role.name not in ['default', 'vendor', 'initiative'] %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'main.ShowProjects' %} active {% endif %}"
-                            href="{{ url_for('main.ShowProjects') }}">Клиенты</a>
-                    </li>
-                {% endif %}
-                {% if current_user.role.name in ['admin'] %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'main.show_vendors' %} active {% endif %}"
-                            href="{{ url_for('main.show_vendors') }}">Поставщики</a>
-                    </li>
-                {% endif %}
-                {% if current_user.role.name in ['admin'] %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'main.show_products' %} active {% endif %}"
-                            href="{{ url_for('main.show_products') }}">Товары</a>
-                    </li>
-                {% endif %}
-                {% if current_user.role.name not in ['default', 'vendor', 'initiative'] %}
-                <li class="nav-item">
-                    <a class="nav-link {% if request.endpoint == 'main.ShowHistory' %} active {% endif %}"
-                        href="{{ url_for('main.ShowHistory') }}">История</a>
-                </li>
-                {% endif %}
-
-                {% if current_user.role.name in ['admin'] %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
-                        aria-expanded="false">Хабы</a>
-                    <ul class="dropdown-menu">
-                        {% for hub in current_user.hub_list %}
-                        <li><a class="dropdown-item" href="{{url_for('main.SwitchHub', hub_id=hub.id)}}">{{ hub.name }}</a></li>
-                        {% endfor %}
-                    </ul>
-                </li>
-                {% endif %}
+                    {% endif %}
                 </ul>
-                        <form class="d-flex w-100" role="search" action="">
-                            <div class="input-group me-2">
-                                <input name="q" class="form-control" type="search" placeholder="Поиск" aria-label="Search" />
-                                <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i></button>
-                            </div>
-                        </form>
+                <form class="d-flex w-100" role="search" action="">
+                    <div class="input-group me-2">
+                        <input name="q" class="form-control" type="search" placeholder="Поиск" aria-label="Search" />
+                        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i></button>
+                    </div>
+                </form>
             </div>
 
-                        <div class="dropdown-center">
-                            <button class="btn btn-link nav-link align-items-center text-muted dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle fs-4"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item icon-link" href="{{url_for('main.show_settings')}}">
-                                        <i class="bi bi-person mb-2"></i>
-                                        Профиль
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item icon-link" href="#" data-bs-toggle="modal" data-bs-target="#callSupportModal">
-                                        <i class="bi bi-info-circle mb-2"></i>
-                                        Поддержка
-                                    </a>
-                                </li>
+            <div class="dropdown-center">
+                <button class="btn btn-link nav-link align-items-center text-muted dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle fs-4"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item icon-link" href="{{url_for('main.show_settings')}}">
+                            <i class="bi bi-person mb-2"></i>
+                            Профиль
+                        </a>
+                    </li>
 
-                                <li>
-                                    <a class="dropdown-item icon-link" href="{{url_for('auth.logout')}}">
-                                        <i class="bi bi-box-arrow-right mb-2"></i>
-                                        Выйти
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
+                    <li>
+                        <a class="dropdown-item icon-link" href="{{url_for('admin.ShowAdminPage')}}" >
+                            <i class="bi bi-wrench-adjustable-circle mb-2"></i>
+                            Настройки
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="dropdown-item icon-link" href="#" data-bs-toggle="modal" data-bs-target="#callSupportModal">
+                            <i class="bi bi-info-circle mb-2"></i>
+                            Поддержка
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="dropdown-item icon-link" href="{{url_for('auth.logout')}}">
+                            <i class="bi bi-box-arrow-right mb-2"></i>
+                            Выйти
+                        </a>
+                    </li>
+                </ul>
+            </div>
 
         </div>
     </nav>
