@@ -5,11 +5,7 @@
     <ul class="dropdown-menu bg-light" aria-labelledby="orderActionsLink">
         <li class="dropdown-item">
             <i class="bi bi-pencil"></i>
-            {% if current_user.role.name in ['admin', 'initiative', 'validator', 'purchaser'] %}
-                <a class="leaveComment" href="#" data-bs-toggle="modal" data-bs-target="#leaveCommentModal" data-target="comment">комментировать</a>
-            {% else %}
-                <span class="text-secondary">комментировать</span>
-            {% endif %}
+            <a class="leaveComment" href="#" data-bs-toggle="modal" data-bs-target="#leaveCommentModal" data-target="comment">комментировать</a>
         </li>
         <li class="dropdown-item">
             <i class="bi bi-files"></i>

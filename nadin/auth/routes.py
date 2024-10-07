@@ -81,7 +81,7 @@ def signup():
     return render_template("auth/register.html", form=form)
 
 
-@bp.route("/logout/")
+@bp.route("/logout/", methods=["POST"])
 def logout():
     logout_user()
     return redirect(url_for("auth.login"))

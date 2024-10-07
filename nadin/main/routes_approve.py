@@ -297,7 +297,7 @@ def save_quantity(order_id):
 
 @bp.route("/orders/approval/<int:order_id>", methods=["POST"])
 @login_required
-@role_required([UserRoles.validator])
+@role_required([UserRoles.validator, UserRoles.warehouse])
 def SaveApproval(order_id):
     order = get_order(order_id)
     if order is None:
@@ -312,7 +312,6 @@ def SaveApproval(order_id):
     if form.validate_on_submit():
 
         message = form.comment.data.strip() or None
-
 
         user_approval = OrderApproval.query.filter_by(
             user_id=current_user.id,
@@ -350,7 +349,10 @@ def SaveApproval(order_id):
                 data=message,
                 timestamp=datetime.now(tz=timezone.utc),
             )
-            order.status = OrderStatus.authorized
+            if current_user.role == UserRoles.validator:
+                order.status = OrderStatus.authorized
+            else:
+                order.status = OrderStatus.unpayed
         else:
             OrderApproval.query.filter_by(order_id=order_id, user_id=current_user.id, product_id=None).delete()
             if form.product_id.data == 0:
@@ -460,7 +462,6 @@ def SaveParameters(order_id):
 
 @bp.route("/orders/comment/<int:order_id>", methods=["POST"])
 @login_required
-@role_required([UserRoles.admin, UserRoles.initiative, UserRoles.validator, UserRoles.purchaser])
 def LeaveComment(order_id):
     order = get_order(order_id)
     if order is None:

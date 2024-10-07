@@ -85,10 +85,12 @@
                     </li>
 
                     <li>
-                        <a class="dropdown-item icon-link" href="{{url_for('auth.logout')}}">
-                            <i class="bi bi-box-arrow-right mb-2"></i>
-                            Выйти
-                        </a>
+                        <form method="POST" action="{{url_for('auth.logout')}}">
+                            <button type="submit" class="dropdown-item icon-link">
+                                <i class="bi bi-box-arrow-right mb-2"></i>
+                                Выйти
+                            </button>
+                        </form>
                     </li>
                 </ul>
             </div>

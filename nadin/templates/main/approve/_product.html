@@ -53,7 +53,7 @@
             data-id="{{ product.id }}"><i class="bi bi-chat-left"></i></a>
         <br>
         {% endif %}
-        {% if current_user.role.name in ['validator'] %}
+        {% if current_user.role.name in ['validator', 'warehouse'] %}
         <a href="#" class="approveButton text-decoration-none" data-id="{{ product['id'] }}" data-target="product">
             +замечание
         </a>
