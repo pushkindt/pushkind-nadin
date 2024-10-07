@@ -71,7 +71,7 @@ def remove_vendor(store_id):
 @bp.route("/vendors/activate/<int:store_id>")
 @login_required
 @role_required([UserRoles.admin])
-def acrivate_vendor(store_id):
+def activate_vendor(store_id):
     store = Vendor.query.filter(Vendor.id == store_id, Vendor.hub_id == current_user.hub_id).first()
     if store is not None:
         store.enabled = not store.enabled
