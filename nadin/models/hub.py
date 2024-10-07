@@ -166,7 +166,7 @@ class User(UserMixin, db.Model):
         return isinstance(another, User) and self.id == another.id
 
     def __repr__(self):
-        return json.dumps(self.to_dict(), ensure_ascii=False)
+        return json.dumps(self.to_dict(include_projects=True), ensure_ascii=False)
 
     def get_user_id(self):
         return self.id
@@ -181,7 +181,7 @@ class User(UserMixin, db.Model):
         digest = md5(self.email.lower().encode("utf-8")).hexdigest()
         return f"https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}"
 
-    def to_dict(self):
+    def to_dict(self, include_projects: bool = False):
         data = {
             "id": self.id,
             "email": self.email,
@@ -197,6 +197,8 @@ class User(UserMixin, db.Model):
             "email_comment": self.email_comment,
             "project_ids": self.projects_list,
         }
+        if include_projects:
+            data["projects"] = [p.to_dict() for p in self.projects]
         return data
 
     def get_jwt_token(self, expires_in=600):
