@@ -1,11 +1,12 @@
 import enum
 from datetime import datetime, timezone
 
-from sqlalchemy.sql import expression, func
+from sqlalchemy.sql import func
 
 from nadin.extensions import db
 from nadin.models.hub import AppSettings, User, UserProject, UserRoles, Vendor
 from nadin.models.product import Product
+from nadin.models.search import SearchableMixin
 from nadin.models.shopping_cart import ApiShoppingCartModel
 
 
@@ -142,7 +143,10 @@ OrderRelationship = db.Table(
 )
 
 
-class Order(db.Model):
+class Order(SearchableMixin, db.Model):
+
+    __searchable__ = ["number", "initiative", "project", "products"]
+
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     number = db.Column(db.String(128), nullable=False)
     initiative_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True)
@@ -287,8 +291,10 @@ class Order(db.Model):
         return order
 
     @classmethod
-    def get_by_access(cls, user: User):
-        orders = Order.query.filter_by(hub_id=user.hub_id)
+    def get_by_access(cls, user: User, query=None):
+        if query is None:
+            query = Order.query
+        orders = query.filter_by(hub_id=user.hub_id)
         if user.role == UserRoles.vendor:
             vendor = Vendor.query.filter_by(hub_id=user.hub_id, email=user.email).first()
             vendor_id = vendor.id if vendor else None

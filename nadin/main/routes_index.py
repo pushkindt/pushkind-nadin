@@ -23,6 +23,9 @@ from nadin.utils import SendEmailNotification, flash_errors, get_filter_timestam
 @role_forbidden([UserRoles.default])
 def ShowIndex():
 
+    search_key = request.args.get("q", type=str)
+    page = request.args.get("page", type=int, default=1)
+
     dates = get_filter_timestamps()
     filter_from = request.args.get("from", default=dates["recently"], type=int)
     filter_disapproved = request.args.get("disapproved", default=None, type=str)
@@ -36,7 +39,12 @@ def ShowIndex():
     dates.pop("annually")
     dates["недавно"] = dates.pop("recently")
 
-    orders = Order.get_by_access(current_user)
+    if search_key:
+        orders, total = Order.search(search_key, page=page, per_page=current_app.config["MAX_PER_PAGE"])
+    else:
+        orders = Order.query
+
+    orders = Order.get_by_access(current_user, orders)
 
     if filter_disapproved is None:
         orders = orders.filter(~Order.status.in_([OrderStatus.returned, OrderStatus.cancelled]))
@@ -44,9 +52,13 @@ def ShowIndex():
     if filter_from > 0:
         orders = orders.filter(Order.create_timestamp > filter_from)
 
-    orders = orders.order_by(Order.create_timestamp.desc())
-
-    orders = db.paginate(orders, max_per_page=current_app.config["MAX_PER_PAGE"])
+    if search_key:
+        orders = db.paginate(orders, page=1, max_per_page=current_app.config["MAX_PER_PAGE"])
+        orders.total = total
+        orders.page = page
+    else:
+        orders = orders.order_by(Order.create_timestamp.desc())
+        orders = db.paginate(orders, page=page, max_per_page=current_app.config["MAX_PER_PAGE"])
 
     merge_form = MergeOrdersForm()
     save_form = SaveOrdersForm(orders=[order.id for order in orders])

@@ -110,7 +110,6 @@ class Project(SearchableMixin, db.Model):
             "price_level_pretty": str(self.price_level),
             "price_level_id": int(self.price_level),
             "discount": self.discount,
-            "last_order_date": self.last_order_date.isoformat() if self.last_order_date is not None else "",
             "order_history": {
                 "year": [h.year for h in self.order_history],
                 "total": [h.total for h in self.order_history],
