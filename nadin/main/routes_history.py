@@ -25,11 +25,26 @@ def ShowHistory():
     dates["квартал"] = dates.pop("quarterly")
     dates["год"] = dates.pop("annually")
     dates["недавно"] = dates.pop("recently")
-    events = OrderEvent.query.filter(OrderEvent.timestamp > dt.fromtimestamp(filter_from))
+
+    search_key = request.args.get("q", type=str)
+    page = request.args.get("page", type=int, default=1)
+
+    if search_key:
+        events, total = OrderEvent.search(search_key, page, current_app.config["MAX_PER_PAGE"])
+    else:
+        events = OrderEvent.query
+
+    events = events.filter(OrderEvent.timestamp > dt.fromtimestamp(filter_from))
     events = events.join(Order).filter_by(hub_id=current_user.hub_id)
     events = events.order_by(OrderEvent.timestamp.desc())
 
-    events = db.paginate(events, max_per_page=current_app.config["MAX_PER_PAGE"])
+    if search_key:
+        events = db.paginate(events, page=1, max_per_page=current_app.config["MAX_PER_PAGE"])
+        events.total = total
+        events.page = page
+    else:
+        events = events.order_by(OrderEvent.timestamp.desc())
+        events = db.paginate(events, page=page, max_per_page=current_app.config["MAX_PER_PAGE"])
 
     return render_template(
         "main/history/history.html", events=events, EventType=EventType, filter_from=filter_from, dates=dates

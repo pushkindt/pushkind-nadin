@@ -119,7 +119,10 @@ class OrderApproval(db.Model):
         return self.product_id is None
 
 
-class OrderEvent(db.Model):
+class OrderEvent(SearchableMixin, db.Model):
+
+    __searchable__ = ["data", "type"]
+
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     order_id = db.Column(db.Integer, db.ForeignKey("order.id", ondelete="CASCADE"), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
