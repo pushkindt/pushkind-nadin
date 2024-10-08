@@ -482,20 +482,19 @@ def LeaveComment(order_id):
 
 @bp.route("/orders/process/<int:order_id>")
 @login_required
-@role_required([UserRoles.admin, UserRoles.purchaser])
-def ProcessHubOrder(order_id):
+@role_required([UserRoles.admin, UserRoles.validator, UserRoles.finance])
+def process_payment(order_id):
     order = get_order(order_id)
     if order is None:
         flash("Заявка с таким номером не найдена.")
         return redirect(url_for("main.ShowIndex"))
 
     if order.status == OrderStatus.cancelled:
-        flash("Нельзя отправить поставщику аннулированную заявку.")
+        flash("Нельзя оплатить аннулированную заявку.")
         return redirect(url_for("main.show_order", order_id=order_id))
 
-    message = "Заявка была отправлена поставщикам: "
-    message += ", ".join(vendor.name for vendor in order.vendors)
-
+    order.status = OrderStatus.payed
+    message = "Заявка была оплачена"
     event = OrderEvent(
         user_id=current_user.id,
         order_id=order_id,
@@ -504,11 +503,92 @@ def ProcessHubOrder(order_id):
         timestamp=datetime.now(tz=timezone.utc),
     )
     db.session.add(event)
-
     db.session.commit()
-
     flash(message)
+    return redirect(url_for("main.show_order", order_id=order_id))
 
+
+@bp.route("/orders/deliver/<int:order_id>")
+@login_required
+@role_required([UserRoles.admin, UserRoles.delivery])
+def deliver_order(order_id):
+    order = get_order(order_id)
+    if order is None:
+        flash("Заявка с таким номером не найдена.")
+        return redirect(url_for("main.ShowIndex"))
+
+    if order.status == OrderStatus.cancelled:
+        flash("Нельзя оплатить аннулированную заявку.")
+        return redirect(url_for("main.show_order", order_id=order_id))
+
+    order.status = OrderStatus.delivering
+    message = "Заявка была передана в доставку"
+    event = OrderEvent(
+        user_id=current_user.id,
+        order_id=order_id,
+        type=EventType.exported,
+        data=message,
+        timestamp=datetime.now(tz=timezone.utc),
+    )
+    db.session.add(event)
+    db.session.commit()
+    flash(message)
+    return redirect(url_for("main.show_order", order_id=order_id))
+
+
+@bp.route("/orders/pickup/<int:order_id>")
+@login_required
+@role_required([UserRoles.admin, UserRoles.delivery])
+def pickup_order(order_id):
+    order = get_order(order_id)
+    if order is None:
+        flash("Заявка с таким номером не найдена.")
+        return redirect(url_for("main.ShowIndex"))
+
+    if order.status == OrderStatus.cancelled:
+        flash("Нельзя оплатить аннулированную заявку.")
+        return redirect(url_for("main.show_order", order_id=order_id))
+
+    order.status = OrderStatus.fulfilled
+    message = "Заявка была получена"
+    event = OrderEvent(
+        user_id=current_user.id,
+        order_id=order_id,
+        type=EventType.dealdone,
+        data=message,
+        timestamp=datetime.now(tz=timezone.utc),
+    )
+    db.session.add(event)
+    db.session.commit()
+    flash(message)
+    return redirect(url_for("main.show_order", order_id=order_id))
+
+
+@bp.route("/orders/return/<int:order_id>")
+@login_required
+@role_required([UserRoles.admin, UserRoles.delivery])
+def return_order(order_id):
+    order = get_order(order_id)
+    if order is None:
+        flash("Заявка с таким номером не найдена.")
+        return redirect(url_for("main.ShowIndex"))
+
+    if order.status == OrderStatus.cancelled:
+        flash("Нельзя оплатить аннулированную заявку.")
+        return redirect(url_for("main.show_order", order_id=order_id))
+
+    order.status = OrderStatus.returned
+    message = "Заявка была возвращена"
+    event = OrderEvent(
+        user_id=current_user.id,
+        order_id=order_id,
+        type=EventType.cancelled,
+        data=message,
+        timestamp=datetime.now(tz=timezone.utc),
+    )
+    db.session.add(event)
+    db.session.commit()
+    flash(message)
     return redirect(url_for("main.show_order", order_id=order_id))
 
 

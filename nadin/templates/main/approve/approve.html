@@ -118,15 +118,15 @@
     </div>
     {% for product in order.products %}
         {% include 'main/approve/_product.html' %}
-    {% endfor %}
-    <div class="row">
-        <div class="col text-center add_button_container">
-            <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#addProductFormCollapse" aria-expanded="false" aria-controls="addProductFormCollapse">
-                <i class="bi bi-plus-circle"></i>
-            </button>
-        </div>
-    </div>
+    {% endfor %} 
     {% if current_user.role.name in ['initiative', 'purchaser', 'admin'] %}
+        <div class="row">
+            <div class="col text-center add_button_container">
+                <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#addProductFormCollapse" aria-expanded="false" aria-controls="addProductFormCollapse">
+                    <i class="bi bi-plus-circle"></i>
+                </button>
+            </div>
+        </div>
         <div class="collapse" id="addProductFormCollapse">
             <div class="row my-1 py-1 bg-white rounded">
                 <div class="col">
