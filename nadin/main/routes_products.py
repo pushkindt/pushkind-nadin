@@ -123,8 +123,7 @@ def show_products():
         vendors = vendors.filter_by(email=current_user.email)
     vendors = vendors.all()
 
-    if not vendors:
-        vendors.append(current_user.hub)
+    vendors.append(current_user.hub)
 
     vendor_id = request.args.get("vendor_id", type=int)
     if vendor_id is None or vendor_id not in (v.id for v in vendors):

@@ -9,6 +9,7 @@ from flask import Flask, render_template, request
 
 from nadin import admin, api, auth, oauth
 from nadin.extensions import db, login_manager, mail, migrate, moment, oauth_ext
+from nadin.jinja_filters import qs_active, qs_toggler
 from nadin.main import routes as main_routes
 from nadin.oauth.server import config_oauth_server
 from nadin.oauth.yandex import YandexOauth2Config
@@ -22,8 +23,14 @@ def create_app(**config):
     register_errorhandlers(app)
     register_shellcontext(app)
     configure_logger(app)
+    register_filters(app)
 
     return app
+
+
+def register_filters(app):
+    app.jinja_env.filters["qs_active"] = qs_active
+    app.jinja_env.filters["qs_toggler"] = qs_toggler
 
 
 def register_extensions(app):

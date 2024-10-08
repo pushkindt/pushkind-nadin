@@ -98,29 +98,8 @@
             {% include 'main/products/_product.modal.html' %}
         {% endfor %}
     </div>
-    <nav aria-label="Products pagination">
-        <ul class="pagination justify-content-center flex-wrap" id="productPagination">
-            {% for page in products.iter_pages() %}
-                {% if page %}
-                    {% if page != products.page %}
-                        <li class="page-item">
-                        <a class="page-link" href="{{ url_for('main.show_products', page=page, vendor_id=vendor_id, category_id=category_id) }}">
-                                {{ page }}
-                            </a>
-                        </li>
-                    {% else %}
-                        <li class="page-item active" aria-current="page">
-                            <a class="page-link" href="#">{{ page }}</a>
-                        <li>
-                    {% endif %}
-                {% else %}
-                    <li class="page-item">
-                        <span class="ellipsis">…</span>
-                    </li>
-                {% endif %}
-            {% endfor %}
-        </ul>
-    </nav>
+    {% set items = products %}
+    {% include '_pagination.html' %}
 </div>
 
 {% endblock %}

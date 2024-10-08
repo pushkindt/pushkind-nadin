@@ -1,3 +1,5 @@
+
+{% set request_args = request.args.to_dict() %}
 {% if items.pages > 1 %}
     <nav aria-label="pagination">
         <ul class="pagination justify-content-center flex-wrap" id="pagination">
@@ -5,7 +7,7 @@
                 {% if page %}
                     {% if page != items.page %}
                         <li class="page-item">
-                        <a class="page-link" href="?page={{page}}">
+                        <a class="page-link" href="?{{ request_args|qs_toggler('page', page) }}">
                                 {{ page }}
                             </a>
                         </li>
