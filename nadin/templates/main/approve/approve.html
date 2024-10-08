@@ -230,7 +230,35 @@
                     }
                 });
             },
+            render: {
+                option: function(item, escape) {
+                    return '<div class="item" '+
+                    'data-contact="'+escape(item.contact)+'"'+
+                    'data-email="'+escape(item.email)+'"'+
+                    'data-phone="'+escape(item.phone)+'"'+
+                    'data-shippingaddress="'+escape(item.shipping_address)+'"'+
+                    '>'+escape(item.name)+'</div>';
+                }
+            },
         });
+
+        const projectInfoContact = document.getElementById("contact");
+        const projectInfoEmail = document.getElementById("email");
+        const projectInfoPhone = document.getElementById("phone");
+        const projectInfoShippingAddress = document.getElementById("shipping_address");
+
+        projectSelect.on("change", function () {
+            const id = Number(projectSelect.val());
+            if (id){
+                const selectedOption = projectSelect[0].selectize.getOption(id);
+                projectInfoContact.value = selectedOption.data("contact");
+                projectInfoEmail.value = selectedOption.data("email");
+                projectInfoPhone.value = selectedOption.data("phone");
+                projectInfoShippingAddress.value = selectedOption.data("shippingaddress");
+            }
+
+        });
+
     {% endif %}
         $(".showRemarks").click(function () {
             let productId = $(this).data("id");
