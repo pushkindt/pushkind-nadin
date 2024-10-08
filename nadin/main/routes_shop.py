@@ -19,8 +19,14 @@ from nadin.utils import SendEmailNotification, flash_errors, role_required
 @login_required
 @role_required([UserRoles.purchaser, UserRoles.admin])
 def shop_search():
-    search_key = request.args.get("search", type=str)
+    search_key = request.args.get("q", type=str)
     vendor_id = request.args.get("vendor_id", type=int)
+
+    project_id = request.cookies.get("project_id", type=int)
+    if not project_id:
+        return redirect(url_for("main.shop_categories"))
+
+    project = Project.query.filter_by(id=project_id, hub_id=current_user.hub_id).first()
 
     if not search_key:
         return redirect(url_for("main.shop_categories"))
@@ -51,6 +57,7 @@ def shop_search():
         vendors=vendors,
         products=products,
         vendor_id=vendor_id,
+        project=project,
     )
 
 
@@ -58,6 +65,9 @@ def shop_search():
 @login_required
 @role_required([UserRoles.purchaser, UserRoles.admin])
 def shop_categories():
+
+    if "q" in request.args:
+        return redirect(url_for("main.shop_search", q=request.args["q"]))
 
     if len(current_user.projects) == 1:
         project = current_user.projects[0]
@@ -77,6 +87,9 @@ def shop_categories():
 @login_required
 @role_required([UserRoles.purchaser, UserRoles.admin])
 def shop_products(cat_id, vendor_id):
+
+    if "q" in request.args:
+        return redirect(url_for("main.shop_search", q=request.args["q"]))
 
     project_id = request.cookies.get("project_id", type=int)
 
@@ -116,6 +129,10 @@ def shop_products(cat_id, vendor_id):
 @login_required
 @role_required([UserRoles.purchaser, UserRoles.admin])
 def shop_cart():
+
+    if "q" in request.args:
+        return redirect(url_for("main.shop_search", q=request.args["q"]))
+
     form = CreateOrderForm()
     if form.submit.data:
         if form.validate_on_submit():

@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from flask import flash, redirect, render_template, url_for
+from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_
 from sqlalchemy.orm.attributes import flag_modified
@@ -34,6 +34,9 @@ def get_order(order_id):
 @login_required
 @role_forbidden([UserRoles.default])
 def show_order(order_id):
+
+    if "q" in request.args:
+        return redirect(url_for("main.ShowIndex", q=request.args["q"]))
 
     order = get_order(order_id)
     if order is None:
