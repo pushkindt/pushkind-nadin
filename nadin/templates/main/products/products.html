@@ -14,23 +14,26 @@
 
 <div class="container my-2">
     <div class="row gx-1 justify-content-center">
-        {% if current_user.role.name != 'vendor' %}
-        <div class="col-md-3 mb-1">
-            <select class="form-select" aria-label="Vendor select" id="vendorSelect">
-                {% for v in vendors %}
-                <option {% if v.id==vendor_id %}selected{% endif %} value="{{ v.id }}">{{ v.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        {% endif %}
-        <div class="col-md-3 mb-1">
-            <select class="form-select" aria-label="Category select" id="categorySelect">
-                <option value="" selected>Все категории</option>
-                {% for c in categories %}
-                    <option {% if c.id==category_id %}selected{% endif %} value="{{ c.id }}">{{ c.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
+        <form>
+            {% if current_user.role.name != 'vendor' %}
+                <div class="col-md-3 mb-1">
+                    <input type="hidden" name="q" value="{{request.args.get("q", "")}}">
+                    <select name="vendor_id" class="form-select" aria-label="Vendor select" id="vendorSelect">
+                        {% for v in vendors %}
+                        <option {% if v.id==vendor_id %}selected{% endif %} value="{{ v.id }}">{{ v.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+            <div class="col-md-3 mb-1">
+                <select name="category_id" class="form-select" aria-label="Category select" id="categorySelect">
+                    <option value="" selected>Все категории</option>
+                    {% for c in categories %}
+                        <option {% if c.id==category_id %}selected{% endif %} value="{{ c.id }}">{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
         <div class="col-auto">
             <a class="btn btn-primary text-white" href="{{url_for('main.DownloadProducts', vendor_id=vendor_id)}}">
                 <i class="bi bi-cloud-download"></i>
@@ -112,20 +115,14 @@
         $('#uploadProductsButton').on('change', () => {
             $('#uploadProductsForm').submit();
         });
-        $('#vendorSelect').change(() => {
-            window.location = "{{url_for('main.show_products', vendor_id=-1)}}".replace('-1', $('#vendorSelect').val());
+        document.getElementById('vendorSelect').addEventListener('change', (e) => {
+            e.currentTarget.form.submit();
         });
-        $('#categorySelect').change(() => {
-            window.location = "{{url_for('main.show_products', category_id=-1)}}".replace('-1', $('#categorySelect').val());
+        document.getElementById('categorySelect').addEventListener('change', (e) => {
+            e.currentTarget.form.submit();
         });
-        $('#uploadImagesButton').on('change', () => {
-            $('#uploadImagesForm').submit();
-        });
-
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            if (!e.currentTarget.value) {
-                e.currentTarget.form.submit();
-            }
+        $('#uploadImagesButton').on('change', (e) => {
+            e.currentTarget.form.submit();
         });
 
         const selectElements = document.querySelectorAll('.form-select.productPriceLevel');

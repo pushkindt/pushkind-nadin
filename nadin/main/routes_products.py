@@ -111,7 +111,7 @@ def products_excel_to_df(df: pd.DataFrame, vendor_id: int, categories: "dict[str
 @role_forbidden([UserRoles.default, UserRoles.initiative, UserRoles.supervisor])
 def show_products():
 
-    search_key = request.args.get("search", type=str)
+    search_key = request.args.get("q", type=str)
     page = request.args.get("page", type=int, default=1)
 
     products_form = UploadProductsForm()
