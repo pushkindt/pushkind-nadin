@@ -82,7 +82,10 @@ class AppSettings(db.Model):
     hub = db.relationship("Vendor", back_populates="settings")
 
 
-class User(UserMixin, db.Model):
+class User(SearchableMixin, UserMixin, db.Model):
+
+    __searchable__ = ["name", "email"]
+
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     email = db.Column(db.String(128), index=True, unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)

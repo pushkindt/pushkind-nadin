@@ -1,6 +1,6 @@
 import io
 
-from flask import Response, current_app, flash, redirect, render_template, url_for
+from flask import Response, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from openpyxl import Workbook
 from sqlalchemy import or_
@@ -24,10 +24,27 @@ from nadin.utils import flash_errors, role_forbidden, role_required
 def show_settings():
 
     if current_user.role == UserRoles.admin:
+
+        search_key = request.args.get("q", type=str)
+        page = request.args.get("page", type=int, default=1)
+
         user_form = UserRolesForm()
-        users = User.query.filter(or_(User.role == UserRoles.default, User.hub_id == current_user.hub_id))
-        users = users.order_by(User.name, User.email)
-        users = db.paginate(users, max_per_page=current_app.config["MAX_PER_PAGE"])
+
+        if search_key:
+            users, total = User.search(search_key, page, current_app.config["MAX_PER_PAGE"])
+        else:
+            users = User.query
+
+        users = users.filter(or_(User.role == UserRoles.default, User.hub_id == current_user.hub_id))
+
+        if search_key:
+            users = db.paginate(users, page=1, max_per_page=current_app.config["MAX_PER_PAGE"])
+            users.total = total
+            users.page = page
+        else:
+            users = users.order_by(User.name, User.email)
+            users = db.paginate(users, max_per_page=current_app.config["MAX_PER_PAGE"])
+
     else:
         users = []
         user_form = UserSettingsForm()
