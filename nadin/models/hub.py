@@ -13,6 +13,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from nadin.extensions import db, login_manager
 from nadin.models.project import Project, ProjectPriceLevel
+from nadin.models.search import SearchableMixin
 
 
 @login_manager.user_loader
@@ -48,7 +49,10 @@ class UserRoles(enum.IntEnum):
         return pretty[self.value]
 
 
-class Vendor(db.Model):
+class Vendor(SearchableMixin, db.Model):
+
+    __searchable__ = ["name", "email"]
+
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     hub_id = db.Column(db.Integer, db.ForeignKey("vendor.id", ondelete="CASCADE"), nullable=True)
     name = db.Column(db.String(128), nullable=False)

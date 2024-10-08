@@ -1,13 +1,13 @@
 from datetime import datetime, timezone
 
-from flask import flash, redirect, render_template, url_for
+from flask import current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from nadin.extensions import db
 from nadin.main.forms import AddVendorForm
 from nadin.main.routes import bp
 from nadin.models.hub import User, UserRoles, Vendor
-from nadin.utils import flash_errors, role_forbidden, role_required
+from nadin.utils import flash_errors, role_required
 
 ################################################################################
 # Vendors page
@@ -18,11 +18,28 @@ from nadin.utils import flash_errors, role_forbidden, role_required
 @login_required
 @role_required([UserRoles.admin])
 def show_vendors():
+
+    search_key = request.args.get("q", type=str)
+    page = request.args.get("page", type=int, default=1)
+
+    if search_key:
+        vendors, total = Vendor.search(search_key, page=page, per_page=current_app.config["MAX_PER_PAGE"])
+    else:
+        vendors = Vendor.query
+
+    vendors = Vendor.query.filter(Vendor.hub_id == current_user.hub_id)
+
+    if search_key:
+        vendors = db.paginate(vendors, page=1, max_per_page=current_app.config["MAX_PER_PAGE"])
+        vendors.total = total
+        vendors.page = page
+    else:
+        vendors = vendors.order_by(Vendor.name)
+        vendors = db.paginate(vendors, page=page, max_per_page=current_app.config["MAX_PER_PAGE"])
+
     store_form = AddVendorForm()
-    stores = Vendor.query.filter(Vendor.hub_id == current_user.hub_id).all()
-    if len(stores) == 0:
-        flash("Ни один поставщик не зарегистрован в системе.")
-    return render_template("main/vendors/vendors.html", store_form=store_form, stores=stores)
+
+    return render_template("main/vendors/vendors.html", store_form=store_form, vendors=vendors)
 
 
 @bp.route("/vendors/add/", methods=["POST"])
@@ -51,7 +68,7 @@ def add_vendor():
     return redirect(url_for("main.show_vendors"))
 
 
-@bp.route("/vendors/remove/<int:store_id>")
+@bp.route("/vendors/remove/<int:store_id>", methods=["POST"])
 @login_required
 @role_required([UserRoles.admin])
 def remove_vendor(store_id):
@@ -68,7 +85,7 @@ def remove_vendor(store_id):
     return redirect(url_for("main.show_vendors"))
 
 
-@bp.route("/vendors/activate/<int:store_id>")
+@bp.route("/vendors/activate/<int:store_id>", methods=["POST"])
 @login_required
 @role_required([UserRoles.admin])
 def activate_vendor(store_id):

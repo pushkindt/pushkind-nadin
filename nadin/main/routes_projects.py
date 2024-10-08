@@ -112,7 +112,7 @@ def projects_excel_to_df(excel_file) -> tuple[pd.DataFrame, pd.DataFrame]:
 def ShowProjects():
 
     show_add_project = request.args.get("add_project", default=False, type=bool)
-    search_key = request.args.get("search", type=str)
+    search_key = request.args.get("q", type=str)
     search_fields = request.args.getlist("field", type=str)
     page = request.args.get("page", type=int, default=1)
     price_level = request.args.get("price_level", type=str)

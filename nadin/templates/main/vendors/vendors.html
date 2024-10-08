@@ -41,25 +41,27 @@
 	</div>
 
 {% endif %}
-{% if stores|length > 0 %}
-	<div class="container bg-white border rounded">
-		<div class="row d-none d-sm-flex fw-bold">
-			<div class="col overflow-hidden">
-				Номер
-			</div>
-			<div class="col overflow-hidden">
-				Название
-			</div>
-			<div class="col overflow-hidden">
-				Электронная почта
-			</div>
-			<div class="col overflow-hidden">
-				&nbsp;
-			</div>
+
+<div class="container bg-white border rounded">
+	<div class="row d-none d-sm-flex fw-bold">
+		<div class="col overflow-hidden">
+			Номер
 		</div>
-		{% for store in stores %}
-			{% include 'main/vendors/_vendor.html' %}
-		{% endfor %}
+		<div class="col overflow-hidden">
+			Название
+		</div>
+		<div class="col overflow-hidden">
+			Электронная почта
+		</div>
+		<div class="col overflow-hidden">
+			&nbsp;
+		</div>
 	</div>
-{% endif %}
+	{% for store in vendors %}
+		{% include 'main/vendors/_vendor.html' %}
+	{% endfor %}
+
+	{% set items = vendors %}
+	{% include '_pagination.html' %}
+</div>
 {% endblock %}
