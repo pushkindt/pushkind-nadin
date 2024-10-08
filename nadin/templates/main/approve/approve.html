@@ -49,6 +49,9 @@
                 <span class="fw-bold">Клиент:</span>
                 {{ order.project.name or 'не указан' }}<br>
             {% endif %}
+			{% if order.project.contact and order.project.contact != order.project.name %}{{ order.project.contact }}<br>{% endif %}
+			{% if order.project.email %}{{ order.project.email }}<br>{% endif %}
+			{% if order.project.phone %}{{ order.project.phone }}<br>{% endif %}
         </div>
     </div>
     <div class="row">
