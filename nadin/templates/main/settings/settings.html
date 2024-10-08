@@ -13,16 +13,11 @@
 			<div class="col-auto">
 				<a href="{{ url_for('oauth.home') }}">OAuth2</a>
 			</div>
+			<div class="col-auto">
+				<a href="{{ url_for('main.DownloadUsers') }}">скачать</a>
+			</div>
 			<div class="col text-end">
 				<a href="{{ url_for('static', filename = 'app.log') }}">Лог файл</a>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col">
-				<input class="form-control" id="usersFilter" type="text" placeholder="Фильтр..">
-			</div>
-			<div class="col-auto">
-				<a href="{{ url_for('main.DownloadUsers') }}" class="btn btn-primary text-white"><i class="bi bi-download"></i></a>
 			</div>
 		</div>
 		<div class="row d-none d-sm-flex fw-bold px-3">
