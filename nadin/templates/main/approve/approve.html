@@ -52,6 +52,7 @@
 			{% if order.project.contact and order.project.contact != order.project.name %}{{ order.project.contact }}<br>{% endif %}
 			{% if order.project.email %}{{ order.project.email }}<br>{% endif %}
 			{% if order.project.phone %}{{ order.project.phone }}<br>{% endif %}
+			{% if order.project.shipping_address %}{{ order.project.shipping_address }}{% endif %}
         </div>
     </div>
     <div class="row">
