@@ -63,6 +63,19 @@ class InitiativeForm(FlaskForm):
         validators=[DataRequired(message="Название клиента - обязательное поле.")],
         coerce=int,
     )
+    phone = StringField(
+        "Телефон",
+        validators=[Optional(), Length(max=128, message="Слишком длинный телефон.")],
+    )
+    email = StringField(
+        "Электронная почта", validators=[Optional(), Length(max=128, message="Слишком длинная электронная почта.")]
+    )
+    contact = StringField(
+        "Контактное лицо", validators=[Optional(), Length(max=128, message="Слишком длинное имя контактного лица.")]
+    )
+    shipping_address = StringField(
+        "Адрес доставки", validators=[Optional(), Length(max=128, message="Слишком длинный адрес доставки.")]
+    )
     submit = SubmitField("Сохранить")
 
 

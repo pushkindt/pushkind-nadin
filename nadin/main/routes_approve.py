@@ -57,9 +57,16 @@ def show_order(order_id):
         initiative_form.project.choices = []
 
     if order.project:
-        initiative_form.project.choices.append((order.project["id"], order.project["name"]))
-        initiative_form.project.default = order.project["id"]
-        initiative_form.process()
+
+        if (order.project["id"], order.project["name"]) not in initiative_form.project.choices:
+            initiative_form.project.choices.append((order.project["id"], order.project["name"]))
+            initiative_form.project.default = order.project["id"]
+            initiative_form.process()
+
+        initiative_form.phone.data = order.project['phone']
+        initiative_form.email.data = order.project['email']
+        initiative_form.contact.data = order.project['contact']
+        initiative_form.shipping_address.data = order.project['shipping_address']
 
     split_form = SplitOrderForm()
 
@@ -453,6 +460,17 @@ def SaveParameters(order_id):
             db.session.add(event)
             order.project = new_project.to_dict()
             order.project_id = new_project.id
+
+        if form.phone.data:
+            order.project["phone"] = form.phone.data
+        if form.email.data:
+            order.project["email"] = form.email.data
+        if form.contact.data:
+            order.project["contact"] = form.contact.data
+        if form.shipping_address.data:
+            order.project["shipping_address"] = form.shipping_address.data
+
+        flag_modified(order, "project")
 
         OrderApproval.query.filter_by(order_id=order.id).delete()
         db.session.commit()

@@ -1,0 +1,22 @@
+{% if current_user.role.name in ['admin', 'initiative', 'purchaser'] %}
+
+    <form id="splitForm" class="d-none" method="POST" action="{{ url_for('main.split_order', order_id = order.id) }}">
+        <div class="fixed-top">
+            <div class="container">
+                <div class="row bg-dark text-white py-1">
+                    <div class="col-auto">
+                        <button id="cancelSplitting" type="button" class="btn btn-danger text-white">Отменить</button>
+                    </div>
+                    <div class="col text-center">
+                        Укажите позиции, по которым произойдёт разделение.
+                    </div>
+                    <div class="col-auto text-end">
+                        {{ split_form.csrf_token(id=False) }}
+                        {{ split_form.products(id='splitProducts', class_='d-none', readonly=True) }}
+                        {{ split_form.submit(id=False, class_='btn btn-primary text-white') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endif %}

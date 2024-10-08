@@ -1,0 +1,29 @@
+<div class="modal fade" id="leaveCommentModal" tabindex="-1" aria-labelledby="leaveCommentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="leaveCommentModalLabel">ОСТАВИТЬ КОММЕНТАРИЙ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('main.LeaveComment', order_id = order.id) }}" id="leaveCommentForm">
+                <div class="modal-body">
+                    {{ comment_form.csrf_token(id=False) }}
+                    <div class="mb-3">
+                        {{ comment_form.comment.label(class_ = 'form-label') }}
+                        {{ comment_form.comment(class_ = 'form-control', placeholder='Вы можете оповестить без комментария') }}
+                    </div>
+                    <div class="mb-3">
+                        {{ comment_form.notify_reviewers.label(class_='form-label notifyReviewersDropDown') }}
+                        <a class="notifyReviewersDropDown" href="#">добавить из списка</a>
+                        {{ comment_form.notify_reviewers(class_='form-control', style="width:100%") }}
+                        <a id="notifyNoneReviewers" href="#" class="text-danger">удалить все</a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    {{ comment_form.submit(class_ = 'btn btn-primary text-white', id=False) }}
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
