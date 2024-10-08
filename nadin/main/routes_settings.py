@@ -1,6 +1,6 @@
 import io
 
-from flask import Response, flash, redirect, render_template, url_for
+from flask import Response, current_app, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
 from openpyxl import Workbook
 from sqlalchemy import or_
@@ -26,7 +26,8 @@ def show_settings():
     if current_user.role == UserRoles.admin:
         user_form = UserRolesForm()
         users = User.query.filter(or_(User.role == UserRoles.default, User.hub_id == current_user.hub_id))
-        users = users.order_by(User.name, User.email).all()
+        users = users.order_by(User.name, User.email)
+        users = db.paginate(users, max_per_page=current_app.config["MAX_PER_PAGE"])
     else:
         users = []
         user_form = UserSettingsForm()

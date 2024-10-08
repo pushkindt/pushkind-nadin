@@ -37,6 +37,8 @@
 		{% for user in users %}
 		{% include 'main/settings/_user.html' %}
 		{% endfor %}
+		{% set items = users %}
+		{% include '_pagination.html' %}
 	</div>
 
 	<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">

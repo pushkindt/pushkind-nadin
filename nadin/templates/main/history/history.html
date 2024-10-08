@@ -59,43 +59,8 @@
             </div>
         {% endfor %}
     </div>
+    {% set items = events %}
+    {% include '_pagination.html' %}
 </div>
 
-<nav aria-label="Events pagination">
-    <ul class="pagination justify-content-center flex-wrap" id="eventPagination">
-    </ul>
-</nav>
-
-{% endblock %}
-
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/pagination.js') }}"></script>
-<script>
-    $(document).ready(function () {
-
-        const eventFilter = document.querySelector("#eventFilter");
-        const eventList = document.querySelector("#eventList");
-
-        InstantiatePagination("eventList", "event", "eventPagination", 10, 'eventFilter');
-
-        eventFilter.addEventListener("keyup", () => {
-            const filterValue = eventFilter.value.toLowerCase();
-            const eventRows = eventList.querySelectorAll(".event");
-            if (filterValue.length > 0){
-                eventRows.forEach(row => {
-                    const rowText = row.textContent.toLowerCase();
-                    const showRow = rowText.indexOf(filterValue) > -1;
-                    if (showRow)
-                        row.classList.remove("d-none")
-                    else
-                        row.classList.add("d-none");
-                });
-            } else {
-                const page = document.querySelector("#eventPagination li.active");
-                page.click();
-            }
-
-        });
-    });
-</script>
 {% endblock %}
