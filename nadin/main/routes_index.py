@@ -46,7 +46,8 @@ def ShowIndex():
 
     orders = orders.order_by(Order.create_timestamp.desc())
 
-    orders = orders.all()
+    orders = db.paginate(orders, max_per_page=current_app.config["MAX_PER_PAGE"])
+
     merge_form = MergeOrdersForm()
     save_form = SaveOrdersForm(orders=[order.id for order in orders])
 

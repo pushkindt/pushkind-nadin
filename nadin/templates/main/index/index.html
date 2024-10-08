@@ -42,10 +42,8 @@
             {% include 'main/index/_order.html' %}
         {% endfor %}
     </div>
-    <nav aria-label="Orders pagination">
-        <ul class="pagination justify-content-center flex-wrap" id="orderPagination">
-        </ul>
-    </nav>
+    {% set items = orders %}
+    {% include '_pagination.html' %}
 </div>
 
 {% if current_user.role.name in ['admin', 'initiative', 'purchaser'] %}
