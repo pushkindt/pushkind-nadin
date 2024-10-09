@@ -4,7 +4,7 @@
     <nav class="navbar navbar-expand-sm bg-body-tertiary">
         <div class="container-fluid">
             <a class="navbar-brand me-0" href="{{ url_for('main.ShowIndex') }}">
-                <img class="logo" src="{{ url_for('static', filename='upload/logo{}.png'.format(current_user.hub_id or '')) }}" alt="Logo" title="{{current_user.hub.name}}">
+                <img class="logo" src="{{ url_for('static', filename='upload/logo{}.png'.format(current_user.hub_id or '')) }}" alt="Logo">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
