@@ -8,7 +8,7 @@
             <div class="row">
                 <div class="col">
                     {% for fs in fast_search %}
-                        <a href="{{ url_for('main.ShowProjects', search=fs, field=["legal_address", "shipping_address"]) }}" class="text-decoration-none badge {% if search_key == fs %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}"">{{ fs }}</a>
+                        <a href="{{ url_for('main.ShowProjects', q=fs, field=["legal_address", "shipping_address"]) }}" class="text-decoration-none badge {% if search_key == fs %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}"">{{ fs }}</a>
                     {% endfor %}
                 </div>
                 <div class="col-3">
@@ -16,7 +16,7 @@
                         <div class="row mb-1">
                             <div class="col">
                                 <select class="form-select form-select-sm" name="price_level" id="priceLevelFilter">
-                                    <option value="">Канал</option>
+                                    <option value="">Цены</option>
                                     {% for pl in price_levels %}
                                         <option value="{{pl.name}}" {%if pl == price_level%}selected{%endif%}>{{pl}}</option>
                                     {% endfor %}
@@ -343,12 +343,6 @@
 
         $('#uploadProjectsButton').on('change', () => {
             $('#uploadProjectsForm').submit();
-        });
-
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            if (!e.currentTarget.value) {
-                e.currentTarget.form.submit();
-            }
         });
 
         document.getElementById("priceLevelFilter").addEventListener("change", (e) => {
