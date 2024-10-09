@@ -14,6 +14,10 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint in ('main.ShowIndex') %} active {% endif %}"
+                            href="{{ url_for('main.ShowIndex') }}">Главная</a>
+                    </li>
                     {% if current_user.role.name in ['admin', 'purchaser'] %}
                         <li class="nav-item">
                             <a class="nav-link {% if request.endpoint in ('main.shop_categories', 'main.shop_search', 'main.shop_products', 'main.shop_cart') %} active {% endif %}"
