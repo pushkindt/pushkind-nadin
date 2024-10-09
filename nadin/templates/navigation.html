@@ -1,4 +1,5 @@
 
+{% if current_user.is_authenticated %}
 <div class="container">
 
     <nav class="navbar navbar-expand-sm bg-body-tertiary">
@@ -99,6 +100,4 @@
     </nav>
 
 </div>
-
-
-
+{% endif %}
