@@ -13,27 +13,31 @@
 {% block content %}
 
 <div class="container my-2">
-    <div class="row gx-1 justify-content-center">
-        <form>
-            {% if current_user.role.name != 'vendor' %}
-                <div class="col-md-3 mb-1">
-                    <input type="hidden" name="q" value="{{request.args.get("q", "")}}">
-                    <select name="vendor_id" class="form-select" aria-label="Vendor select" id="vendorSelect">
-                        {% for v in vendors %}
-                        <option {% if v.id==vendor_id %}selected{% endif %} value="{{ v.id }}">{{ v.name }}</option>
-                        {% endfor %}
-                    </select>
+    <div class="row gx-1">
+        <div class="col">
+            <form>
+                <div class="row gx-1">
+                    {% if current_user.role.name != 'vendor' %}
+                        <div class="col-md-3 mb-1">
+                            <input type="hidden" name="q" value="{{request.args.get("q", "")}}">
+                            <select name="vendor_id" class="form-select" aria-label="Vendor select" id="vendorSelect">
+                                {% for v in vendors %}
+                                <option {% if v.id==vendor_id %}selected{% endif %} value="{{ v.id }}">{{ v.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% endif %}
+                    <div class="col-md-3 mb-1">
+                        <select name="category_id" class="form-select" aria-label="Category select" id="categorySelect">
+                            <option value="" selected>Все категории</option>
+                            {% for c in categories %}
+                                <option {% if c.id==category_id %}selected{% endif %} value="{{ c.id }}">{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
-            {% endif %}
-            <div class="col-md-3 mb-1">
-                <select name="category_id" class="form-select" aria-label="Category select" id="categorySelect">
-                    <option value="" selected>Все категории</option>
-                    {% for c in categories %}
-                        <option {% if c.id==category_id %}selected{% endif %} value="{{ c.id }}">{{ c.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </form>
+            </form>
+        </div>
         <div class="col-auto">
             <a class="btn btn-primary text-white" href="{{url_for('main.DownloadProducts', vendor_id=vendor_id)}}">
                 <i class="bi bi-cloud-download"></i>
@@ -52,44 +56,12 @@
             </form>
         </div>
         <div class="col-auto">
-            <form method="POST" enctype="multipart/form-data" id="uploadImagesForm"
-                action="{{url_for('main.UploadImages', vendor_id=vendor_id)}}">
-                {{ images_form.csrf_token(id=False) }}
-                <label for="uploadImagesButton">
-                    <span class="btn btn-success mb-1 text-white">
-                        <i class="bi bi-card-image"></i>
-                    </span>
-                </label>
-                <input id="uploadImagesButton" type="file" name="images" class="d-none" accept=".zip">
-            </form>
-        </div>
-        <div class="col-auto">
             <form action="{{ url_for('main.remove_products', vendor_id=vendor_id) }}" method="POST">
                 <button type="submit" class="btn btn-danger text-white"
                     onclick="return confirm('Очистить список товаров?')">
                     <i class="bi bi-x-lg"></i>
                 </button>
             </form>
-        </div>
-    </div>
-    <div class="row justify-content-center">
-        <div class="col">
-            <div class="alert bg-yellow my-1" role="alert">
-                <ol class="my-0">
-                    <li>
-                        Скачайте текущий каталог и используйте полученный Excel-файл как шаблон.
-                        Помимо обязательных столбцов вы можете добавить столбцы с опциями товаров.
-                        Значения ячеек таких столбцов - список опций через запятую.
-                    </li>
-                    <li>
-                        Загрузите обновленный каталог из Excel.
-                    </li>
-                    <li>
-                        Загрузите картинки в zip-архиве (имя файла = "артикул товара") или добавьте по одной (ссылка
-                        "фото")
-                    </li>
-                </ol>
-            </div>
         </div>
     </div>
 </div>
