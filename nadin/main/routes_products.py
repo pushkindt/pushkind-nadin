@@ -8,13 +8,14 @@ from flask import current_app, flash, redirect, render_template, request, send_f
 from flask_login import current_user, login_required
 from sqlalchemy.orm.attributes import flag_modified
 
+from nadin.email import run_async
 from nadin.extensions import db
 from nadin.main.forms import EditProductForm, UploadImagesForm, UploadProductsForm
 from nadin.main.routes import bp
 from nadin.models.hub import UserRoles, Vendor
 from nadin.models.product import Category, Product, ProductTag
 from nadin.models.project import ProjectPriceLevel
-from nadin.utils import first, flash_errors, role_forbidden
+from nadin.utils import flash_errors, role_forbidden
 
 ################################################################################
 # Vendor products page
@@ -187,8 +188,7 @@ def show_products():
     vendors.append(current_user.hub)
 
     vendor_id = request.args.get("vendor_id", type=int)
-    if vendor_id is None or vendor_id not in (v.id for v in vendors):
-        vendor_id = first(vendors).id
+    vendor_id = _get_vendor(vendor_id=vendor_id).id
 
     category_id = request.args.get("category_id", type=int)
     categories = Category.query.filter_by(hub_id=current_user.hub_id)
@@ -263,7 +263,7 @@ def upload_products():
         db.session.commit()
         df_tags.to_sql(name="product_tag", con=db.engine, if_exists="append", index=False)
         db.session.commit()
-        Product.reindex()
+        run_async(current_app._get_current_object(), Product.reindex)
         flash("Список товаров успешно обновлён.")
     else:
         flash_errors(form)
