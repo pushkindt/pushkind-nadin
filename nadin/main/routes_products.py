@@ -2,7 +2,6 @@ import io
 import json
 import re
 from pathlib import Path
-from zipfile import ZipFile
 
 import pandas as pd
 from flask import current_app, flash, redirect, render_template, request, send_file, url_for
@@ -22,14 +21,35 @@ from nadin.utils import first, flash_errors, role_forbidden
 ################################################################################
 
 
-MANDATORY_COLUMNS = [
+INDEX_COLUMNS = ["sku"]
+MANDATORY_COLUMNS = INDEX_COLUMNS + [
     "name",
-    "sku",
     "price",
     "measurement",
     "category",
     "description",
 ]
+MANDATORY_COLUMNS2 = INDEX_COLUMNS + ["name", "price", "cat_id", "description", "vendor_id"]
+ADDITIONAL_COLUMNS = [
+    "image",
+    "images",
+    "tags",
+]
+PRICE_COLUMNS = [
+    "prices_online_store",
+    "prices_marketplace",
+    "prices_small_wholesale",
+    "prices_large_wholesale",
+    "prices_distributor",
+    "prices_exclusive",
+    "prices_chains_vat",
+    "prices_chains_vat_promo",
+    "prices_chains_no_vat",
+    "prices_chains_no_vat_promo",
+    "prices_msrp_chains",
+    "prices_msrp_retail",
+]
+FULL_SET_COLLUMNS = MANDATORY_COLUMNS + PRICE_COLUMNS + ADDITIONAL_COLUMNS
 
 
 def _get_vendor(vendor_id: int) -> Vendor:
@@ -49,6 +69,16 @@ def product_columns_to_json(row: pd.Series) -> str:
     return json.dumps(result, ensure_ascii=False) if result else ""
 
 
+def price_columns_to_json(row: pd.Series) -> str:
+    result = {}
+    for col in PRICE_COLUMNS:
+        price_col = "_".join(col.split("_")[1:])
+        if col not in row:
+            continue
+        result[price_col] = float(row[col])
+    return json.dumps(result)
+
+
 def process_product_tags(df_tags: pd.DataFrame, vendor_id: int) -> pd.DataFrame:
     product_ids = {p.sku: p.id for p in Product.query.filter_by(vendor_id=vendor_id).all()}
     df_tags["product_id"] = df_tags["sku"].apply(product_ids.get)
@@ -65,44 +95,75 @@ def clean_column_names(name: str) -> str:
     return re.sub(r"[^\w]+", "_", name.lower())
 
 
-def products_excel_to_df(df: pd.DataFrame, vendor_id: int, categories: "dict[str:int]") -> pd.DataFrame:
+def products_excel_to_df(
+    df: pd.DataFrame, vendor_id: int, categories: "dict[str:int]"
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     df.columns = [clean_column_names(name) for name in df.columns]
-    mandatory_columns_set = set(MANDATORY_COLUMNS)
+    mandatory_columns_set = set(INDEX_COLUMNS)
     if not mandatory_columns_set.issubset(df.columns):
-        missing_columns = mandatory_columns_set - df.columns
+        missing_columns = mandatory_columns_set - set(df.columns)
         raise KeyError(f"The following mandatory columns are missing: {missing_columns}")
-    extra_columns = list(df.columns.difference(MANDATORY_COLUMNS))
-    if "options" in extra_columns:
-        extra_columns.remove("options")
-    if "tags" in extra_columns:
-        extra_columns.remove("tags")
+    extra_columns = list(df.columns.difference(FULL_SET_COLLUMNS))
+
     df["options"] = df[extra_columns].apply(product_columns_to_json, axis=1)
     df.drop(
         extra_columns,
         axis=1,
         inplace=True,
     )
-    df["price"] = df["price"].apply(pd.to_numeric, errors="coerce")
     df["options"] = df["options"].replace("", None)
 
-    df["vendor_id"] = vendor_id
-    df["cat_id"] = df["category"].apply(lambda x: categories.get(x.lower()))
-    df.drop(["category"], axis=1, inplace=True)
-    df.dropna(subset=["cat_id", "name", "sku", "price", "measurement"], inplace=True)
+    if "price" in df.columns:
+        df["price"] = df["price"].apply(pd.to_numeric, errors="coerce")
 
-    static_path = Path(f"nadin/static/upload/vendor{vendor_id}")
-    static_path.mkdir(parents=True, exist_ok=True)
-    image_list = {
-        f.stem: url_for("static", filename=Path(*static_path.parts[2:]) / f.name)
-        for f in static_path.glob("*")
-        if not f.is_dir()
-    }
-    df["image"] = df["sku"].apply(image_list.get)
+    df["vendor_id"] = vendor_id
+
+    if "images" in df.columns:
+        df["images"] = df["images"].apply(lambda x: json.dumps(str(x).split(",")) if x else None)
+
+    if "category" in df.columns:
+        df["cat_id"] = df["category"].str.lower().map(categories)
+        df.drop(["category"], axis=1, inplace=True)
+    else:
+        df.drop("cat_id", errors="ignore")
+
+    for col in ["cat_id", "name", "sku", "price", "measurement"]:
+        if col not in df.columns:
+            continue
+        df.dropna(subset=col, inplace=True)
+
+    if any(col in df.columns for col in PRICE_COLUMNS):
+        df["prices"] = df.apply(price_columns_to_json, axis=1)
+        df.drop(PRICE_COLUMNS, axis=1, inplace=True, errors="ignore")
 
     string_columns = ["name", "sku", "measurement", "description"]
     for column in string_columns:
+        if column not in df.columns:
+            continue
         df[column] = df[column].str.slice(0, 128) if column == "name" else df[column].str.slice(0, 512)
-    return df
+
+    if "tags" in df.columns:
+        df_tags = df[["sku", "tags"]].dropna(subset=["tags"])
+        df.drop(["tags"], axis=1, inplace=True)
+    else:
+        df_tags = pd.DataFrame(columns=["sku", "tags"])
+
+    existing_products = pd.read_sql(
+        sql=f"SELECT * FROM PRODUCT WHERE VENDOR_ID = {vendor_id}", con=db.engine, index_col="sku"
+    )
+    if not existing_products.empty:
+        df.drop_duplicates(subset=["sku"], inplace=True)
+        df.set_index("sku", inplace=True)
+        existing_products.update(df)
+        existing_products.reset_index(inplace=True)
+        existing_products.dropna(subset=["cat_id", "name", "sku", "price", "measurement"], inplace=True)
+        return existing_products, df_tags
+    else:
+        mandatory_columns_set = set(MANDATORY_COLUMNS2)
+        if not mandatory_columns_set.issubset(df.columns):
+            missing_columns = mandatory_columns_set - set(df.columns)
+            raise KeyError(f"The following mandatory columns are missing: {missing_columns}")
+        return df, df_tags
 
 
 @bp.route("/products/", methods=["GET", "POST"])
@@ -170,76 +231,40 @@ def show_products():
 @bp.route("/products/upload", methods=["GET", "POST"])
 @login_required
 @role_forbidden([UserRoles.default, UserRoles.initiative, UserRoles.supervisor])
-def UploadProducts():
+def upload_products():
     form = UploadProductsForm()
     vendor = _get_vendor(request.args.get("vendor_id", type=int))
     if vendor is None:
         flash("Такой поставщик не найден.")
         return redirect(url_for("main.show_products"))
 
-    category_id = request.args.get("category_id", type=int)
-
     if form.validate_on_submit():
         categories = Category.query.filter_by(hub_id=current_user.hub_id).all()
         categories = {c.name.lower(): c.id for c in categories}
         try:
-            df = pd.read_excel(form.products.data, engine="openpyxl", dtype=str, keep_default_na=False)
+            new_products = pd.read_excel(form.products.data, engine="openpyxl", dtype=str, keep_default_na=False)
         except ValueError as e:
             flash(str(e), category="error")
             return redirect(url_for("main.show_products", vendor_id=vendor.id))
+
         try:
-            df = products_excel_to_df(df, vendor.id, categories)
-        except ValueError as e:
+            new_products, df_tags = products_excel_to_df(new_products, vendor.id, categories)
+        except (ValueError, KeyError) as e:
             flash(str(e), category="error")
             return redirect(url_for("main.show_products", vendor_id=vendor.id))
-        skus = df.sku.values.tolist()
-        Product.query.filter_by(vendor_id=vendor.id).filter(Product.sku.in_(skus)).delete()
+
+        Product.query.filter_by(vendor_id=vendor.id).delete()
         db.session.commit()
-        df_tags = df[["sku", "tags"]].dropna(subset=["tags"])
-        df.drop(["tags"], axis=1, inplace=True)
-        df.to_sql(name="product", con=db.engine, if_exists="append", index=False)
+        new_products.to_sql(name="product", con=db.engine, if_exists="append", index=False)
         db.session.commit()
+
         df_tags = process_product_tags(df_tags, vendor.id)
         ProductTag.query.filter(ProductTag.product_id.in_(df_tags["product_id"].to_list())).delete()
         db.session.commit()
         df_tags.to_sql(name="product_tag", con=db.engine, if_exists="append", index=False)
         db.session.commit()
+        Product.reindex()
         flash("Список товаров успешно обновлён.")
-    else:
-        flash_errors(form)
-    return redirect(url_for("main.show_products", vendor_id=vendor.id, category_id=category_id))
-
-
-@bp.route("/products/upload/images", methods=["GET", "POST"])
-@login_required
-@role_forbidden([UserRoles.default, UserRoles.initiative, UserRoles.supervisor])
-def UploadImages():
-    form = UploadImagesForm()
-    vendor = _get_vendor(request.args.get("vendor_id", type=int))
-    if vendor is None:
-        flash("Такой поставщик не найден.")
-        return redirect(url_for("main.show_products"))
-    if form.validate_on_submit():
-        products = Product.query.filter_by(vendor_id=vendor.id).all()
-        products = [p.sku for p in products]
-        with ZipFile(form.images.data, "r") as zip_file:
-            for zip_info in zip_file.infolist():
-                if zip_info.is_dir() or zip_info.file_size > current_app.config["MAX_ZIP_FILE_SIZE"]:
-                    continue
-                file_name = Path(zip_info.filename)
-                sku = file_name.stem
-                if sku not in products:
-                    continue
-                zip_info.filename = sku + file_name.suffix
-                static_path = Path(f"nadin/static/upload/vendor{vendor.id}")
-                static_path.mkdir(parents=True, exist_ok=True)
-                zip_file.extract(zip_info, static_path)
-                static_path = static_path / zip_info.filename
-                db.session.query(Product).filter_by(vendor_id=vendor.id, sku=sku).update(
-                    {"image": url_for("static", filename=Path(*static_path.parts[2:]))}
-                )
-                db.session.commit()
-        flash("Изображения товаров успешно загружены.")
     else:
         flash_errors(form)
     return redirect(url_for("main.show_products", vendor_id=vendor.id))
@@ -261,28 +286,29 @@ def remove_products():
     return redirect(url_for("main.show_products", vendor_id=vendor.id))
 
 
-@bp.route("/products/download", methods=["GET", "POST"])
+@bp.route("/products/download", methods=["GET"])
 @login_required
 @role_forbidden([UserRoles.default, UserRoles.initiative, UserRoles.supervisor])
-def DownloadProducts():
+def download_products():
     vendor = _get_vendor(request.args.get("vendor_id", type=int))
     if vendor is None:
         flash("Такой поставщик не найден.")
         return redirect(url_for("main.show_products"))
 
     products = Product.query.filter_by(vendor_id=vendor.id).all()
-    products = [p.to_dict(current_user.price_level, current_user.discount) for p in products]
+    products = [p.to_dict() for p in products]
     df = pd.json_normalize(products)
     if len(df.index) > 0:
-        df.drop(["id", "image", "vendor"], axis="columns", inplace=True, errors="ignore")
-        df.columns = [col.replace("options.", "") for col in df.columns]
-        extra_columns = list(df.columns.difference(MANDATORY_COLUMNS))
-        for col in extra_columns:
+        df.drop(["id", "vendor", "options", "cat_id"], axis="columns", inplace=True, errors="ignore")
+        for col in df.columns:
+            if not any(col.startswith(column_with_lists) for column_with_lists in ["tags", "options", "images"]):
+                continue
             df[col] = df[col].apply(
                 lambda values: (
                     ", ".join(re.sub(r"\"|'", "", str(v)) for v in values) if isinstance(values, list) else None
                 )
             )
+        df.columns = [col.replace("options.", "") for col in df.columns]
     else:
         df[MANDATORY_COLUMNS] = None
     buffer = io.BytesIO()
