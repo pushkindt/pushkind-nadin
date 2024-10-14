@@ -263,7 +263,7 @@ def upload_products():
         db.session.commit()
         df_tags.to_sql(name="product_tag", con=db.engine, if_exists="append", index=False)
         db.session.commit()
-        run_async(current_app._get_current_object(), Product.reindex)
+        run_async(Product.reindex)
         flash("Список товаров успешно обновлён.")
     else:
         flash_errors(form)
