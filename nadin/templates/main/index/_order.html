@@ -21,9 +21,8 @@
 				</span>
 			</div>
 			<div class="col-sm overflow-hidden">
-				{{ order.products | length }}
-				позиции на сумму
-				{{ "{:,.2f}".format(order.total) }}
+				Позиций: {{ order.products | length }}<br>
+				Cумма: {{ "{:,.2f}".format(order.total) }}
 			</div>
 			<div class="col-sm overflow-hidden">
 				<span class="d-sm-none fw-bold">Цены/Скидка:</span>
