@@ -75,6 +75,7 @@ def ShowIndex():
         merge_form=merge_form,
         save_form=save_form,
         alert=alert,
+        OrderStatus=OrderStatus,
     )
 
 

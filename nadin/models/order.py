@@ -76,33 +76,44 @@ class EventType(enum.IntEnum):
 
 class OrderStatus(enum.IntEnum):
     new = 0
-    unpayed = 1
-    payed = 2
-    delivering = 3
-    delivered = 4
-    fulfilled = 5
-    cancelled = 6
-    returned = 7
-    clarification = 8
-    authorized = 9
+    clarification = 1
+    authorized = 2
+    unpayed = 3
+    payed = 4
+    delivering = 5
+    delivered = 6
+    fulfilled = 7
+    cancelled = 8
+    returned = 9
 
     def __str__(self):
         pretty = [
             "Обработка",
-            "К оплате",
+            "Уточнение",
+            "Авторизована",
+            "Оплата",
             "Оплачена",
             "Доставка",
             "Выдача",
             "Получена",
             "Отменёна",
             "Возврат",
-            "Уточнение",
-            "Авторизован",
         ]
         return pretty[self.value]
 
     def color(self):
-        colors = ["white", "primary", "info", "info", "info", "success", "danger", "danger", "warning", "primary"]
+        colors = [
+            "text-bg-white",
+            "text-bg-warning",
+            "text-bg-primary",
+            "text-bg-primary",
+            "text-bg-info",
+            "text-bg-info",
+            "text-bg-info",
+            "text-bg-success",
+            "text-bg-danger",
+            "text-bg-danger",
+        ]
         return colors[self.value]
 
 

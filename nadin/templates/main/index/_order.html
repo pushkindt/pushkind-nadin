@@ -1,98 +1,54 @@
-{% if order.children | length > 1 %}
-	<div class="row text-muted border bg-white my-1 rounded order" data-id="{{ order.id }}" data-total="{{ order.total }}">
-		<div class="row"><div class="col"><div class="row">
-		<div class="col-sm-2 overflow-hidden">
-			{{ order.number }}<br>
-			<small>разделена на</small><br>
-			{% for child in order.children %}
-				<a class="text-decoration-none" href="{{ url_for('main.show_order', order_id=child.id) }}">
-					{{ child.number }}
-				</a><br>
+<div 
+	{% if order.children | length > 1 %}
+		class="row border bg-white my-1 rounded order opacity-50"
+	{% elif order.children | length == 1 %}
+		class="row border bg-white my-1 rounded order opacity-50"
+	{% elif order.status.name in ['cancelled', 'returned'] %}
+		class="row border bg-white my-1 rounded order opacity-50"
+	{% else %}
+		class="row selectable border bg-white my-1 rounded order"
+	{% endif %}
+	data-id="{{ order.id }}" 
+	data-total="{{ order.total }}">
+	<div class="col">
+		<div class="row">
+			<div class="col-sm overflow-hidden">
+				<span class="d-sm-none fw-bold">Заявка:</span>
+				<a class="text-decoration-none" href="{{ url_for('main.show_order', order_id=order.id) }}">{{ order.number }}</a>
+				<br>
+				<span class="text-muted">
+					{{ moment(order.create_date).format() }}
+				</span>
+			</div>
+			<div class="col-sm overflow-hidden">
+				{{ order.products | length }}
+				позиции на сумму
+				{{ "{:,.2f}".format(order.total) }}
+			</div>
+			<div class="col-sm overflow-hidden">
+				<span class="d-sm-none fw-bold">Цены/Скидка:</span>
+				{{ order.project.price_level_pretty }} {{ "{:,.0%}".format(order.project.get("discount", 0.0)/100.0 or 0.0) }}
+			</div>
+			<div class="col-sm overflow-hidden">
+				{% if not order.project_id or not order.project %}
+					<span class="text-danger fw-bold">клиент не указан</span>
+				{% else %}
+					{% if order.project.name %}{{ order.project.name }}<br>{% endif %}
+					{% if order.project.contact and order.project.contact != order.project.name %}{{ order.project.contact }}<br>{% endif %}
+					{% if order.project.email %}{{ order.project.email }}<br>{% endif %}
+					{% if order.project.phone %}{{ order.project.phone }}<br>{% endif %}
+				{% endif %}
+			</div>
+			<div class="col-sm overflow-hidden">
+				{{ order.project.shipping_address or "" }}
+			</div>
+		</div>
+		<div class="row flex-nowrap">
+			{% for status in OrderStatus %}
+				<div class="{{status.color()}} overflow-hidden {%if order.status != status%}col opacity-25{%else%}col-auto rounded border border-black{%endif%}">
+					{{status}}
+				</div>
 			{% endfor %}
 		</div>
-{% elif order.children | length == 1 %}
-	<div class="row text-muted border bg-white my-1 rounded order" data-id="{{ order.id }}" data-total="{{ order.total }}">
-		<div class="row"><div class="col"><div class="row">
-		<div class="col-sm-2 overflow-hidden">
-			{{ order.number }}<br>
-			<small>объединена в</small><br>
-			<a class="text-decoration-none" href="{{ url_for('main.show_order', order_id=order.children[0].id) }}">
-				{{ order.children[0].number }}
-			</a>
-		</div>
-{% elif order.status.name == 'cancelled' %}
-<div class="row text-muted border bg-white my-1 rounded order" data-id="{{ order.id }}" data-total="{{ order.total }}">
-	<div class="row"><div class="col"><div class="row">
-	<div class="col-sm-2 overflow-hidden">
-		<span class="d-sm-none fw-bold">Заявка:</span>
-		<a class="text-decoration-none" href="{{ url_for('main.show_order', order_id=order.id) }}">{{ order.number }}</a>
-		<br>
-		<span class="text-muted">
-			{{ moment(order.create_date).format() }}
-		</span>
-	</div>
-{% else %}
-	<div class="row selectable border bg-white my-1 rounded order" data-id="{{ order.id }}" data-total="{{ order.total }}">
-		<div class="row"><div class="col"><div class="row">
-		<div class="col-sm-2 overflow-hidden">
-			<span class="d-sm-none fw-bold">Заявка:</span>
-			<a class="text-decoration-none" href="{{ url_for('main.show_order', order_id=order.id) }}">{{ order.number }}</a>
-			<br>
-			<span class="text-muted">
-				{{ moment(order.create_date).format() }}
-			</span>
-		</div>
-{% endif %}
-	<div class="col-sm-1 overflow-hidden">
-		<span class="d-sm-none fw-bold">Позиций:</span>
-		{{ order.products | length }}
-	</div>
-	<div class="col-sm-1 overflow-hidden">
-		<span class="d-sm-none fw-bold">Сумма:</span>
-		{{ "{:,.2f}".format(order.total) }}
-	</div>
-	<div class="col-sm-2 overflow-hidden">
-		<span class="d-sm-none fw-bold">Цены/Скидка:</span>
-		{{ order.project.price_level_pretty }} {{ "{:,.0%}".format(order.project.get("discount", 0.0)/100.0 or 0.0) }}
-	</div>
-	<div class="col col-sm overflow-hidden">
-		{% if not order.project_id or not order.project %}
-			<span class="text-danger fw-bold">клиент не указан</span>
-		{% else %}
-			{% if order.project.name %}{{ order.project.name }}<br>{% endif %}
-			{% if order.project.contact and order.project.contact != order.project.name %}{{ order.project.contact }}<br>{% endif %}
-			{% if order.project.email %}{{ order.project.email }}<br>{% endif %}
-			{% if order.project.phone %}{{ order.project.phone }}<br>{% endif %}
-		{% endif %}
-	</div>
-	<div class="col col-sm overflow-hidden">
-		{{ order.project.shipping_address or "" }}
-	</div>
-	</div>
-	</div>
-	<div class="col-2 overflow-hidden fs-7 py-1">
-		{% include '_order.status.html' %}
-	</div>
-	</div>
-	<div class="row">
-	{% if order.parents | length > 1 %}
-		<div class="col-12">
-			<small>
-				&sum;
-				{% for parent in order.parents %}
-					#{{ parent.number }}
-				{% endfor %}
-			</small>
-		</div>
-	{% elif order.parents | length == 1 %}
-		<div class="col-12">
-			<small>
-				&divide;
-				{% for parent in order.parents %}
-					#{{ parent.number }}
-				{% endfor %}
-			</small>
-		</div>
-	{% endif %}
 	</div>
 </div>
