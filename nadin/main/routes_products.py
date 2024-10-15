@@ -1,5 +1,4 @@
 import io
-import json
 import re
 from pathlib import Path
 
@@ -15,42 +14,12 @@ from nadin.main.routes import bp
 from nadin.models.hub import UserRoles, Vendor
 from nadin.models.product import Category, Product, ProductTag
 from nadin.models.project import ProjectPriceLevel
+from nadin.products import process_product_tags, process_products
 from nadin.utils import flash_errors, role_forbidden
 
 ################################################################################
 # Vendor products page
 ################################################################################
-
-
-INDEX_COLUMNS = ["sku"]
-MANDATORY_COLUMNS = INDEX_COLUMNS + [
-    "name",
-    "price",
-    "measurement",
-    "category",
-    "description",
-]
-MANDATORY_COLUMNS2 = INDEX_COLUMNS + ["name", "price", "cat_id", "description", "vendor_id"]
-ADDITIONAL_COLUMNS = [
-    "image",
-    "images",
-    "tags",
-]
-PRICE_COLUMNS = [
-    "prices_online_store",
-    "prices_marketplace",
-    "prices_small_wholesale",
-    "prices_large_wholesale",
-    "prices_distributor",
-    "prices_exclusive",
-    "prices_chains_vat",
-    "prices_chains_vat_promo",
-    "prices_chains_no_vat",
-    "prices_chains_no_vat_promo",
-    "prices_msrp_chains",
-    "prices_msrp_retail",
-]
-FULL_SET_COLLUMNS = MANDATORY_COLUMNS + PRICE_COLUMNS + ADDITIONAL_COLUMNS
 
 
 def _get_vendor(vendor_id: int) -> Vendor:
@@ -60,111 +29,6 @@ def _get_vendor(vendor_id: int) -> Vendor:
     if not vendor:
         vendor = Vendor.query.filter_by(id=current_user.hub_id).first()
     return vendor
-
-
-def product_columns_to_json(row: pd.Series) -> str:
-    def parse_column(value: str) -> "list[str]":
-        return sorted(list({s.strip() for s in str(value).split(",")})) if value else None
-
-    result = {k: parse_column(v) for k, v in row.items() if v}
-    return json.dumps(result, ensure_ascii=False) if result else ""
-
-
-def price_columns_to_json(row: pd.Series) -> str:
-    result = {}
-    for col in PRICE_COLUMNS:
-        price_col = "_".join(col.split("_")[1:])
-        if col not in row:
-            continue
-        result[price_col] = float(row[col])
-    return json.dumps(result)
-
-
-def process_product_tags(df_tags: pd.DataFrame, vendor_id: int) -> pd.DataFrame:
-    product_ids = {p.sku: p.id for p in Product.query.filter_by(vendor_id=vendor_id).all()}
-    df_tags["product_id"] = df_tags["sku"].apply(product_ids.get)
-    df_tags.drop(["sku"], axis=1, inplace=True)
-    df_tags["tags"] = df_tags["tags"].str.split(",")
-    df_tags = df_tags.explode("tags")
-    df_tags = df_tags.drop_duplicates()
-    df_tags.rename(columns={"tags": "tag"}, inplace=True)
-    df_tags["tag"] = df_tags["tag"].apply(lambda x: x.lower().strip()[:128])
-    return df_tags
-
-
-def clean_column_names(name: str) -> str:
-    return re.sub(r"[^\w]+", "_", name.lower())
-
-
-def products_excel_to_df(
-    df: pd.DataFrame, vendor_id: int, categories: "dict[str:int]"
-) -> tuple[pd.DataFrame, pd.DataFrame]:
-    df.columns = [clean_column_names(name) for name in df.columns]
-    mandatory_columns_set = set(INDEX_COLUMNS)
-    if not mandatory_columns_set.issubset(df.columns):
-        missing_columns = mandatory_columns_set - set(df.columns)
-        raise KeyError(f"The following mandatory columns are missing: {missing_columns}")
-    extra_columns = list(df.columns.difference(FULL_SET_COLLUMNS))
-
-    df["options"] = df[extra_columns].apply(product_columns_to_json, axis=1)
-    df.drop(
-        extra_columns,
-        axis=1,
-        inplace=True,
-    )
-    df["options"] = df["options"].replace("", None)
-
-    if "price" in df.columns:
-        df["price"] = df["price"].apply(pd.to_numeric, errors="coerce")
-
-    df["vendor_id"] = vendor_id
-
-    if "images" in df.columns:
-        df["images"] = df["images"].apply(lambda x: json.dumps(str(x).split(",")) if x else None)
-
-    if "category" in df.columns:
-        df["cat_id"] = df["category"].str.lower().map(categories)
-        df.drop(["category"], axis=1, inplace=True)
-    else:
-        df.drop("cat_id", errors="ignore")
-
-    for col in ["cat_id", "name", "sku", "price", "measurement"]:
-        if col not in df.columns:
-            continue
-        df.dropna(subset=col, inplace=True)
-
-    if any(col in df.columns for col in PRICE_COLUMNS):
-        df["prices"] = df.apply(price_columns_to_json, axis=1)
-        df.drop(PRICE_COLUMNS, axis=1, inplace=True, errors="ignore")
-
-    string_columns = ["name", "sku", "measurement", "description"]
-    for column in string_columns:
-        if column not in df.columns:
-            continue
-        df[column] = df[column].str.slice(0, 128) if column == "name" else df[column].str.slice(0, 512)
-
-    if "tags" in df.columns:
-        df_tags = df[["sku", "tags"]].dropna(subset=["tags"])
-        df.drop(["tags"], axis=1, inplace=True)
-    else:
-        df_tags = pd.DataFrame(columns=["sku", "tags"])
-
-    existing_products = pd.read_sql(
-        sql=f"SELECT * FROM PRODUCT WHERE VENDOR_ID = {vendor_id}", con=db.engine, index_col="sku"
-    )
-    if not existing_products.empty:
-        df.drop_duplicates(subset=["sku"], inplace=True)
-        df.set_index("sku", inplace=True)
-        existing_products.update(df)
-        existing_products.reset_index(inplace=True)
-        existing_products.dropna(subset=["cat_id", "name", "sku", "price", "measurement"], inplace=True)
-        return existing_products, df_tags
-    else:
-        mandatory_columns_set = set(MANDATORY_COLUMNS2)
-        if not mandatory_columns_set.issubset(df.columns):
-            missing_columns = mandatory_columns_set - set(df.columns)
-            raise KeyError(f"The following mandatory columns are missing: {missing_columns}")
-        return df, df_tags
 
 
 @bp.route("/products/", methods=["GET", "POST"])
@@ -247,22 +111,35 @@ def upload_products():
             flash(str(e), category="error")
             return redirect(url_for("main.show_products", vendor_id=vendor.id))
 
-        try:
-            new_products, df_tags = products_excel_to_df(new_products, vendor.id, categories)
-        except (ValueError, KeyError) as e:
-            flash(str(e), category="error")
+        if "sku" not in new_products.columns:
+            flash("Не найден столбец sku.", category="error")
             return redirect(url_for("main.show_products", vendor_id=vendor.id))
+
+        if "tags" in new_products.columns:
+            df_tags = new_products[["sku", "tags"]]
+            new_products.drop(["tags"], axis=1, inplace=True)
+        else:
+            df_tags = None
+
+        existing_products = pd.read_sql(sql=f"SELECT * FROM PRODUCT WHERE VENDOR_ID = {vendor.id}", con=db.engine)
+
+        new_products = process_products(new_products, existing_products, categories)
+        new_products["vendor_id"] = vendor.id
 
         Product.query.filter_by(vendor_id=vendor.id).delete()
         db.session.commit()
         new_products.to_sql(name="product", con=db.engine, if_exists="append", index=False)
         db.session.commit()
 
-        df_tags = process_product_tags(df_tags, vendor.id)
-        ProductTag.query.filter(ProductTag.product_id.in_(df_tags["product_id"].to_list())).delete()
-        db.session.commit()
-        df_tags.to_sql(name="product_tag", con=db.engine, if_exists="append", index=False)
-        db.session.commit()
+        if df_tags is not None:
+            existing_products = Product.query.filter_by(vendor_id=vendor.id).all()
+            product_ids = {p.sku: p.id for p in existing_products}
+            df_tags = process_product_tags(product_ids, df_tags)
+            ProductTag.query.filter(ProductTag.product_id.in_(df_tags["product_id"].to_list())).delete()
+            db.session.commit()
+            df_tags.to_sql(name="product_tag", con=db.engine, if_exists="append", index=False)
+            db.session.commit()
+
         run_async(Product.reindex)
         flash("Список товаров успешно обновлён.")
     else:
@@ -298,19 +175,18 @@ def download_products():
     products = Product.query.filter_by(vendor_id=vendor.id).all()
     products = [p.to_dict() for p in products]
     df = pd.json_normalize(products)
-    if len(df.index) > 0:
-        df.drop(["id", "vendor", "options", "cat_id"], axis="columns", inplace=True, errors="ignore")
-        for col in df.columns:
-            if not any(col.startswith(column_with_lists) for column_with_lists in ["tags", "options", "images"]):
-                continue
-            df[col] = df[col].apply(
-                lambda values: (
-                    ", ".join(re.sub(r"\"|'", "", str(v)) for v in values) if isinstance(values, list) else None
-                )
+
+    df.drop(["id", "vendor", "options", "cat_id"], axis="columns", inplace=True, errors="ignore")
+    for col in df.columns:
+        if not any(col.startswith(column_with_lists) for column_with_lists in ["tags", "options", "images"]):
+            continue
+        df[col] = df[col].apply(
+            lambda values: (
+                ", ".join(re.sub(r"\"|'", "", str(v)) for v in values) if isinstance(values, list) else None
             )
-        df.columns = [col.replace("options.", "") for col in df.columns]
-    else:
-        df[MANDATORY_COLUMNS] = None
+        )
+    df.columns = [col.replace("options.", "") for col in df.columns]
+
     buffer = io.BytesIO()
     df.to_excel(buffer, index=False)
     buffer.seek(0)
