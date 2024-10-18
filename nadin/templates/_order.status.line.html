@@ -1,0 +1,7 @@
+<div class="row flex-nowrap justify-content-md-center">
+    {% for status in OrderStatus %}
+        <div class="{{status.color()}} overflow-hidden {%if order_status is not none and order_status != status%}col opacity-10{%else%}col-auto rounded border border-black{%endif%}">
+            <a class="text-reset text-decoration-none" href="?status={{status.name}}">{{status}}</a>
+        </div>
+    {% endfor %}
+</div>

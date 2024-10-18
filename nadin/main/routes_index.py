@@ -25,6 +25,9 @@ def ShowIndex():
 
     search_key = request.args.get("q", type=str)
     page = request.args.get("page", type=int, default=1)
+    filter_status = request.args.get("status", default=None, type=str)
+
+    filter_status = OrderStatus[filter_status] if filter_status in OrderStatus.__members__ else None
 
     dates = get_filter_timestamps()
     filter_from = request.args.get("from", default=dates["recently"], type=int)
@@ -45,6 +48,9 @@ def ShowIndex():
         orders = Order.query
 
     orders = Order.get_by_access(current_user, orders)
+
+    if filter_status is not None:
+        orders = orders.filter(Order.status == filter_status)
 
     if filter_disapproved is None:
         orders = orders.filter(~Order.status.in_([OrderStatus.returned, OrderStatus.cancelled]))
@@ -76,6 +82,7 @@ def ShowIndex():
         save_form=save_form,
         alert=alert,
         OrderStatus=OrderStatus,
+        filter_status=filter_status,
     )
 
 

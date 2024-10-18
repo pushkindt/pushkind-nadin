@@ -10,26 +10,9 @@
             <a href="{{ url_for('main.ShowIndex', from=0, disapproved=filter_disapproved) }}" class="text-decoration-none badge {% if filter_from == 0 %}bg-primary{% else %}bg-white fw-normal text-secondary border{% endif %}">все</a>
         </div>
     </div>
-    <div class="row">
-        <div class="col fs-7">
-            <div class="row">
-                <div class="col">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="filterDisapproved" {%if filter_disapproved %}checked{% endif %}>
-                        <label class="form-check-label" for="filterDisapproved">
-                            Показывать отклоненные заявки
-                        </label>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 <div class="container">
     <div class="row my-2 fs-7">
-        <div class="col">
-            Выбрано заявок: <span id="orderCount"></span> на сумму <span id="orderTotal"></span> млн руб.
-        </div>
         <div class="col text-end">
             {% if current_user.role.name in ['admin', 'initiative', 'purchaser'] %}
                 <a href="#" id="startMerging">объединить</a>
@@ -37,6 +20,8 @@
         </div>
     </div>
     {% include 'main/index/_order.header.html' %}
+    {% set order_status = filter_status %}
+    {% include '_order.status.line.html' %}
     <div id="orderList">
         {% for order in orders %}
             {% include 'main/index/_order.html' %}

@@ -42,12 +42,7 @@
 				{{ order.project.shipping_address or "" }}
 			</div>
 		</div>
-		<div class="row flex-nowrap">
-			{% for status in OrderStatus %}
-				<div class="{{status.color()}} overflow-hidden {%if order.status != status%}col opacity-25{%else%}col-auto rounded border border-black{%endif%}">
-					{{status}}
-				</div>
-			{% endfor %}
-		</div>
+		{% set order_status = order.status %}
+		{% include '_order.status.line.html' %}
 	</div>
 </div>
