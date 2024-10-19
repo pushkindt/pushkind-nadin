@@ -3,5 +3,5 @@
 {% elif order.children | length > 1 %}
 	<span class="badge bg-white text-muted border fw-normal">Разделена</span>
 {% else %}
-	<span class="badge {{order['status'].color()}} fw-normal" title="Статус">{{ order.status }}</span>
+	<span class="border border-black rounded px-1 {{order['status'].color()}} fw-normal" title="Статус">{{ order.status }}</span>
 {% endif %}

@@ -1,4 +1,4 @@
-{% if current_user.role.name in ['validator', 'warehouse'] %}
+{% if current_user.role.name in ['admin', 'validator', 'warehouse'] %}
     <div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">

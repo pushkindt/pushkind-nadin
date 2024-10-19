@@ -1,0 +1,41 @@
+<div class="row justify-content-end gx-1">
+    {% if current_user.role.name in ['admin', 'validator'] %}
+        <div class="col-auto">
+            <button type="button" class="btn btn-success approveButton text-white" data-approved="false" data-target="order">Авторизовать</button>
+        </div>
+    {% endif %}
+    {% if current_user.role.name in ['admin', 'validator', 'finance'] %}
+        <div class="col-auto">
+            <form method="POST" action="{{ url_for('main.process_payment', order_id = order.id) }}">
+                <button class="btn btn-warning text-white" type=submit onclick="return confirm('Отметить оплату?')">Оплачена</button>
+            </form>
+        </div>
+    {% endif %}
+    {% if current_user.role.name in ['admin', 'warehouse'] %}
+        <div class="col-auto">
+            <button type="button" class="btn btn-success approveButton text-white" data-approved="false" data-target="order">На оплату</button>
+        </div>
+    {% endif %}
+    {% if current_user.role.name in ['admin', 'validator', 'warehouse'] %}
+        <div class="col-auto">
+            <button type="button" class="btn btn-danger approveButton text-white" data-approved="true" data-target="order">Замечание</button>
+        </div>
+    {% endif %}
+    {% if current_user.role.name in ['admin', 'delivery'] %}
+
+        <div class="col-auto">
+            <a class="btn btn-warning text-white leaveComment" href="#" data-bs-toggle="modal" data-bs-target="#leaveCommentModal" data-target="delivery">Доставка</a>
+        </div>
+        <div class="col-auto">
+            <form method="POST" action="{{ url_for('main.pickup_order', order_id = order.id) }}">
+                <button class="btn btn-success text-white" type=submit onclick="return confirm('Отметить выдачу?')">Выдача</button>
+            </form>
+        </div>
+        <div class="col-auto">
+            <form method="POST" action="{{ url_for('main.return_order', order_id = order.id) }}">
+                <button class="btn btn-danger text-white" type=submit onclick="return confirm('Отметить возврат?')">Возврат</button>
+            </form>
+        </div>
+
+    {% endif %}
+</div>

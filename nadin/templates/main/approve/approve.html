@@ -154,14 +154,7 @@
             на сумму {{ '{:,.2f}'.format(order.total) }}
         </div>
     </div>
-    {% if current_user.role.name in ['validator', 'warehouse'] %}
-        <div class="row">
-            <div class="col text-end">
-                <button type="button" class="btn btn-success approveButton text-white" data-approved="false" data-target="order">Согласен</button>
-                <button type="button" class="btn btn-danger approveButton my-2 text-white" data-approved="true" data-target="order">Не согласен</button>
-            </div>
-        </div>
-    {% endif %}
+    {% include 'main/approve/controls.html' %}
 </div>
 <div class="container">
     <div class="row my-2">
@@ -286,7 +279,7 @@
             });
         {% endif %}
 
-        {% if current_user.role.name in ['validator', 'warehouse'] %}
+        {% if current_user.role.name in ['admin', 'validator', 'warehouse'] %}
             $(".approveButton").click(function () {
 
                 let userModal = new bootstrap.Modal(document.getElementById('approveModal'), {});
@@ -395,32 +388,32 @@
                 e.stopPropagation();
             });
         {% endif %}
-        {% if current_user.role.name in ['admin', 'initiative', 'validator', 'purchaser'] %}
-            let notifyReviewers = $("#notify_reviewers");
-            notifyReviewers.selectize({});
-            let notifyReviewersSelectize = notifyReviewers[0].selectize;
+        let notifyReviewers = $("#notify_reviewers");
+        notifyReviewers.selectize({});
+        let notifyReviewersSelectize = notifyReviewers[0].selectize;
 
-            $('.notifyReviewersDropDown').click(function(e) {
-                notifyReviewersSelectize.focus();
-            });
+        $('.notifyReviewersDropDown').click(function(e) {
+            notifyReviewersSelectize.focus();
+        });
 
-            $('#notifyNoneReviewers').click(function() {
-                notifyReviewersSelectize.clear(false);
-            });
-
-            $('.leaveComment').click(function() {
-                let target = $(this).data("target");
-                if (target == 'comment'){
-                    $("#leaveCommentModalLabel").text('ОСТАВИТЬ КОММЕНТАРИЙ');
-                    $("#leaveCommentForm").attr('action', "{{url_for('main.LeaveComment', order_id=order.id)}}")
-                }
-                else if (target == 'cancel'){
-                    $("#leaveCommentModalLabel").text('АННУЛИРОВАТЬ');
-                    $("#leaveCommentForm").attr('action', "{{url_for('main.cancel_order', order_id=order.id)}}")
-                }
-            });
-
-        {% endif %}
+        $('#notifyNoneReviewers').click(function() {
+            notifyReviewersSelectize.clear(false);
+        });
+        $('.leaveComment').click(function() {
+            let target = $(this).data("target");
+            if (target == 'comment'){
+                $("#leaveCommentModalLabel").text('ОСТАВИТЬ КОММЕНТАРИЙ');
+                $("#leaveCommentForm").attr('action', "{{url_for('main.LeaveComment', order_id=order.id)}}")
+            }
+            else if (target == 'cancel'){
+                $("#leaveCommentModalLabel").text('АННУЛИРОВАТЬ');
+                $("#leaveCommentForm").attr('action', "{{url_for('main.cancel_order', order_id=order.id)}}")
+            }
+            else if (target == 'delivery'){
+                $("#leaveCommentModalLabel").text('ДОСТАВКА');
+                $("#leaveCommentForm").attr('action', "{{url_for('main.deliver_order', order_id=order.id)}}")
+            }
+        });
 
         const productSearch = $("#productSearch");
 

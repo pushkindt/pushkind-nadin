@@ -9,38 +9,6 @@
         </li>
         <li class="dropdown-item">
             <i class="bi bi-files"></i>
-            {% if current_user.role.name in ['admin', 'validator', 'finance'] %}
-                <a href="{{ url_for('main.process_payment', order_id = order.id) }}" onclick="return confirm('Отметить оплату?')">оплачена</a>
-            {% else %}
-                <span class="text-secondary">оплачена</span>
-            {% endif %}
-        </li>
-        <li class="dropdown-item">
-            <i class="bi bi-files"></i>
-            {% if current_user.role.name in ['admin', 'delivery'] %}
-                <a href="{{ url_for('main.deliver_order', order_id = order.id) }}" onclick="return confirm('Отметить доставку?')">доставка</a>
-            {% else %}
-                <span class="text-secondary">доставка</span>
-            {% endif %}
-        </li>
-        <li class="dropdown-item">
-            <i class="bi bi-files"></i>
-            {% if current_user.role.name in ['admin', 'delivery'] %}
-                <a href="{{ url_for('main.pickup_order', order_id = order.id) }}" onclick="return confirm('Отметить выдачу?')">выдать</a>
-            {% else %}
-                <span class="text-secondary">выдать</span>
-            {% endif %}
-        </li>
-        <li class="dropdown-item">
-            <i class="bi bi-files"></i>
-            {% if current_user.role.name in ['admin', 'delivery'] %}
-                <a href="{{ url_for('main.return_order', order_id = order.id) }}" onclick="return confirm('Отметить выдачу?')">возврат</a>
-            {% else %}
-                <span class="text-secondary">возврат</span>
-            {% endif %}
-        </li>
-        <li class="dropdown-item">
-            <i class="bi bi-files"></i>
             {% if current_user.role.name in ['admin', 'initiative', 'purchaser'] %}
                 <a href="{{ url_for('main.duplicate_order', order_id = order.id) }}" onclick="return confirm('Клонировать заявку?')">клонировать</a>
             {% else %}

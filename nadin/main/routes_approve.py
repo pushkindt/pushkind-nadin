@@ -63,10 +63,10 @@ def show_order(order_id):
             initiative_form.project.default = order.project["id"]
             initiative_form.process()
 
-        initiative_form.phone.data = order.project['phone']
-        initiative_form.email.data = order.project['email']
-        initiative_form.contact.data = order.project['contact']
-        initiative_form.shipping_address.data = order.project['shipping_address']
+        initiative_form.phone.data = order.project["phone"]
+        initiative_form.email.data = order.project["email"]
+        initiative_form.contact.data = order.project["contact"]
+        initiative_form.shipping_address.data = order.project["shipping_address"]
 
     split_form = SplitOrderForm()
 
@@ -307,7 +307,7 @@ def save_quantity(order_id):
 
 @bp.route("/orders/approval/<int:order_id>", methods=["POST"])
 @login_required
-@role_required([UserRoles.validator, UserRoles.warehouse])
+@role_required([UserRoles.admin, UserRoles.validator, UserRoles.warehouse])
 def SaveApproval(order_id):
     order = get_order(order_id)
     if order is None:
@@ -498,7 +498,7 @@ def LeaveComment(order_id):
     return redirect(url_for("main.show_order", order_id=order_id))
 
 
-@bp.route("/orders/process/<int:order_id>")
+@bp.route("/orders/process/<int:order_id>", methods=["POST"])
 @login_required
 @role_required([UserRoles.admin, UserRoles.validator, UserRoles.finance])
 def process_payment(order_id):
@@ -526,7 +526,7 @@ def process_payment(order_id):
     return redirect(url_for("main.show_order", order_id=order_id))
 
 
-@bp.route("/orders/deliver/<int:order_id>")
+@bp.route("/orders/deliver/<int:order_id>", methods=["POST"])
 @login_required
 @role_required([UserRoles.admin, UserRoles.delivery])
 def deliver_order(order_id):
@@ -536,25 +536,33 @@ def deliver_order(order_id):
         return redirect(url_for("main.ShowIndex"))
 
     if order.status == OrderStatus.cancelled:
-        flash("Нельзя оплатить аннулированную заявку.")
+        flash("Нельзя доставить аннулированную заявку.")
         return redirect(url_for("main.show_order", order_id=order_id))
 
-    order.status = OrderStatus.delivering
-    message = "Заявка была передана в доставку"
-    event = OrderEvent(
-        user_id=current_user.id,
-        order_id=order_id,
-        type=EventType.exported,
-        data=message,
-        timestamp=datetime.now(tz=timezone.utc),
-    )
-    db.session.add(event)
-    db.session.commit()
-    flash(message)
+    form = LeaveCommentForm()
+    form.notify_reviewers.choices = [(r.id, r.name) for r in order.reviewers]
+    if form.validate_on_submit():
+        order.status = OrderStatus.delivering
+        message = "Заявка была передана в доставку"
+        if form.comment.data:
+            message += f" с комментарием: {form.comment.data}"
+        event = OrderEvent(
+            user_id=current_user.id,
+            order_id=order_id,
+            type=EventType.exported,
+            data=message,
+            timestamp=datetime.now(tz=timezone.utc),
+        )
+        db.session.add(event)
+        db.session.commit()
+        flash(message)
+    else:
+        flash_errors(form)
+
     return redirect(url_for("main.show_order", order_id=order_id))
 
 
-@bp.route("/orders/pickup/<int:order_id>")
+@bp.route("/orders/pickup/<int:order_id>", methods=["POST"])
 @login_required
 @role_required([UserRoles.admin, UserRoles.delivery])
 def pickup_order(order_id):
@@ -564,7 +572,7 @@ def pickup_order(order_id):
         return redirect(url_for("main.ShowIndex"))
 
     if order.status == OrderStatus.cancelled:
-        flash("Нельзя оплатить аннулированную заявку.")
+        flash("Нельзя выдать аннулированную заявку.")
         return redirect(url_for("main.show_order", order_id=order_id))
 
     order.status = OrderStatus.fulfilled
@@ -582,7 +590,7 @@ def pickup_order(order_id):
     return redirect(url_for("main.show_order", order_id=order_id))
 
 
-@bp.route("/orders/return/<int:order_id>")
+@bp.route("/orders/return/<int:order_id>", methods=["POST"])
 @login_required
 @role_required([UserRoles.admin, UserRoles.delivery])
 def return_order(order_id):
@@ -592,7 +600,7 @@ def return_order(order_id):
         return redirect(url_for("main.ShowIndex"))
 
     if order.status == OrderStatus.cancelled:
-        flash("Нельзя оплатить аннулированную заявку.")
+        flash("Нельзя вернуть аннулированную заявку.")
         return redirect(url_for("main.show_order", order_id=order_id))
 
     order.status = OrderStatus.returned
