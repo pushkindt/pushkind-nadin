@@ -7,7 +7,7 @@ from nadin.email import SendEmail
 from nadin.extensions import db
 from nadin.main.forms import MergeOrdersForm, SaveOrdersForm
 from nadin.main.routes import bp
-from nadin.models.hub import AppSettings, UserRoles, Vendor
+from nadin.models.hub import UserRoles, Vendor
 from nadin.models.order import EventType, Order, OrderEvent, OrderStatus
 from nadin.models.product import Category
 from nadin.utils import SendEmailNotification, flash_errors, get_filter_timestamps, role_forbidden, role_required
@@ -69,7 +69,7 @@ def ShowIndex():
     merge_form = MergeOrdersForm()
     save_form = SaveOrdersForm(orders=[order.id for order in orders])
 
-    app_data = AppSettings.query.filter_by(hub_id=current_user.hub_id).first()
+    app_data = current_user.hub.settings[0] if current_user.hub.settings else None
     alert = app_data.alert if app_data else None
 
     return render_template(

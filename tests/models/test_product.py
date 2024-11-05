@@ -16,7 +16,7 @@ def test_can_calculate_price_non_existent(app, product):
     assert product.get_price(ProjectPriceLevel.exclusive) == pytest.approx(244.36105)
 
 
-def test_get_root_category(app, category, hub):
+def test_get_root_category(app, category):
     root = Category.get_root_category()
     assert root["name"] == ""
     assert root["id"] == 0

@@ -25,7 +25,7 @@ def show_admin_page():
         "select_hub": SelectHubForm(),
     }
 
-    app_data = AppSettings.query.filter_by(hub_id=current_user.hub_id).first()
+    app_data = current_user.hub.settings[0] if current_user.hub.settings else None
     if app_data is None:
         forms["app"] = AppSettingsForm(order_id_bias=0)
     else:
@@ -63,7 +63,7 @@ def show_admin_page():
 def SaveAppSettings():
     form = AppSettingsForm()
     if form.validate_on_submit():
-        app_data = AppSettings.query.filter_by(hub_id=current_user.hub_id).first()
+        app_data = current_user.hub.settings[0] if current_user.hub.settings else None
         if app_data is None:
             app_data = AppSettings(hub_id=current_user.hub_id)
             db.session.add(app_data)
@@ -130,7 +130,7 @@ def AddCategory():
                 category_name = parent.name + "/" + category_name
             else:
                 parent = None
-            category = Category(name=category_name, hub_id=current_user.hub_id, children=[])
+            category = Category(name=category_name, children=[])
             db.session.add(category)
             db.session.commit()
             if parent:

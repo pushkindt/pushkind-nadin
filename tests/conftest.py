@@ -34,9 +34,8 @@ def project(hub):
 
 
 @pytest.fixture(scope="session")
-def category(hub):
+def category():
     cat = Category(id=1, name="Купажи", children=[])
-    cat.hub = hub
     return cat
 
 

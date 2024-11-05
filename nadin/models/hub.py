@@ -59,7 +59,7 @@ class Vendor(SearchableMixin, db.Model):
     email = db.Column(db.String(128), nullable=False, unique=True, index=True)
     enabled = db.Column(db.Boolean, nullable=False, default=True, server_default=expression.true())
     users = db.relationship("User", back_populates="hub", cascade="all, delete", passive_deletes=True)
-    categories = db.relationship("Category", back_populates="hub", cascade="all, delete", passive_deletes=True)
+
     settings = db.relationship("AppSettings", back_populates="hub", cascade="all, delete", passive_deletes=True)
     projects = db.relationship("Project", back_populates="hub", cascade="all, delete", passive_deletes=True)
     orders = db.relationship("Order", back_populates="hub", cascade="all, delete", passive_deletes=True)

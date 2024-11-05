@@ -11,10 +11,8 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     name = db.Column(db.String(128), nullable=False, index=True)
     children = db.Column(db.JSON(), nullable=False)
-    hub_id = db.Column(db.Integer, db.ForeignKey("vendor.id", ondelete="CASCADE"), nullable=False)
     code = db.Column(db.String(128), nullable=True)
     image = db.Column(db.String(128), nullable=True)
-    hub = db.relationship("Vendor", back_populates="categories")
     products = db.relationship(
         "Product",
         back_populates="category",
