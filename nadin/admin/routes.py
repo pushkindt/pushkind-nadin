@@ -35,6 +35,7 @@ def show_admin_page():
             order_id_bias=app_data.order_id_bias or 0,
             single_category_orders=app_data.single_category_orders,
             alert=app_data.alert,
+            store_url=app_data.store_url,
         )
 
     categories = Category.query.all()
