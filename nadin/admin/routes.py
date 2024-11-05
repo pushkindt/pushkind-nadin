@@ -72,6 +72,7 @@ def SaveAppSettings():
         app_data.single_category_orders = form.single_category_orders.data
         alert = form.alert.data.strip() if form.alert.data else None
         app_data.alert = alert if alert else None
+        app_data.store_url = form.store_url.data.strip() if form.store_url.data else None
         if form.image.data:
             f = form.image.data
             file_name, file_ext = os.path.splitext(f.filename)
