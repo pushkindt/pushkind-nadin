@@ -55,7 +55,7 @@ def show_products():
     vendor_id = _get_vendor(vendor_id=vendor_id).id
 
     category_id = request.args.get("category_id", type=int)
-    categories = Category.query.filter_by(hub_id=current_user.hub_id)
+    categories = Category.query
     categories = categories.order_by(Category.name).all()
 
     if search_key:
@@ -103,7 +103,7 @@ def upload_products():
         return redirect(url_for("main.show_products"))
 
     if form.validate_on_submit():
-        categories = Category.query.filter_by(hub_id=current_user.hub_id).all()
+        categories = Category.query.all()
         categories = {c.name.lower(): c.id for c in categories}
         try:
             new_products = pd.read_excel(form.products.data, engine="openpyxl", dtype=str, keep_default_na=False)

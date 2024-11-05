@@ -37,7 +37,7 @@ def show_admin_page():
             alert=app_data.alert,
         )
 
-    categories = Category.query.filter(Category.hub_id == current_user.hub_id).all()
+    categories = Category.query.all()
 
     forms["add_category"].parent.choices = [(c.id, c.name) for c in categories]
     forms["add_category"].parent.choices.insert(0, (0, "Выберите категорию..."))
@@ -91,7 +91,7 @@ def SaveAppSettings():
 def SaveCategoryResponsibility():
     form = CategoryResponsibilityForm()
     if form.validate_on_submit():
-        category = Category.query.filter_by(id=form.category_id.data, hub_id=current_user.hub_id).first()
+        category = Category.query.filter_by(id=form.category_id.data).first()
         if category is None:
             flash("Категория с таким идентификатором не найдена.")
         else:
@@ -116,12 +116,12 @@ def SaveCategoryResponsibility():
 @role_required([UserRoles.admin])
 def AddCategory():
     form = AddCategoryForm()
-    categories = Category.query.filter(Category.hub_id == current_user.hub_id).all()
+    categories = Category.query.all()
     form.parent.choices = [(c.id, c.name) for c in categories]
     form.parent.choices.insert(0, (0, ""))
     if form.validate_on_submit():
         category_name = form.category_name.data.strip().replace("/", "_")
-        category = Category.query.filter_by(hub_id=current_user.hub_id, name=category_name).first()
+        category = Category.query.filter_by(name=category_name).first()
         if category is None:
             if form.parent.data > 0:
                 parent = Category.query.get(form.parent.data)
@@ -177,6 +177,11 @@ def add_hub():
         if hub is None:
             hub = Vendor(name=form.name.data, email=form.email.data)
             db.session.add(hub)
+            db.session.commit()
+            app_settings = AppSettings(
+                hub_id=hub.id,
+            )
+            db.session.add(app_settings)
             db.session.commit()
             flash("Хаб добавлен.")
         else:

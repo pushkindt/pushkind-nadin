@@ -27,7 +27,7 @@
                     {% if current_user.role.name in ['initiative'] %}
                         <li class="nav-item">
                             <a class="nav-link"
-                                href="https://map.pushkind.com/">Заказать</a>
+                                href="{{current_user.hub.settings[0].store_url}}">Заказать</a>
                         </li>
                     {% endif %}
                     {% if current_user.role.name not in ['default', 'vendor', 'initiative'] %}

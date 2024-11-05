@@ -265,6 +265,7 @@ class AppSettingsForm(FlaskForm):
     )
     single_category_orders = BooleanField("Заявки с одной категорией")
     alert = TextAreaField("Предупреждение")
+    store_url = StringField("URL магазина")
     submit = SubmitField("Сохранить")
 
 

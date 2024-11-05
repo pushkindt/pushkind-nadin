@@ -79,6 +79,7 @@ class AppSettings(db.Model):
     order_id_bias = db.Column(db.Integer, nullable=False, default=0, server_default="0")
     single_category_orders = db.Column(db.Boolean, nullable=False, default=True, server_default=expression.true())
     alert = db.Column(db.String(512), nullable=True)
+    store_url = db.Column(db.String(512), nullable=True)
     hub = db.relationship("Vendor", back_populates="settings")
 
 

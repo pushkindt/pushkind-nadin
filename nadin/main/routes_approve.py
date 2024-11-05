@@ -136,9 +136,7 @@ def split_order(order_id):
             new_order.create_timestamp = int(now.timestamp())
             new_order.hub_id = order.hub_id
             categories = [product.get("categoryId", -1) for product in new_order.products]
-            new_order.categories = Category.query.filter(
-                Category.id.in_(categories), Category.hub_id == current_user.hub_id
-            ).all()
+            new_order.categories = Category.query.filter(Category.id.in_(categories)).all()
             vendors = [product.get("vendor") for product in new_order.products]
             new_order.vendors = Vendor.query.filter(
                 Vendor.name.in_(vendors), Vendor.hub_id == current_user.hub_id

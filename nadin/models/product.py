@@ -39,14 +39,11 @@ class Category(db.Model):
         return data
 
     @classmethod
-    def get_root_category(cls, hub_id: int) -> dict:
+    def get_root_category(cls) -> dict:
         return {
             "name": "",
             "id": 0,
-            "children": [
-                (c.id, c.name)
-                for c in Category.query.filter(Category.hub_id == hub_id, not_(Category.name.like("%/%"))).all()
-            ],
+            "children": [(c.id, c.name) for c in Category.query.filter(not_(Category.name.like("%/%"))).all()],
         }
 
     def __hash__(self):

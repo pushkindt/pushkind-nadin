@@ -39,6 +39,12 @@
                     </div>
                 </div>
                 <div class="row mb-3">
+                    {{ forms['app'].store_url.label(class_ = 'col-md-2 form-label') }}
+                    <div class="col-md-10">
+                        {{ forms['app'].store_url(class_ = 'form-control') }}
+                    </div>
+                </div>
+                <div class="row mb-3">
                     {{ forms['app'].order_id_bias.label(class_ = 'col-md-2 form-label') }}
                     <div class="col-md-10">
                         {{ forms['app'].order_id_bias(class_ = 'form-control') }}

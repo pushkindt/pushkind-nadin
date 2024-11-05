@@ -74,7 +74,7 @@ def shop_categories():
     else:
         project = None
 
-    categories = Category.query.filter(Category.hub_id == current_user.hub_id, not_(Category.name.like("%/%"))).all()
+    categories = Category.query.filter(not_(Category.name.like("%/%"))).all()
     response = make_response(render_template("main/shop/shop_categories.html", categories=categories, project=project))
     if project:
         response.set_cookie("project_id", str(project.id))
@@ -98,13 +98,11 @@ def shop_products(cat_id, vendor_id):
         flash("Выберите клиента.")
         return redirect(url_for("main.shop_categories"))
 
-    category = Category.query.filter_by(id=cat_id, hub_id=current_user.hub_id).first()
+    category = Category.query.filter_by(id=cat_id).first()
     if category is None:
         return redirect(url_for("main.shop_categories"))
     if category.children:
-        categories = Category.query.filter(
-            Category.hub_id == current_user.hub_id, Category.id.in_(category.children)
-        ).all()
+        categories = Category.query.filter(Category.id.in_(category.children)).all()
     else:
         categories = []
     products = Product.query.filter_by(cat_id=cat_id)

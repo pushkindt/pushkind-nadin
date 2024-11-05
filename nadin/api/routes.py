@@ -1,16 +1,14 @@
 import math
 from functools import wraps
 
-import sqlalchemy as sa
 from authlib.integrations.flask_oauth2 import current_token
 from flask import Blueprint, current_app, jsonify, make_response, request
 from flask_login import current_user, login_required
 from pydantic import ValidationError
-from sqlalchemy import or_
 
 from nadin.api.errors import error_response
 from nadin.extensions import db
-from nadin.models.hub import UserRoles, Vendor
+from nadin.models.hub import UserRoles
 from nadin.models.order import Order, OrderEvent
 from nadin.models.product import Category, Product, ProductTag
 from nadin.models.project import Project, ProjectPriceLevel
@@ -35,16 +33,6 @@ def cors_preflight_response(fn):
     return wrapper
 
 
-def get_hub_id() -> int:
-    if current_token:
-        return current_token.user.hub_id
-    elif "hub_id" in request.args:
-        return request.args.get("hub_id", type=int)
-    else:
-        hub = Vendor.query.filter(Vendor.hub_id == sa.null()).first()
-        return hub.id if hub else None
-
-
 def get_price_level() -> ProjectPriceLevel:
     if current_token:
         return current_token.user.price_level
@@ -64,13 +52,7 @@ def get_discount() -> float:
 @cors_preflight_response
 def get_tags():
 
-    hub_id = get_hub_id()
-    tags = (
-        ProductTag.query.join(Product)
-        .join(Vendor, Product.vendor_id == Vendor.id)
-        .filter(or_(Vendor.hub_id == hub_id, Product.vendor_id == hub_id))
-        .all()
-    )
+    tags = ProductTag.query.all()
     tags = set(tag.tag for tag in tags if tag.tag)
     response = jsonify(list(tags))
     response.headers.add("Access-Control-Allow-Origin", "*")
@@ -82,12 +64,10 @@ def get_tags():
 @cors_preflight_response
 def get_category(category_id: int):
 
-    hub_id = get_hub_id()
-
     if category_id == 0:
-        category = Category.get_root_category(hub_id=hub_id)
+        category = Category.get_root_category()
     else:
-        category = Category.query.filter_by(hub_id=hub_id, id=category_id).first()
+        category = Category.query.filter_by(id=category_id).first()
         if category is None:
             return error_response(404)
         category = category.to_dict()
@@ -106,13 +86,10 @@ def get_category_products(category_id: int):
     sort_by = request.args.get("sort_by", default="name_asc", type=str)
     sort_by, order = sort_by.split("_", 1)
 
-    hub_id = get_hub_id()
     price_level = get_price_level()
     discount = get_discount()
 
-    products = Product.query.join(Vendor, Product.vendor_id == Vendor.id).filter(
-        or_(Vendor.hub_id == hub_id, Product.vendor_id == hub_id)
-    )
+    products = Product.query
 
     if not tag and not category_id:
         page = 1
@@ -123,7 +100,7 @@ def get_category_products(category_id: int):
     else:
 
         if category_id != 0:
-            category = Category.query.filter_by(hub_id=hub_id, id=category_id).first()
+            category = Category.query.filter_by(id=category_id).first()
             if category is None:
                 return error_response(404)
             products = products.join(Category, onclause=Category.id == Product.cat_id).filter(
@@ -220,16 +197,10 @@ def search_products():
 @cors_preflight_response
 def get_product(product_id: int):
 
-    hub_id = get_hub_id()
     price_level = get_price_level()
     discount = get_discount()
 
-    product = (
-        Product.query.join(Vendor, Product.vendor_id == Vendor.id)
-        .filter(or_(Vendor.hub_id == hub_id, Product.vendor_id == hub_id))
-        .filter_by(id=product_id)
-        .first()
-    )
+    product = Product.query.filter_by(id=product_id).first()
     if not product:
         return error_response(404)
 

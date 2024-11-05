@@ -17,7 +17,7 @@ def test_can_calculate_price_non_existent(app, product):
 
 
 def test_get_root_category(app, category, hub):
-    root = Category.get_root_category(hub.id)
+    root = Category.get_root_category()
     assert root["name"] == ""
     assert root["id"] == 0
     assert root["children"] == [(category.id, category.name)]

@@ -160,9 +160,7 @@ def merge_orders():
         order.create_timestamp = int(now.timestamp())
 
         order.hub_id = current_user.hub_id
-        order.categories = Category.query.filter(
-            Category.id.in_(categories), Category.hub_id == current_user.hub_id
-        ).all()
+        order.categories = Category.query.filter(Category.id.in_(categories)).all()
         order.vendors = Vendor.query.filter(Vendor.name.in_(vendors), Vendor.hub_id == current_user.hub_id).all()
         order.parents = orders
 
