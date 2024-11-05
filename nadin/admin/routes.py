@@ -44,7 +44,7 @@ def show_admin_page():
     forms["add_category"].process()
 
     forms["select_hub"].hub_id.choices = [
-        (hub.id, hub.name) for hub in Vendor.query.filter(Vendor.hub_id.is_(None)).all()
+        (hub.id, f"{hub.id}: {hub.name} ({hub.email})") for hub in Vendor.query.filter(Vendor.hub_id.is_(None)).all()
     ]
     forms["select_hub"].hub_id.default = current_user.hub_id
     forms["select_hub"].process()
