@@ -1,0 +1,61 @@
+<div class="accordion-item">
+    <h2 class="accordion-header" id="oneSFormHeading">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+            data-bs-target="#oneSFormCollapse" aria-expanded="false" aria-controls="oneSFormCollapse">
+            Настройка приложения
+        </button>
+    </h2>
+    <div id="oneSFormCollapse" class="accordion-collapse collapse" aria-labelledby="oneSFormHeading"
+        data-bs-parent="#settingsFormsAccordion">
+        <div class="accordion-body">
+            <form method="POST" action="{{ url_for('admin.SaveAppSettings') }}" enctype="multipart/form-data">
+                <div class="row my-3">
+                    {{ forms['app'].csrf_token(id=False) }}
+                    {{ forms['app'].email.label(class_ = 'col-md-2 form-label') }}
+                    <div class="col-md-10">
+                        {{ forms['app'].email(class_ = 'form-control') }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-10 offset-md-2">
+                        <div class="form-check">
+                            {{ forms['app'].enable(class_ = 'form-check-input') }}
+                            {{ forms['app'].enable.label(class_ = 'form-check-label') }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-10 offset-md-2">
+                        <div class="form-check">
+                            {{ forms['app'].single_category_orders(class_ = 'form-check-input') }}
+                            {{ forms['app'].single_category_orders.label(class_ = 'form-check-label') }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    {{ forms['app'].alert.label(class_ = 'col-md-2 form-label') }}
+                    <div class="col-md-10">
+                        {{ forms['app'].alert(class_ = 'form-control') }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    {{ forms['app'].order_id_bias.label(class_ = 'col-md-2 form-label') }}
+                    <div class="col-md-10">
+                        {{ forms['app'].order_id_bias(class_ = 'form-control') }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    {{ forms['app'].image.label(class_ = 'col-md-2 form-label') }}
+                    <div class="col-md-10">
+                        {{forms['app'].image(class_='form-control', accept='image/png')}}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        {{ forms['app'].submit(id=False, class_ = 'btn btn-primary text-white') }}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -4,22 +4,25 @@ from flask import Blueprint, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
 from sqlalchemy.orm.attributes import flag_modified
 
+from nadin.admin.forms import AddHubForm, SelectHubForm
 from nadin.extensions import db
 from nadin.main.forms import AddCategoryForm, AppSettingsForm, CategoryResponsibilityForm
-from nadin.models.hub import AppSettings, UserRoles
+from nadin.models.hub import AppSettings, UserRoles, Vendor
 from nadin.models.product import Category
 from nadin.utils import flash_errors, role_required
 
 bp = Blueprint("admin", __name__)
 
 
-@bp.route("/", methods=["GET", "POST"])
+@bp.route("/", methods=["GET"])
 @login_required
 @role_required([UserRoles.admin])
-def ShowAdminPage():
+def show_admin_page():
     forms = {
         "add_category": AddCategoryForm(),
         "edit_category": CategoryResponsibilityForm(),
+        "add_hub": AddHubForm(),
+        "select_hub": SelectHubForm(),
     }
 
     app_data = AppSettings.query.filter_by(hub_id=current_user.hub_id).first()
@@ -38,7 +41,13 @@ def ShowAdminPage():
 
     forms["add_category"].parent.choices = [(c.id, c.name) for c in categories]
     forms["add_category"].parent.choices.insert(0, (0, "Выберите категорию..."))
-    forms["edit_category"].process()
+    forms["add_category"].process()
+
+    forms["select_hub"].hub_id.choices = [
+        (hub.id, hub.name) for hub in Vendor.query.filter(Vendor.hub_id.is_(None)).all()
+    ]
+    forms["select_hub"].hub_id.default = current_user.hub_id
+    forms["select_hub"].process()
 
     return render_template(
         "admin/admin.html",
@@ -73,7 +82,7 @@ def SaveAppSettings():
         flash("Настройки рассылки 1С успешно сохранены.")
     else:
         flash_errors(form)
-    return redirect(url_for("admin.ShowAdminPage"))
+    return redirect(url_for("admin.show_admin_page"))
 
 
 @bp.route("/category/edit/", methods=["POST"])
@@ -99,7 +108,7 @@ def SaveCategoryResponsibility():
             flash("Категория успешно отредактирована.")
     else:
         flash_errors(form)
-    return redirect(url_for("admin.ShowAdminPage"))
+    return redirect(url_for("admin.show_admin_page"))
 
 
 @bp.route("/category/add/", methods=["POST"])
@@ -131,7 +140,7 @@ def AddCategory():
             flash(f"Категория {category_name} уже существует.")
     else:
         flash_errors(form)
-    return redirect(url_for("admin.ShowAdminPage"))
+    return redirect(url_for("admin.show_admin_page"))
 
 
 @bp.route("/category/remove/<int:category_id>")
@@ -142,7 +151,7 @@ def RemoveCategory(category_id):
     if category is not None:
         if category.children:
             flash("Невозможно удалить категорию, содержащую подкатегории.")
-            return redirect(url_for("admin.ShowAdminPage"))
+            return redirect(url_for("admin.show_admin_page"))
         db.session.delete(category)
         db.session.commit()
         parent = Category.query.filter(Category.children.contains([category_id])).first()
@@ -153,4 +162,43 @@ def RemoveCategory(category_id):
         flash(f'Категория "{category.name}" удалена.')
     else:
         flash("Такой категории не существует.")
-    return redirect(url_for("admin.ShowAdminPage"))
+    return redirect(url_for("admin.show_admin_page"))
+
+
+@bp.route("/hub/add", methods=["POST"])
+@login_required
+@role_required([UserRoles.admin])
+def add_hub():
+
+    form = AddHubForm()
+
+    if form.validate_on_submit():
+        hub = Vendor.query.filter_by(email=form.email.data).first()
+        if hub is None:
+            hub = Vendor(name=form.name.data, email=form.email.data)
+            db.session.add(hub)
+            db.session.commit()
+            flash("Хаб добавлен.")
+        else:
+            flash("Хаб с таким электронным адресом уже существует.")
+    else:
+        flash_errors(form)
+
+    return redirect(url_for("admin.show_admin_page"))
+
+
+@bp.route("/hub/select", methods=["POST"])
+@login_required
+@role_required([UserRoles.admin, UserRoles.supervisor])
+def select_hub():
+
+    form = SelectHubForm()
+    form.hub_id.choices = [(hub.id, hub.name) for hub in Vendor.query.filter(Vendor.hub_id.is_(None)).all()]
+    if form.validate_on_submit():
+        current_user.hub_id = form.hub_id.data
+        db.session.commit()
+        flash("Хаб изменен.")
+    else:
+        flash_errors(form)
+
+    return redirect(url_for("admin.show_admin_page"))

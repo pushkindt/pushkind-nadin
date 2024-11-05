@@ -241,16 +241,3 @@ def DownloadUsers():
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": "attachment;filename=users.xlsx"},
     )
-
-
-@bp.route("/settings/hub/<int:hub_id>", methods=["GET"])
-@login_required
-@role_required([UserRoles.admin, UserRoles.supervisor])
-def SwitchHub(hub_id):
-    hub = Vendor.query.filter_by(hub_id=None, id=hub_id).first()
-    if hub is None:
-        flash("Такого хаба не существует.")
-    else:
-        current_user.hub_id = hub_id
-        db.session.commit()
-    return redirect(url_for("main.ShowIndex"))

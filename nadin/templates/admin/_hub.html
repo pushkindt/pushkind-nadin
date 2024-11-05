@@ -1,0 +1,45 @@
+<div class="accordion-item">
+    <h2 class="accordion-header" id="hubFormHeading">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#hubFormCollapse" aria-expanded="false" aria-controls="hubFormCollapse">
+            Хабы
+        </button>
+    </h2>
+    <div id="hubFormCollapse" class="accordion-collapse collapse" aria-labelledby="hubFormHeading" data-bs-parent="#settingsFormsAccordion">
+        <div class="accordion-body">
+            <form method="POST" action="{{ url_for('admin.add_hub') }}">
+                <div class="row my-3">
+                    {{ forms['add_hub'].name.label(class_ = 'col-md-2 form-label') }}
+                    <div class="col-md-10">
+                        {{ forms['add_hub'].name(class_ = 'form-control') }}
+                    </div>
+                </div>
+                <div class="row my-3">
+                    {{ forms['add_hub'].email.label(class_ = 'col-md-2 form-label') }}
+                    <div class="col-md-10">
+                        {{ forms['add_hub'].email(class_ = 'form-control') }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        {{ forms['add_hub'].csrf_token(id=False) }}
+                        {{ forms['add_hub'].submit(id=False, class_ = 'btn btn-primary text-white') }}
+                    </div>
+                </div>
+            </form>
+            <form method="POST" action="{{ url_for('admin.select_hub') }}">
+                <div class="row my-3">
+                    {{ forms['select_hub'].hub_id.label(class_ = 'col-md-2 form-label') }}
+                    <div class="col-md-10">
+                        {{ forms['select_hub'].hub_id(class_ = 'form-select') }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        {{ forms['select_hub'].csrf_token(id=False) }}
+                        {{ forms['select_hub'].submit(id=False, class_ = 'btn btn-primary text-white') }}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

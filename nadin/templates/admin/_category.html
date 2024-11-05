@@ -1,0 +1,102 @@
+<div class="accordion-item">
+    <h2 class="accordion-header" id="categoriesFormHeading">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+            data-bs-target="#categoriesFormCollapse" aria-expanded="false"
+            aria-controls="categoriesFormCollapse">
+            Категории
+        </button>
+    </h2>
+    <div id="categoriesFormCollapse" class="accordion-collapse collapse" aria-labelledby="categoriesFormHeading"
+        data-bs-parent="#settingsFormsAccordion">
+        <div class="accordion-body">
+            <div class="row">
+                <div class="col">
+                    <input class="form-control" id="categoryFilter" type="text" placeholder="Фильтр..">
+                </div>
+                <div class="col-auto">
+                    <a class="btn btn-primary text-white" href="#" role="button" data-bs-toggle="modal"
+                        data-bs-target="#addCategoryModal"><i class="bi bi-plus-square"></i></a>
+                </div>
+            </div>
+            <div class="row d-none d-sm-flex fw-bold">
+                <div class="col overflow-hidden">
+                    Название
+                </div>
+                <div class="col overflow-hidden">
+                    Код
+                </div>
+            </div>
+            <div id="categoryList">
+                {% for category in categories %}
+                <div class="row my-1 py-1 border-bottom">
+                    <div class="col-sm">
+                        <span class="d-sm-none fw-bold">Название:</span>
+                        {{ category.name }}
+                    </div>
+                    <div class="col-sm">
+                        <form class="categoryForm" action="{{ url_for('admin.SaveCategoryResponsibility') }}"
+                            method="POST" id="categoryForm{{category.id}}" enctype="multipart/form-data">
+                            <div class="row py-1">
+                                <div class="col">
+                                    {{ forms['edit_category'].csrf_token(id=False) }}
+                                    {{ forms['edit_category'].category_id(class_ = 'd-none', hidden = '',
+                                    value=category.id, id=False) }}
+                                    {{ forms['edit_category'].code(class_ = 'form-control code', id=False,
+                                    placeholder='Код', value = category.code or '') }}
+                                </div>
+                            </div>
+                            <div class="row py-1">
+                                <div class="col">
+                                    {{forms['edit_category'].image(class_='form-control', accept='image/*')}}
+                                </div>
+                            </div>
+                            <div class="row py-1">
+                                <div class="col text-start">
+                                    {{ forms['edit_category'].submit(id=False, class_='btn btn-primary
+                                    text-white') }}
+                                </div>
+                                <div class="col text-end">
+                                    <a class="btn btn-danger text-white"
+                                        href="{{url_for('admin.RemoveCategory', category_id=category.id)}}"
+                                        role="button"
+                                        onclick="confirm('Вы действительно хотите удалить?')">Удалить</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="addCategoryModalLabel">ДОБАВИТЬ КАТЕГОРИЮ</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<form method="POST" action="{{ url_for('admin.AddCategory') }}">
+				<div class="modal-body">
+					{{ forms['add_category'].csrf_token(id=False) }}
+					<div class="mb-3">
+						{{ forms['add_category'].category_name.label(id=False, class_='form-label',
+						for='addCategoryName') }}
+						{{ forms['add_category'].category_name(id='addCategoryName', class_='form-control') }}
+					</div>
+					<div class="mb-3">
+						{{ forms['add_category'].parent.label(id=False, class_='form-label',
+						for='addCategoryParent') }}
+						{{ forms['add_category'].parent(id='addCategoryParent', class_='form-select',
+						placeholder='Выберите категорию...', value=0) }}
+					</div>
+				</div>
+				<div class="modal-footer">
+					{{ forms['add_category'].submit(id=False, class_='btn btn-primary text-white') }}
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
