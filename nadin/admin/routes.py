@@ -201,4 +201,4 @@ def select_hub():
     else:
         flash_errors(form)
 
-    return redirect(url_for("admin.show_admin_page"))
+    return redirect(url_for("main.ShowIndex"))

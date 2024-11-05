@@ -5,6 +5,7 @@ from flask_login import current_user, login_required
 from openpyxl import Workbook
 from sqlalchemy import or_
 
+from nadin.admin.forms import SelectHubForm
 from nadin.extensions import db
 from nadin.main.forms import UserRolesForm, UserSettingsForm
 from nadin.main.routes import bp
@@ -65,7 +66,17 @@ def show_settings():
     user_form.about_user.email_comment.data = current_user.email_comment
     user_form.about_user.projects.choices = [(p.id, p.name) for p in current_user.projects]
 
-    return render_template("main/settings/settings.html", user_form=user_form, users=users)
+    forms = {
+        "select_hub": SelectHubForm(),
+    }
+
+    forms["select_hub"].hub_id.choices = [
+        (hub.id, f"{hub.id}: {hub.name} ({hub.email})") for hub in Vendor.query.filter(Vendor.hub_id.is_(None)).all()
+    ]
+    forms["select_hub"].hub_id.default = current_user.hub_id
+    forms["select_hub"].process()
+
+    return render_template("main/settings/settings.html", user_form=user_form, users=users, forms=forms)
 
 
 @bp.route("/settings/", methods=["POST"])

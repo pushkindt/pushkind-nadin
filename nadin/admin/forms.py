@@ -12,4 +12,4 @@ class AddHubForm(FlaskForm):
 
 class SelectHubForm(FlaskForm):
     hub_id = SelectField("Выбор хаба", validators=[InputRequired(message="Обязательное поле.")], coerce=int)
-    submit = SubmitField("Сохранить")
+    submit = SubmitField("Выбрать хаб")

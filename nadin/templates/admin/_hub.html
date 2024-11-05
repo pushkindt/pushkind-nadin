@@ -26,20 +26,7 @@
                     </div>
                 </div>
             </form>
-            <form method="POST" action="{{ url_for('admin.select_hub') }}">
-                <div class="row my-3">
-                    {{ forms['select_hub'].hub_id.label(class_ = 'col-md-2 form-label') }}
-                    <div class="col-md-10">
-                        {{ forms['select_hub'].hub_id(class_ = 'form-select') }}
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        {{ forms['select_hub'].csrf_token(id=False) }}
-                        {{ forms['select_hub'].submit(id=False, class_ = 'btn btn-primary text-white') }}
-                    </div>
-                </div>
-            </form>
+            {% include 'admin/_select_hub.html' %}
         </div>
     </div>
 </div>
