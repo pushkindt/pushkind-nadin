@@ -51,6 +51,9 @@ def show_settings():
         user_form = UserSettingsForm()
         if current_user.role == UserRoles.initiative:
             current_user.set_initiative_project()
+
+            db.session.commit()
+
             project = current_user.projects[0]
             user_form.project_name.data = project.name
             user_form.phone.data = project.phone
@@ -92,6 +95,7 @@ def save_settings():
     if current_user.role == UserRoles.initiative:
         projects = current_user.projects
         current_user.set_initiative_project()
+        db.session.commit()
     else:
         projects = Project.query
         if current_user.role != UserRoles.admin:

@@ -49,6 +49,8 @@ def login():
             return redirect(url_for("auth.login"))
         update_user_hub_from_url(user, next_page)
         user.set_initiative_project()
+        db.session.commit()
+
         login_user(user, remember=form.remember_me.data)
         current_app.logger.info("%s logged", user.email)
         return redirect(next_page)
@@ -96,6 +98,7 @@ def signup():
 
         if update_initiative_hub_from_url(user, next_page):
             user.set_initiative_project()
+            db.session.commit()
 
         send_user_registered_email(user)
         flash("Теперь пользователь может войти.")
@@ -202,6 +205,7 @@ def callback_oauth(authenticator: str):
         update_user_hub_from_url(user, next_page)
     user.name = profile["name"]
     user.set_initiative_project(phone=profile["phone_number"])
+    db.session.commit()
 
     login_user(user, remember=True)
     current_app.logger.info("%s logged", user.email)

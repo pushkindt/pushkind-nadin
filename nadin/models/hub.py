@@ -144,10 +144,10 @@ class User(SearchableMixin, UserMixin, db.Model):
         project = Project.query.filter_by(hub_id=self.hub_id).filter(check_condition).first()
         if not project:
             project_name = self.name if self.name else self.email
-            project = Project(hub_id=self.hub_id, email=self.email, phone=phone, name=project_name, contact=self.name)
+            project = Project(email=self.email, phone=phone, name=project_name, contact=self.name)
             db.session.add(project)
+        project.hub_id = self.hub_id
         self.projects = [project]
-        db.session.commit()
 
     @property
     def default_project(self) -> Optional[Project]:
