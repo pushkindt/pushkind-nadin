@@ -1,7 +1,9 @@
 from collections.abc import Iterable
 from datetime import datetime, timedelta, timezone
 from functools import wraps
+from html import unescape
 from typing import Any, Optional
+from urllib.parse import parse_qs, urlparse
 
 from flask import current_app, flash, jsonify, render_template, url_for
 from flask_login import current_user
@@ -131,3 +133,10 @@ def SendEmail1C(recipients, order, data):
         html_body=render_template("email/export1C.html", order=order),
         attachments=[data],
     )
+
+
+def get_escaped_url_parameter(escaped_url: str, param: str, default: Optional[str] = None) -> str:
+    unescaped_url = unescape(escaped_url)
+    parsed_url = urlparse(unescaped_url)
+    result = parse_qs(parsed_url.query).get(param, [None])[0]
+    return result if result is not None else default

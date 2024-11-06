@@ -9,9 +9,26 @@ from nadin.auth.email import send_password_reset_email, send_user_registered_ema
 from nadin.auth.forms import LoginForm, RegistrationForm, ResetPasswordForm, ResetPasswordRequestForm
 from nadin.extensions import db, oauth_ext
 from nadin.models.hub import User, UserRoles, Vendor
-from nadin.utils import flash_errors
+from nadin.models.oauth import OAuth2Client
+from nadin.utils import flash_errors, get_escaped_url_parameter
 
 bp = Blueprint("auth", __name__)
+
+
+def update_user_hub_from_url(user: User, escaped_url: str) -> bool:
+    if not escaped_url:
+        return False
+    client_id = get_escaped_url_parameter(escaped_url, "client_id")
+    client = OAuth2Client.query.filter_by(client_id=client_id).first()
+    if client:
+        user.hub_id = client.hub_id
+        return True
+    return False
+
+
+def update_initiative_hub_from_url(user: User, escaped_url: str) -> bool:
+    user.role = UserRoles.initiative
+    return update_user_hub_from_url(user, escaped_url)
 
 
 @bp.route("/login_local/", methods=["GET", "POST"])
@@ -30,6 +47,7 @@ def login():
         if user is None or not user.check_password(form.password.data):
             flash("Некорректный логин или пароль.")
             return redirect(url_for("auth.login"))
+        update_user_hub_from_url(user, next_page)
         user.set_initiative_project()
         login_user(user, remember=form.remember_me.data)
         current_app.logger.info("%s logged", user.email)
@@ -60,8 +78,13 @@ def login_token(token):
 
 @bp.route("/signup/", methods=["GET", "POST"])
 def signup():
+    next_page = request.args.get("next")
+    if not next_page or url_parse(next_page).netloc != "":
+        next_page = url_for("main.ShowIndex")
+
     if current_user.is_authenticated and current_user.role != UserRoles.admin:
-        return redirect(url_for("main.ShowIndex"))
+        return redirect(next_page)
+
     form = RegistrationForm()
     if form.validate_on_submit():
         email = form.email.data.lower()
@@ -70,12 +93,16 @@ def signup():
         user.registered = datetime.now(tz=timezone.utc)
         db.session.add(user)
         db.session.commit()
+
+        if update_initiative_hub_from_url(user, next_page):
+            user.set_initiative_project()
+
         send_user_registered_email(user)
         flash("Теперь пользователь может войти.")
         current_app.logger.info("%s registered", user.email)
         if current_user.is_authenticated and current_user.role == UserRoles.admin:
             return redirect(url_for("main.show_settings"))
-        return redirect(url_for("auth.login"))
+        return redirect(url_for("auth.login", next=next_page))
 
     flash_errors(form)
     return render_template("auth/register.html", form=form)
@@ -165,12 +192,17 @@ def callback_oauth(authenticator: str):
         abort(400)
     user = User.query.filter_by(email=profile["email"]).first()
     if not user:
-        user = User(email=profile["email"], role=UserRoles.initiative, password="")
-        user.hub = Vendor.query.filter(Vendor.hub_id == sa.null()).first()
+        user = User(email=profile["email"], password="")
+
+        if not update_initiative_hub_from_url(user, next_page):
+            user.hub = Vendor.query.filter(Vendor.hub_id == sa.null()).first()
+
         db.session.add(user)
+    else:
+        update_user_hub_from_url(user, next_page)
     user.name = profile["name"]
     user.set_initiative_project(phone=profile["phone_number"])
-    db.session.commit()
+
     login_user(user, remember=True)
     current_app.logger.info("%s logged", user.email)
     return redirect(next_page)

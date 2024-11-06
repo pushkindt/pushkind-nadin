@@ -62,7 +62,7 @@
                             <a href="{{ url_for('auth.request_password_reset') }}">Не помню пароль</a>
                         </div>
                         <div class="col text-end">
-                            <a href="{{ url_for('auth.signup') }}">Регистрация</a>
+                            <a href="{{ url_for('auth.signup', next=next_page) }}">Регистрация</a>
                         </div>
                     </div>
                 </div>

@@ -34,7 +34,7 @@ def split_by_crlf(s):
 def create_client():
     form = request.form
     client_id = gen_salt(24)
-    client = OAuth2Client(client_id=client_id, user_id=current_user.id)
+    client = OAuth2Client(client_id=client_id, hub_id=current_user.hub_id)
     # Mixin doesn't set the issue_at date
     client.client_id_issued_at = int(time.time())
     if client.token_endpoint_auth_method == "none":
