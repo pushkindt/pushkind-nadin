@@ -8,6 +8,7 @@ class OAuth2Client(db.Model, OAuth2ClientMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     hub_id = db.Column(db.Integer, db.ForeignKey("vendor.id", ondelete="CASCADE"), default=1, server_default="1")
+    hub = db.relationship("Vendor")
 
 
 class OAuth2AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):

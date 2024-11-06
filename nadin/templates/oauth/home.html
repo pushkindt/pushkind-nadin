@@ -6,9 +6,11 @@
     {% for client in clients %}
     <div class="row border-bottom">
         <div class="col">
-            {{ client.client_info|tojson }}
+            {{ client.hub.id }}: {{ client.hub.name }}({{ client.hub.email }})
         </div>
         <div class="col">
+            {{ client.client_info|tojson }}
+            <br>
             {{ client.client_metadata|tojson }}
         </div>
         <div class="col-auto">
