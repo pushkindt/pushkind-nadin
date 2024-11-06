@@ -27,7 +27,7 @@ def _get_vendor(vendor_id: int) -> Vendor:
         return Vendor.query.filter_by(email=current_user.email).first()
     vendor = Vendor.query.filter_by(id=vendor_id).first()
     if not vendor:
-        vendor = Vendor.query.filter_by(id=current_user.hub_id).first()
+        vendor = Vendor.query.filter_by().first()
     return vendor
 
 
@@ -44,12 +44,10 @@ def show_products():
     images_form = UploadImagesForm()
     edit_product_form = EditProductForm()
 
-    vendors = Vendor.query.filter_by(hub_id=current_user.hub_id)
+    vendors = Vendor.query.filter_by()
     if current_user.role == UserRoles.vendor:
         vendors = vendors.filter_by(email=current_user.email)
     vendors = vendors.all()
-
-    vendors.append(current_user.hub)
 
     vendor_id = request.args.get("vendor_id", type=int)
     vendor_id = _get_vendor(vendor_id=vendor_id).id
