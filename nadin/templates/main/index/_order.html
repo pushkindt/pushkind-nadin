@@ -12,21 +12,24 @@
 	data-total="{{ order.total }}">
 	<div class="col">
 		<div class="row">
-			<div class="col-sm overflow-hidden">
-				<span class="d-sm-none fw-bold">Заявка:</span>
-				<a class="text-decoration-none" href="{{ url_for('main.show_order', order_id=order.id) }}">{{ order.number }}</a>
-				<br>
+			<div class="col-sm overflow-hidden pt-0 pt-sm-2">
 				<span class="text-muted">
 					{{ moment(order.create_date).format() }}
 				</span>
+				<br>
+				<span class="d-sm-none fw-bold">Заявка:</span>
+				<a class="text-decoration-none" href="{{ url_for('main.show_order', order_id=order.id) }}">{{ order.number }}</a>
 			</div>
-			<div class="col-sm overflow-hidden">
-				Позиций: {{ order.products | length }}<br>
-				Cумма: {{ "{:,.2f}".format(order.total) }}
+			<div class="col-sm overflow-hidden pt-0 pt-sm-2">
+				{{ "{:,.2f}".format(order.total) }}
+				<br>
+				{{ order.products | length }} поз.
 			</div>
-			<div class="col-sm overflow-hidden">
+			<div class="col-sm overflow-hidden pt-0 pt-sm-2">
 				<span class="d-sm-none fw-bold">Цены/Скидка:</span>
-				{{ order.project.price_level_pretty }} {{ "{:,.0%}".format(order.project.get("discount", 0.0)/100.0 or 0.0) }}
+				{{ order.project.price_level_pretty }}
+				<br>
+				{{ "{:,.0%}".format(order.project.get("discount", 0.0)/100.0 or 0.0) }}
 			</div>
 			<div class="col-sm overflow-hidden">
 				{% if not order.project_id or not order.project %}
@@ -35,14 +38,15 @@
 					{% if order.project.name %}{{ order.project.name }}<br>{% endif %}
 					{% if order.project.contact and order.project.contact != order.project.name %}{{ order.project.contact }}<br>{% endif %}
 					{% if order.project.email %}{{ order.project.email }}<br>{% endif %}
-					{% if order.project.phone %}{{ order.project.phone }}<br>{% endif %}
+					{% if order.project.phone %}{{ order.project.phone }}{% endif %}
 				{% endif %}
+			</div>
+			<div class="col-sm pt-0 pt-sm-2">
+				{% include '_order.status.html' %}
 			</div>
 			<div class="col-sm overflow-hidden">
 				{{ order.project.shipping_address or "" }}
 			</div>
 		</div>
-		{% set order_status = order.status %}
-		{% include '_order.status.line.html' %}
 	</div>
 </div>
