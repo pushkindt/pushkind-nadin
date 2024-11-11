@@ -209,6 +209,22 @@ def get_product(product_id: int):
     return response
 
 
+@bp.route("/prices/", methods=["GET", "OPTIONS"])
+@require_oauth(optional=True)
+@cors_preflight_response
+def get_product_prices():
+    # convert to int skipping ids that cannot be converted to int
+    product_ids = [int(id) for id in request.args.getlist("ids") if id.isdigit()]
+    products = Product.query.filter(Product.id.in_(product_ids)).all()
+
+    price_level = get_price_level()
+    discount = get_discount()
+    products = {p.id: p.get_price(price_level, discount) for p in products}
+    response = jsonify(products)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
+
 @bp.route("/order", methods=["POST", "OPTIONS"])
 @cors_preflight_response
 @require_oauth()
