@@ -28,6 +28,7 @@ def cors_preflight_response(fn):
             response.headers.add("Access-Control-Allow-Methods", "*")
             return response
         response = fn(*args, **kwargs)
+        response.headers.add("Access-Control-Allow-Origin", "*")
         return response
 
     return wrapper
@@ -55,7 +56,6 @@ def get_tags():
     tags = ProductTag.query.all()
     tags = set(tag.tag for tag in tags if tag.tag)
     response = jsonify(list(tags))
-    response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
 
@@ -72,7 +72,6 @@ def get_category(category_id: int):
             return error_response(404)
         category = category.to_dict()
     response = jsonify(category)
-    response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
 
@@ -133,7 +132,6 @@ def get_category_products(category_id: int):
         "products": [p.to_dict(price_level, discount) for p in products],
     }
     response = jsonify(products)
-    response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
 
@@ -188,7 +186,6 @@ def search_products():
         "products": [p.to_dict(price_level, discount) for p in products],
     }
     response = jsonify(products)
-    response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
 
@@ -205,11 +202,10 @@ def get_product(product_id: int):
         return error_response(404)
 
     response = jsonify(product.to_dict(price_level, discount))
-    response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
 
-@bp.route("/prices/", methods=["GET", "OPTIONS"])
+@bp.route("/prices", methods=["GET", "OPTIONS"])
 @require_oauth(optional=True)
 @cors_preflight_response
 def get_product_prices():
@@ -221,7 +217,6 @@ def get_product_prices():
     discount = get_discount()
     products = {p.id: p.get_price(price_level, discount) for p in products}
     response = jsonify(products)
-    response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
 
@@ -255,5 +250,4 @@ def create_order():
             "status": order.status.name,
         }
     )
-    response.headers.add("Access-Control-Allow-Origin", "*")
     return response
