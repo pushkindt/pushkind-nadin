@@ -40,9 +40,11 @@
                 </div>
                 <div class="row mb-3">
                     {{ forms['app'].contacts.label(class_ = 'col-md-2 form-label') }}
-                    <div class="col-md-10">
+                    <div class="col-md-5">
                         {{ forms['app'].contacts(class_ = 'form-control') }}
                         <small class="text-muted">{{ forms['app'].contacts.description | safe }}</small>
+                    </div>
+                    <div class="col-md-5 border rounded" id="contacts-rendered">
                     </div>
                 </div>
                 <div class="row mb-3">
