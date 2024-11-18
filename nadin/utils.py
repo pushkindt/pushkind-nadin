@@ -11,6 +11,8 @@ from flask_wtf import FlaskForm
 
 from nadin.email import SendEmail
 
+IMAGES = list("jpg jpe jpeg png gif svg bmp webp".split())
+
 
 def get_filter_timestamps():
     now = datetime.now(tz=timezone.utc)

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+document.getElementById('contacts').innerHTML =
+    marked.parse(`{{current_user.hub.settings[0].contacts}}`);
+</script>
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h5 class="text-center">Контакты</h5>
+    <div class="row justify-content-center">
+        <div class="col-md-8 border rounded" id="contacts">
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -215,3 +215,10 @@ def CallSupport():
     else:
         flash("Сообщение некорректной длины (максимум 2048 символов).")
     return redirect(url_for("main.ShowIndex"))
+
+
+@bp.route("/contacts", methods=["GET"])
+@login_required
+@role_forbidden([UserRoles.default])
+def show_contacts():
+    return render_template("main/index/contacts.html")

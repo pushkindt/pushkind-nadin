@@ -80,6 +80,7 @@ class AppSettings(db.Model):
     single_category_orders = db.Column(db.Boolean, nullable=False, default=True, server_default=expression.true())
     alert = db.Column(db.String(512), nullable=True)
     store_url = db.Column(db.String(512), nullable=True)
+    contacts = db.Column(db.Text, nullable=True)
     hub = db.relationship("Vendor", back_populates="settings")
 
 
@@ -141,7 +142,7 @@ class User(SearchableMixin, UserMixin, db.Model):
             check_condition = sa.or_(Project.email == self.email, Project.phone == phone)
         else:
             check_condition = Project.email == self.email
-        project = Project.query.filter_by(hub_id=self.hub_id).filter(check_condition).first()
+        project = Project.query.filter(check_condition).first()
         if not project:
             project_name = self.name if self.name else self.email
             project = Project(email=self.email, phone=phone, name=project_name, contact=self.name)

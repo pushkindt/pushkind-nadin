@@ -1,11 +1,11 @@
 <div class="accordion-item">
     <h2 class="accordion-header" id="oneSFormHeading">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+        <button class="accordion-button" type="button" data-bs-toggle="collapse"
             data-bs-target="#oneSFormCollapse" aria-expanded="false" aria-controls="oneSFormCollapse">
             Настройка приложения
         </button>
     </h2>
-    <div id="oneSFormCollapse" class="accordion-collapse collapse" aria-labelledby="oneSFormHeading"
+    <div id="oneSFormCollapse" class="accordion-collapse collapse show" aria-labelledby="oneSFormHeading"
         data-bs-parent="#settingsFormsAccordion">
         <div class="accordion-body">
             <form method="POST" action="{{ url_for('admin.SaveAppSettings') }}" enctype="multipart/form-data">
@@ -36,6 +36,13 @@
                     {{ forms['app'].alert.label(class_ = 'col-md-2 form-label') }}
                     <div class="col-md-10">
                         {{ forms['app'].alert(class_ = 'form-control') }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    {{ forms['app'].contacts.label(class_ = 'col-md-2 form-label') }}
+                    <div class="col-md-10">
+                        {{ forms['app'].contacts(class_ = 'form-control') }}
+                        <small class="text-muted">{{ forms['app'].contacts.description | safe }}</small>
                     </div>
                 </div>
                 <div class="row mb-3">

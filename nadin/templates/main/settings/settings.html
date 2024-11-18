@@ -58,7 +58,7 @@
 	<div class="container">
 		<div class="row justify-content-center">
 			<div class="col-md-10">
-				{% if current_user.role.name == 'supervisor' %}
+				{% if current_user.role.name == 'initiative' %}
 					{% include 'admin/_select_hub.html' %}
 				{% endif %}
 				{% include 'main/settings/_user.settings.form.html' %}

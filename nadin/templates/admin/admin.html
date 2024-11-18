@@ -5,8 +5,10 @@
 <div class="container">
 	<div class="accordion" id="settingsFormsAccordion">
 		{% include 'admin/_app.html' %}
-		{% include 'admin/_hub.html' %}
-		{% include 'admin/_category.html' %}
+		{% if current_user.role.name == "admin" %}
+			{% include 'admin/_hub.html' %}
+			{% include 'admin/_category.html' %}
+		{% endif %}
 	</div>
 </div>
 

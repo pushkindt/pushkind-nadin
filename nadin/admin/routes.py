@@ -4,9 +4,9 @@ from flask import Blueprint, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
 from sqlalchemy.orm.attributes import flag_modified
 
-from nadin.admin.forms import AddHubForm, SelectHubForm
+from nadin.admin.forms import AddHubForm, AppSettingsForm, SelectHubForm
 from nadin.extensions import db
-from nadin.main.forms import AddCategoryForm, AppSettingsForm, CategoryResponsibilityForm
+from nadin.main.forms import AddCategoryForm, CategoryResponsibilityForm
 from nadin.models.hub import AppSettings, UserRoles, Vendor
 from nadin.models.product import Category
 from nadin.utils import flash_errors, role_required
@@ -16,7 +16,7 @@ bp = Blueprint("admin", __name__)
 
 @bp.route("/", methods=["GET"])
 @login_required
-@role_required([UserRoles.admin])
+@role_required([UserRoles.admin, UserRoles.supervisor])
 def show_admin_page():
     forms = {
         "add_category": AddCategoryForm(),
@@ -36,6 +36,7 @@ def show_admin_page():
             single_category_orders=app_data.single_category_orders,
             alert=app_data.alert,
             store_url=app_data.store_url,
+            contacts=app_data.contacts or "",
         )
 
     categories = Category.query.all()
@@ -59,7 +60,7 @@ def show_admin_page():
 
 @bp.route("/app/save", methods=["POST"])
 @login_required
-@role_required([UserRoles.admin])
+@role_required([UserRoles.admin, UserRoles.supervisor])
 def SaveAppSettings():
     form = AppSettingsForm()
     if form.validate_on_submit():
@@ -74,6 +75,7 @@ def SaveAppSettings():
         alert = form.alert.data.strip() if form.alert.data else None
         app_data.alert = alert if alert else None
         app_data.store_url = form.store_url.data.strip() if form.store_url.data else None
+        app_data.contacts = form.contacts.data
         if form.image.data:
             f = form.image.data
             file_name, file_ext = os.path.splitext(f.filename)
@@ -196,13 +198,14 @@ def add_hub():
 
 @bp.route("/hub/select", methods=["POST"])
 @login_required
-@role_required([UserRoles.admin, UserRoles.supervisor])
+@role_required([UserRoles.initiative, UserRoles.supervisor])
 def select_hub():
 
     form = SelectHubForm()
     form.hub_id.choices = [(hub.id, hub.name) for hub in Vendor.query.filter(Vendor.hub_id.is_(None)).all()]
     if form.validate_on_submit():
         current_user.hub_id = form.hub_id.data
+        current_user.set_initiative_project()
         db.session.commit()
         flash("Хаб изменен.")
     else:

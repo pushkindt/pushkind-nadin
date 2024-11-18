@@ -25,9 +25,7 @@ from nadin.extensions import db
 from nadin.models.hub import UserRoles
 from nadin.models.order import EventType, OrderEvent
 from nadin.models.project import ProjectPriceLevel
-from nadin.utils import SendEmailNotification
-
-IMAGES = list("jpg jpe jpeg png gif svg bmp webp".split())
+from nadin.utils import IMAGES, SendEmailNotification
 
 
 class JSONField(StringField):
@@ -250,23 +248,6 @@ class SaveOrdersForm(FlaskForm):
 ################################################################################
 # Admin page
 ################################################################################
-
-
-class AppSettingsForm(FlaskForm):
-    email = EmailField(
-        "Электронная почта 1С",
-        validators=[Length(max=128, message="Слишком длинное название.")],
-    )
-    enable = BooleanField("Включить рассылку 1С")
-    order_id_bias = IntegerField("Константа номеров заявок")
-    image = FileField(
-        label="Логотип",
-        validators=[FileAllowed(IMAGES, "Разрешены только изображения.")],
-    )
-    single_category_orders = BooleanField("Заявки с одной категорией")
-    alert = TextAreaField("Предупреждение")
-    store_url = StringField("URL магазина")
-    submit = SubmitField("Сохранить")
 
 
 class AddProjectForm(FlaskForm):
