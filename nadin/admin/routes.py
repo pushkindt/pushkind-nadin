@@ -198,7 +198,7 @@ def add_hub():
 
 @bp.route("/hub/select", methods=["POST"])
 @login_required
-@role_required([UserRoles.initiative, UserRoles.supervisor])
+@role_required([UserRoles.initiative, UserRoles.admin])
 def select_hub():
 
     form = SelectHubForm()
