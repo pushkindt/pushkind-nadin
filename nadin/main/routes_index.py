@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from flask import current_app, flash, redirect, render_template, request, url_for
+from flask import abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from nadin.email import SendEmail
@@ -8,6 +8,7 @@ from nadin.extensions import db
 from nadin.main.forms import MergeOrdersForm, SaveOrdersForm
 from nadin.main.routes import bp
 from nadin.models.hub import UserRoles, Vendor
+from nadin.models.oauth import OAuth2Client
 from nadin.models.order import EventType, Order, OrderEvent, OrderStatus
 from nadin.models.product import Category
 from nadin.utils import SendEmailNotification, flash_errors, get_filter_timestamps, role_forbidden, role_required
@@ -218,7 +219,21 @@ def CallSupport():
 
 
 @bp.route("/contacts", methods=["GET"])
-@login_required
-@role_forbidden([UserRoles.default])
 def show_contacts():
-    return render_template("main/index/contacts.html")
+
+    client_id = request.args.get("client_id", type=str)
+    oauth2_client = OAuth2Client.query.filter_by(client_id=client_id).first()
+    if oauth2_client is not None:
+        hub = oauth2_client.hub
+        empty_layout = True
+    elif current_user.is_authenticated:
+        hub = current_user.hub
+        empty_layout = False
+    else:
+        hub = None
+        empty_layout = False
+        abort(404)
+
+    contacts = (hub.settings[0].contacts if hub and hub.settings else None) or ""
+
+    return render_template("main/index/contacts.html", contacts=contacts, empty_layout=empty_layout)

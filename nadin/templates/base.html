@@ -61,8 +61,12 @@
         {% endwith %}
     </div>
 
-    {% include 'navigation.html' %}
-    {% include 'support.html' %}
+    {% if not empty_layout %}
+
+        {% include 'navigation.html' %}
+        {% include 'support.html' %}
+
+    {% endif %}
 
     {% block content %}{% endblock %}
     <div class="d-none" id="templates">
