@@ -48,8 +48,6 @@ def process_product_tags(product_ids: dict[str, int], df_tags: pd.DataFrame) -> 
         .reset_index(drop=True)
     )
 
-    print(result)
-
     return result
 
 
