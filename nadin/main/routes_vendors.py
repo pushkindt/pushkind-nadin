@@ -74,7 +74,7 @@ def add_vendor():
 def remove_vendor(store_id):
     store = Vendor.query.filter(Vendor.id == store_id, Vendor.hub_id == current_user.hub_id).first()
     if store is not None:
-        vendor_admin = store.admin
+        vendor_admin = User.query.filter_by(email=store.email).first()
         db.session.delete(store)
         if vendor_admin is not None:
             db.session.delete(vendor_admin)

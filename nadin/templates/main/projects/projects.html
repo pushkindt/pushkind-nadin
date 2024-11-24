@@ -273,7 +273,7 @@
                 <div class="modal-footer">
                     {{ forms['edit_project'].submit(id=False, class_='btn btn-primary text-white') }}
                     <a class="btn btn-danger text-white" href="#" role="button" id="removeProjectButton"
-                        onclick="confirm('Вы действительно хотите удалить?')">Удалить</a>
+                        onclick="return confirm('Вы действительно хотите удалить?')">Удалить</a>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                 </div>
             </form>

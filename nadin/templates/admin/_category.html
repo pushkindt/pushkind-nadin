@@ -17,6 +17,13 @@
                     <a class="btn btn-primary text-white" href="#" role="button" data-bs-toggle="modal"
                         data-bs-target="#addCategoryModal"><i class="bi bi-plus-square"></i></a>
                 </div>
+                <div class="col-auto">
+                    <form method="POST", action="{{url_for('admin.remove_category')}}">
+                        <button class="btn btn-danger text-white"
+                            type="submit"
+                            onclick="return confirm('Вы действительно хотите удалить все товары и категории?')"><i class="bi bi-x-lg"></i></button>
+                    </form>
+                </div>
             </div>
             <div class="row d-none d-sm-flex fw-bold">
                 <div class="col overflow-hidden">
@@ -51,18 +58,21 @@
                                 </div>
                             </div>
                             <div class="row py-1">
-                                <div class="col text-start">
+                                <div class="col text-end">
                                     {{ forms['edit_category'].submit(id=False, class_='btn btn-primary
                                     text-white') }}
                                 </div>
-                                <div class="col text-end">
-                                    <a class="btn btn-danger text-white"
-                                        href="{{url_for('admin.RemoveCategory', category_id=category.id)}}"
-                                        role="button"
-                                        onclick="confirm('Вы действительно хотите удалить?')">Удалить</a>
-                                </div>
                             </div>
                         </form>
+                        <div class="row py-1">
+                            <div class="col text-end">
+                                <form method="POST", action="{{url_for('admin.remove_category', category_id=category.id)}}">
+                                    <button class="btn btn-danger text-white"
+                                        type="submit"
+                                        onclick="return confirm('Вы действительно хотите удалить?')">Удалить</button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}

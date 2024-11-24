@@ -8,7 +8,7 @@ from nadin.admin.forms import AddHubForm, AppSettingsForm, SelectHubForm
 from nadin.extensions import db
 from nadin.main.forms import AddCategoryForm, CategoryResponsibilityForm
 from nadin.models.hub import AppSettings, UserRoles, Vendor
-from nadin.models.product import Category
+from nadin.models.product import Category, Product
 from nadin.utils import flash_errors, role_required
 
 bp = Blueprint("admin", __name__)
@@ -147,10 +147,19 @@ def AddCategory():
     return redirect(url_for("admin.show_admin_page"))
 
 
-@bp.route("/category/remove/<int:category_id>")
+@bp.route("/category/remove/<int:category_id>", methods=["POST"])
+@bp.route("/category/remove/", methods=["POST"], defaults={"category_id": None})
 @login_required
 @role_required([UserRoles.admin])
-def RemoveCategory(category_id):
+def remove_category(category_id: int | None):
+
+    if category_id is None:
+        Product.query.delete()
+        Category.query.delete()
+        db.session.commit()
+        flash("Все категории и товары удалены.")
+        return redirect(url_for("admin.show_admin_page"))
+
     category = Category.query.filter_by(id=category_id).first()
     if category is not None:
         if category.children:
