@@ -24,7 +24,7 @@ def price_columns_to_json(row: pd.Series) -> str:
         price_col = col.replace("prices_", "")
         if col not in row:
             continue
-        result[price_col] = float(row[col])
+        result[price_col] = float(row[col] if row[col] else 0.0)
     return json.dumps(result)
 
 
@@ -43,6 +43,7 @@ def process_product_tags(product_ids: dict[str, int], df_tags: pd.DataFrame) -> 
             product_id=lambda x: x["product_id"].astype(int),
             tag=lambda x: x["tag"].str.lower().str.strip()[:128],
         )
+        .dropna(subset=["tag"])
         .reset_index(drop=True)
     )
 
