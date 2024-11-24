@@ -43,9 +43,12 @@ def process_product_tags(product_ids: dict[str, int], df_tags: pd.DataFrame) -> 
             product_id=lambda x: x["product_id"].astype(int),
             tag=lambda x: x["tag"].str.lower().str.strip()[:128],
         )
+        .replace("", np.nan)
         .dropna(subset=["tag"])
         .reset_index(drop=True)
     )
+
+    print(result)
 
     return result
 
