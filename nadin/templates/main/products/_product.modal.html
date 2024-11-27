@@ -34,6 +34,24 @@
                                     <span class="visually-hidden">Next</span>
                                 </button>
                             </div>
+                            {% if product.options %}
+                                {% for option in product.options %}
+                                    <div class="row mb-2">
+                                        <div class="fw-bold col">{{ option }}</div>
+                                        <div class="col">
+                                            {% if product.options[option] | length > 1 %}
+                                                <select class="form-select">
+                                                    {% for value in product.options[option] %}
+                                                        <option value="{{value}}">{{value}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            {% else %}
+                                                {{product.options[option][0]}}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
                         </div>
                         <div class="col-sm">
                             <form action="{{url_for('main.edit_product', product_id=product.id)}}" method="POST" enctype="multipart/form-data">

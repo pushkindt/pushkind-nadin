@@ -19,31 +19,6 @@
             <div class="col-sm overflow-hidden pt-sm-4 pt-2">
                 <strong>{{ '{:,.2f}'.format(product.price) }}</strong> ₽/{{ product.measurement }}
             </div>
-            {% if product.options %}
-            <div class="col-12">
-                <div class="row">
-                    <div class="col-auto fw-bold pt-2">
-                        Опции:
-                    </div>
-                    <div class="col">
-                        {% for rows in product.options|batch(4) %}
-                        <div class="row">
-                            {% for option in rows %}
-                            <div class="col-sm-3 my-1">
-                                <select class="form-select">
-                                    <option selected disabled>{{ option }}</option>
-                                    {% for value in product.options[option]%}
-                                    <option value="{{value}}">{{value}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-            {% endif %}
         </div>
     </div>
 </div>
