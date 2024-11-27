@@ -225,6 +225,26 @@
                                                 <span class="visually-hidden">Next</span>
                                             </button>
                                         </div>
+                                        {% if product.options %}
+                                            {% for option in product.options %}
+                                                <div class="row mb-2">
+                                                    <div class="fw-bold col">{{ option }}</div>
+                                                    <div class="col">
+                                                        {% if product.options[option] | length > 1 %}
+                                                            <select class="form-select productOption" name="{{option}}">
+                                                                {% for value in product.options[option]%}
+                                                                    <option value="{{value}}">
+                                                                        {{value}}
+                                                                    </option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        {% else %}
+                                                            {{product.options[option][0]}}
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
                                     </div>
                                     <div class="col-sm">
                                         <div class="row my-1 py-1 mb-3 d-none border rounded bg-yellow">
@@ -256,27 +276,6 @@
                                                 </textarea>
                                             </div>
                                         </div>
-                                        {% if product.options %}
-                                            {% for rows in product.options|batch(3) %}
-                                                <div class="row">
-                                                    {% for option in rows %}
-                                                        <div class="col-md-4 my-1">
-                                                            <select class="form-select productOption"
-                                                                name="{{option}}">
-                                                                <option selected disabled value="0">
-                                                                    {{ option }}
-                                                                </option>
-                                                                {% for value in product.options[option]%}
-                                                                    <option value="{{value}}">
-                                                                        {{value}}
-                                                                    </option>
-                                                                {% endfor %}
-                                                            </select>
-                                                        </div>
-                                                    {% endfor %}
-                                                </div>
-                                            {% endfor %}
-                                        {% endif %}
                                         <div class="row my-1">
                                             <div class="col">
                                                 <div class="input-group">
@@ -311,7 +310,7 @@
                                 </div>
                                 <div class="row">
                                     <strong>Описание:</strong>
-                                    <pre>{{product.description or ''}}</pre>
+                                    <p>{{product.description or ''}}</p>
                                 </div>
                             </div>
                         </div>
