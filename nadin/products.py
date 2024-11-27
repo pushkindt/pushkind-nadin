@@ -20,8 +20,8 @@ def option_columns_to_json(row: pd.Series) -> str:
 
 def price_columns_to_json(row: pd.Series) -> str:
     result = {}
-    for col in [f"prices_{col.name}" for col in ProjectPriceLevel]:
-        price_col = col.replace("prices_", "")
+    for col in [f"prices.{col.name}" for col in ProjectPriceLevel]:
+        price_col = col.replace("prices.", "")
         if col not in row:
             continue
         result[price_col] = float(row[col] if row[col] else 0.0)
@@ -52,7 +52,7 @@ def process_product_tags(product_ids: dict[str, int], df_tags: pd.DataFrame) -> 
 
 
 def clean_column_name(name: str) -> str:
-    return re.sub(r"[^\w]+", "_", name.lower().strip())
+    return name.strip()
 
 
 def extra_columns_to_options(df: pd.DataFrame, known_columns: list[str]) -> pd.DataFrame:
@@ -70,7 +70,7 @@ def extra_columns_to_options(df: pd.DataFrame, known_columns: list[str]) -> pd.D
 
 def process_price_columns(df: pd.DataFrame) -> pd.DataFrame:
     result = df.copy(deep=False)
-    price_columns = [f"prices_{col.name}" for col in ProjectPriceLevel]
+    price_columns = [f"prices.{col.name}" for col in ProjectPriceLevel]
     if "price" in df.columns:
         result["price"] = df["price"].apply(pd.to_numeric, errors="coerce")
     if any(col in df.columns for col in price_columns):
@@ -87,6 +87,7 @@ def process_category_column(df: pd.DataFrame, categories: "dict[str:int]") -> pd
 
 
 def process_images_column(df: pd.DataFrame) -> pd.DataFrame:
+    df["image"].replace("", np.nan, inplace=True)
     if "images" in df.columns:
         return df.assign(
             images=df["images"].apply(lambda x: json.dumps([img.strip() for img in str(x).split(",")]) if x else None)
