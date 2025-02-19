@@ -4,10 +4,10 @@ from nadin import products
 
 
 def test_clean_column_name():
-    assert products.clean_column_name("  Test  ") == "test"
-    assert products.clean_column_name("tesT") == "test"
-    assert products.clean_column_name("  test   test  ") == "test_test"
-    assert products.clean_column_name("  test.test  ") == "test_test"
+    assert products.clean_column_name("  Test  ") == "Test"
+    assert products.clean_column_name("tesT") == "tesT"
+    assert products.clean_column_name("  test   test  ") == "test   test"
+    assert products.clean_column_name("  test.test  ") == "test.test"
 
 
 def test_option_columns_to_json():
@@ -21,10 +21,10 @@ def test_option_columns_to_json():
 
 def test_price_columns_to_json():
     assert (
-        products.price_columns_to_json(pd.Series([10.0, 20.0], index=["prices_online_store", "prices_marketplace"]))
+        products.price_columns_to_json(pd.Series([10.0, 20.0], index=["prices.online_store", "prices.marketplace"]))
         == '{"online_store": 10.0, "marketplace": 20.0}'
     )
-    assert products.price_columns_to_json(pd.Series([10.0], index=["prices_online_store"])) == '{"online_store": 10.0}'
+    assert products.price_columns_to_json(pd.Series([10.0], index=["prices.online_store"])) == '{"online_store": 10.0}'
     assert products.price_columns_to_json(pd.Series([])) == "{}"
 
 
@@ -119,8 +119,8 @@ def test_process_price_columns():
     df = pd.DataFrame(
         {
             "price": ["1.0", "2.0", "3.0"],
-            "prices_online_store": ["1", "2", "3"],
-            "prices_marketplace": ["4", "5", "6"],
+            "prices.online_store": ["1", "2", "3"],
+            "prices.marketplace": ["4", "5", "6"],
         }
     )
     expected = pd.DataFrame(

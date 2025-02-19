@@ -1,5 +1,4 @@
 import json
-import re
 
 import numpy as np
 import pandas as pd
@@ -87,7 +86,6 @@ def process_category_column(df: pd.DataFrame, categories: "dict[str:int]") -> pd
 
 
 def process_images_column(df: pd.DataFrame) -> pd.DataFrame:
-    df["image"].replace("", np.nan, inplace=True)
     if "images" in df.columns:
         return df.assign(
             images=df["images"].apply(lambda x: json.dumps([img.strip() for img in str(x).split(",")]) if x else None)
