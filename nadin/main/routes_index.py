@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 from flask import abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from nadin.email import SendEmail
 from nadin.extensions import db
 from nadin.main.forms import MergeOrdersForm, SaveOrdersForm
 from nadin.main.routes import bp

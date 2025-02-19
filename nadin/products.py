@@ -63,8 +63,8 @@ def extra_columns_to_options(df: pd.DataFrame, known_columns: list[str]) -> pd.D
             extra_columns,
             axis=1,
         )
-    else:
-        return df.drop("options", errors="ignore")
+
+    return df.drop("options", errors="ignore")
 
 
 def process_price_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -81,8 +81,8 @@ def process_price_columns(df: pd.DataFrame) -> pd.DataFrame:
 def process_category_column(df: pd.DataFrame, categories: "dict[str:int]") -> pd.DataFrame:
     if "category" in df.columns:
         return df.assign(cat_id=df["category"].str.lower().map(categories)).drop("category", axis=1)
-    else:
-        return df.drop("cat_id", axis=1, errors="ignore")
+
+    return df.drop("cat_id", axis=1, errors="ignore")
 
 
 def process_images_column(df: pd.DataFrame) -> pd.DataFrame:
@@ -90,8 +90,8 @@ def process_images_column(df: pd.DataFrame) -> pd.DataFrame:
         return df.assign(
             images=df["images"].apply(lambda x: json.dumps([img.strip() for img in str(x).split(",")]) if x else None)
         )
-    else:
-        return df
+
+    return df
 
 
 def process_string_columns(df: pd.DataFrame, string_columns: list[str]) -> pd.DataFrame:

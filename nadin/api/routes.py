@@ -37,15 +37,13 @@ def cors_preflight_response(fn):
 def get_price_level() -> ProjectPriceLevel:
     if current_token:
         return current_token.user.price_level
-    else:
-        return ProjectPriceLevel.online_store
+    return ProjectPriceLevel.online_store
 
 
 def get_discount() -> float:
     if current_token:
         return current_token.user.discount
-    else:
-        return 0.0
+    return 0.0
 
 
 @bp.route("/tags", methods=["GET", "OPTIONS"])

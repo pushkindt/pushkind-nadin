@@ -50,6 +50,6 @@ def send_message():
         )
         flash("Сообщение отправлено.", "success")
         return redirect(url_for("main.send_message"))
-    else:
-        flash_errors(form)
+
+    flash_errors(form)
     return render_template("main/messages/messages.html", form=form)
