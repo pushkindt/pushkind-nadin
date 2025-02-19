@@ -27,6 +27,7 @@ email-validator = "^2.1.0.post1"
 
 elasticsearch = "^8.14.0"
 pydantic = "^2.8.2"
+markdown = "^3.7"
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
 pylint = "^3.0.2"

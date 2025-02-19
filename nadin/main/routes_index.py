@@ -199,25 +199,6 @@ def merge_orders():
     return redirect(url_for("main.ShowIndex"))
 
 
-@bp.route("/support/call/", methods=["POST"])
-@login_required
-@role_forbidden([UserRoles.default])
-def CallSupport():
-    comment = request.form.get("comment", "", type=str)
-    if len(comment) > 0 and len(comment) < 2048:
-        SendEmail(
-            "Обращение в поддержку",
-            current_app.config["ADMINS"][0],
-            [current_app.config["ADMINS"][0], current_user.email],
-            text_body=render_template("email/support.txt", comment=comment),
-            html_body=render_template("email/support.html", comment=comment),
-        )
-        flash("Сообщение отправлено в поддержку.")
-    else:
-        flash("Сообщение некорректной длины (максимум 2048 символов).")
-    return redirect(url_for("main.ShowIndex"))
-
-
 @bp.route("/contacts", methods=["GET"])
 def show_contacts():
 

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <form method="POST" action="{{ url_for('main.send_message') }}">
+        {{ form.csrf_token(id=False) }}
+        <div class="container my-1">
+            <h3 class="text-center">Отправка email-сообщения пользователям системы</h3>
+            <div class="row mb-3 ps-3">
+                {{ form.recipients.label(class_='form-label recipientsDropDown') }}
+                <a class="recipientsDropDown" href="#">добавить из списка</a>
+                {{ form.recipients(class_='form-control') }}
+                <a id="recipientsNone" href="#" class="text-danger">убрать всех</a>
+            </div>
+            <div class="row">
+                <div class="col">
+                    {{ form.message(class_='form-control', rows=10) }}
+                </div>
+                <div class="col border rounded" id="message-rendered">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    <small class="text-muted">Сообщение в формате <a href="https://www.markdownguide.org/basic-syntax/">markdown</a></small>
+                </div>
+                <div class="col">
+                    <small class="text-muted">Превью сообщения</small>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    {{ form.submit(class_='btn btn-primary text-white') }}
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+	$(document).ready(function () {
+
+
+    let recipients = $("#recipients");
+    recipients.selectize({});
+    let recipientsSelectize = recipients[0].selectize;
+
+    $(".recipientsDropDown").click(function(e) {
+        recipientsSelectize.focus();
+    });
+
+    $("#recipientsNone").click(function() {
+        recipientsSelectize.clear(false);
+    });
+
+	const edit_message = document.getElementById('message');
+	const render_message = document.getElementById('message-rendered');
+	render_message.innerHTML = marked.parse(edit_message.value);
+
+	edit_message.addEventListener("input", function () {
+		render_message.innerHTML = marked.parse(edit_message.value);
+	});
+
+	});
+</script>
+{% endblock %}
