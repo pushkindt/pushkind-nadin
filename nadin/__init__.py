@@ -45,6 +45,7 @@ def register_extensions(app):
     config_oauth_server(app)
     login_manager.login_view = app.config["LOGIN_VIEW"]
     login_manager.login_message = app.config["LOGIN_MESSAGE"]
+    login_manager.login_message_category = app.config["LOGIN_MESSAGE_CATEGORY"]
     login_manager.init_app(app)
     db.init_app(app)
     migrate.init_app(app, db)
