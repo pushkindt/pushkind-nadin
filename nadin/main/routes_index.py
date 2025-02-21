@@ -94,7 +94,7 @@ def merge_orders():
     if form.validate_on_submit():
         orders_list = form.orders.data
         if not isinstance(orders_list, list) or len(orders_list) < 2:
-            flash("Некорректный список заявок.")
+            flash("Некорректный список заявок.", "danger")
             return redirect(url_for("main.ShowIndex"))
 
         orders = []
@@ -107,12 +107,12 @@ def merge_orders():
         orders = orders.all()
 
         if len(orders) < 2:
-            flash("Некорректный список заявок.")
+            flash("Некорректный список заявок.", "danger")
             return redirect(url_for("main.ShowIndex"))
 
         for order in orders[1:]:
             if order.project_id != orders[0].project_id:
-                flash("Нельзя объединять заявки с разными клиентами.")
+                flash("Нельзя объединять заявки с разными клиентами.", "danger")
                 return redirect(url_for("main.ShowIndex"))
 
         products = {}

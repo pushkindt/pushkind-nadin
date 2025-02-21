@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h3 class="text-center">Управление ролями и действиями</h3>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <h5>Роли</h5>
+            <form method="POST" action="{{ url_for('rbac.add_role') }}">
+                <div class="row mb-3">
+                    <div class="col">
+                        <input class="form-control" type="text" name="name" placeholder="Название новой роли" required>
+                    </div>
+                    <div class="col-3 text-end">
+                        <button class="btn btn-primary" type="submit">Добавить</button>
+                    </div>
+                </div>
+            </form>
+            <ul class="list-group">
+                {% for role in roles %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ role.name }}
+                        <form method="POST" action="{{ url_for('rbac.delete_role', role_id=role.id) }}" style="display:inline;">
+                            <button class="btn btn-danger btn-sm" type="submit" onclick="return confirm('Удалить?')"><i class="bi bi-x-lg"></i></button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="col-md-6">
+            <h5>Действия</h5>
+            <form method="POST" action="{{ url_for('rbac.add_action') }}">
+                <div class="row mb-3">
+                    <div class="col">
+                        <input class="form-control" type="text" name="name" placeholder="Название действия" required>
+                    </div>
+                    <div class="col-3 text-end">
+                        <button class="btn btn-primary" type="submit">Добавить</button>
+                    </div>
+                </div>
+            </form>
+            <ul class="list-group">
+                {% for action in actions %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ action.name }}
+                        <form method="POST" action="{{ url_for('rbac.delete_action', action_id=action.id) }}" style="display:inline;">
+                            <button class="btn btn-danger btn-sm" type="submit" onclick="return confirm('Удалить?')"><i class="bi bi-x-lg"></i></button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+
+            <h5>Назначить ролям действия</h5>
+            <form method="POST" action="{{ url_for('rbac.assign_action_to_role') }}">
+                <div class="row mb-3">
+                    <div class="col">
+                        <select class="form-select" name="role_id" required>
+                            <option value="">Выбор роли</option>
+                            {% for role in roles %}
+                                <option value="{{ role.id }}">{{ role.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col">
+                        <select class="form-select" name="action_id" required>
+                            <option value="">Выбор действия</option>
+                            {% for action in actions %}
+                                <option value="{{ action.id }}">{{ action.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-3 text-end">
+                        <button class="btn btn-primary" type="submit">Назначить</button>
+                    </div>
+                </div>
+            </form>
+
+            <h5>Назначение ролей и действий</h5>
+            <ul class="list-group">
+                {% for role in roles %}
+                    <li class="list-group-item">
+                        <strong>{{ role.name }}</strong>
+                        <ul class="list-group">
+                            {% for action in role.actions %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ action.name }}
+                                    <form method="POST" action="{{ url_for('rbac.unassign_action') }}" style="display:inline;">
+                                        <input type="hidden" name="role_id" value="{{ role.id }}">
+                                        <input type="hidden" name="action_id" value="{{ action.id }}">
+                                        <button class="btn btn-danger btn-sm" type="submit" onclick="return confirm('Убрать?')"><i class="bi bi-x-lg"></i></button>
+                                    </form>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

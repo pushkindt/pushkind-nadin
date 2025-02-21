@@ -45,7 +45,7 @@ def login():
         email = form.email.data.lower()
         user = User.query.filter_by(email=email).first()
         if user is None or not user.check_password(form.password.data):
-            flash("Некорректный логин или пароль.")
+            flash("Некорректный логин или пароль.", "danger")
             return redirect(url_for("auth.login"))
         update_user_hub_from_url(user, next_page)
         user.set_initiative_project()
@@ -69,7 +69,7 @@ def login_token(token):
 
         user = User.verify_jwt_token(token)
         if not user:
-            flash("Некорректный токен авторизации.")
+            flash("Некорректный токен авторизации.", "danger")
             return redirect(url_for("auth.login"))
 
         login_user(user)
@@ -101,7 +101,7 @@ def signup():
             db.session.commit()
 
         send_user_registered_email(user)
-        flash("Теперь пользователь может войти.")
+        flash("Теперь пользователь может войти.", "success")
         current_app.logger.info("%s registered", user.email)
         if current_user.is_authenticated and current_user.role == UserRoles.admin:
             return redirect(url_for("main.show_settings"))
@@ -127,9 +127,9 @@ def request_password_reset():
         user = User.query.filter_by(email=email).first()
         if user:
             send_password_reset_email(user)
-            flash("На вашу электронную почту отправлен запрос на сброс пароля.")
+            flash("На вашу электронную почту отправлен запрос на сброс пароля.", "success")
             return redirect(url_for("auth.login"))
-        flash("Такой пользователь не обнаружен.")
+        flash("Такой пользователь не обнаружен.", "danger")
     else:
         flash_errors(form)
     return render_template("auth/request.html", form=form)
@@ -146,7 +146,7 @@ def reset_password(token):
     if form.validate_on_submit():
         user.set_password(form.password.data)
         db.session.commit()
-        flash("Ваш пароль был изменён.")
+        flash("Ваш пароль был изменён.", "success")
         return redirect(url_for("auth.login"))
 
     flash_errors(form)
@@ -186,7 +186,7 @@ def callback_oauth(authenticator: str):
     try:
         token = oauth_client.authorize_access_token()
     except Exception:
-        flash("Не удалось авторизоваться. Попробуйте позже.")
+        flash("Не удалось авторизоваться. Попробуйте позже.", "danger")
         return redirect(url_for("auth.login"))
 
     user_info = oauth_client.userinfo(token=token)

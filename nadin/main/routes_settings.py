@@ -9,9 +9,10 @@ from nadin.admin.forms import SelectHubForm
 from nadin.extensions import db
 from nadin.main.forms import UserRolesForm, UserSettingsForm
 from nadin.main.routes import bp
-from nadin.models.hub import User, UserRoles, Vendor
+from nadin.models.hub import Role, User, UserRoles, Vendor
 from nadin.models.order import Order, OrderApproval, OrderCategory, OrderStatus
 from nadin.models.project import Project
+from nadin.rbac.auth import rbac_required
 from nadin.utils import flash_errors, role_forbidden, role_required
 
 ################################################################################
@@ -20,8 +21,7 @@ from nadin.utils import flash_errors, role_forbidden, role_required
 
 
 @bp.route("/settings/", methods=["GET"])
-@login_required
-@role_forbidden([UserRoles.default, UserRoles.vendor])
+@rbac_required("settings_view")
 def show_settings():
 
     if current_user.role == UserRoles.admin:
@@ -30,6 +30,7 @@ def show_settings():
         page = request.args.get("page", type=int, default=1)
 
         user_form = UserRolesForm()
+        user_form.roles.choices = [(r.id, r.name) for r in Role.query.all()]
 
         if search_key:
             users, total = User.search(search_key, page, current_app.config["MAX_PER_PAGE"])
@@ -89,6 +90,7 @@ def save_settings():
 
     if current_user.role == UserRoles.admin:
         user_form = UserRolesForm()
+        user_form.roles.choices = [(r.id, r.name) for r in Role.query.all()]
     else:
         user_form = UserSettingsForm()
 
@@ -109,19 +111,23 @@ def save_settings():
         if current_user.role == UserRoles.admin:
             user = User.query.filter(User.id == user_form.user_id.data).first()
             if user is None:
-                flash("Пользователь не найден.")
+                flash("Пользователь не найден.", "danger")
                 return redirect(url_for("main.show_settings"))
             user.hub_id = current_user.hub_id
-            user.role = user_form.role.data
             user.set_initiative_project()
+
+            if user_form.roles.data:
+                user.roles = Role.query.filter(Role.id.in_(user_form.roles.data)).all()
+            else:
+                user.roles = []
+
         else:
             user = current_user
 
-        if user.role != UserRoles.initiative:
-            if user_form.about_user.projects.data:
-                user.projects = Project.query.filter(Project.id.in_(user_form.about_user.projects.data)).all()
-            else:
-                user.projects = []
+        if user_form.about_user.projects.data:
+            user.projects = Project.query.filter(Project.id.in_(user_form.about_user.projects.data)).all()
+        else:
+            user.projects = []
 
         user.email_new = user_form.about_user.email_new.data
         user.email_modified = user_form.about_user.email_modified.data
@@ -141,7 +147,7 @@ def save_settings():
 
         db.session.commit()
 
-        flash("Данные успешно сохранены.")
+        flash("Данные успешно сохранены.", "success")
     else:
         flash_errors(user_form)
         flash_errors(user_form.about_user)
@@ -158,7 +164,7 @@ def RemoveUser(user_id):
         or_(User.role == UserRoles.default, User.hub_id == current_user.hub_id),
     ).first()
     if user is None:
-        flash("Пользователь не найден.")
+        flash("Пользователь не найден.", "danger")
         return redirect(url_for("main.show_settings"))
 
     for order in user.orders:
@@ -168,7 +174,7 @@ def RemoveUser(user_id):
     db.session.delete(user)
     db.session.commit()
 
-    flash("Пользователь успешно удалён.")
+    flash("Пользователь успешно удалён.", "success")
     return redirect(url_for("main.show_settings"))
 
 

@@ -1,4 +1,5 @@
 from authlib.integrations.flask_client import OAuth
+from flask_caching import Cache
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_migrate import Migrate
@@ -22,3 +23,4 @@ db = SQLAlchemy(
 moment = Moment()
 mail = Mail()
 oauth_ext = OAuth()
+cache = Cache(config={"CACHE_TYPE": "SimpleCache"})

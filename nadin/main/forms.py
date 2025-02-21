@@ -190,11 +190,9 @@ class UserSettings(Form):
 
 class UserRolesForm(FlaskForm):
     user_id = IntegerField("Идентификатор пользователя", render_kw={"hidden": ""})
-    role = SelectField(
-        "Права доступа",
-        validators=[InputRequired(message="Некорректные права доступа пользователя.")],
+    roles = SelectMultipleField(
+        "Роли",
         coerce=int,
-        choices=[(int(role), str(role)) for role in UserRoles],
     )
     about_user = FormField(UserSettings, [DataRequired()])
     submit = SubmitField("Сохранить")

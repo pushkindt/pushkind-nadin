@@ -51,9 +51,9 @@
 
 <body class="bg-light">
     <div id="flashMessages">
-        {% with messages = get_flashed_messages() %}
-        {% for message in messages %}
-        <div class="alert alert-primary alert-dismissible" role="alert">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{category}} alert-dismissible" role="alert">
             {{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>

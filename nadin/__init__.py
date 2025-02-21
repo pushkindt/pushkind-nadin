@@ -7,12 +7,13 @@ from dynaconf import FlaskDynaconf
 from elasticsearch import Elasticsearch
 from flask import Flask, render_template, request
 
-from nadin import admin, api, auth, oauth
-from nadin.extensions import db, login_manager, mail, migrate, moment, oauth_ext
+from nadin import admin, api, auth, oauth, rbac
+from nadin.extensions import cache, db, login_manager, mail, migrate, moment, oauth_ext
 from nadin.jinja_filters import qs_active, qs_toggler
 from nadin.main import routes as main_routes
 from nadin.oauth.server import config_oauth_server
 from nadin.oauth.yandex import YandexOauth2Config
+from nadin.rbac.auth import get_user_permissions
 
 
 def create_app(**config):
@@ -31,6 +32,7 @@ def create_app(**config):
 def register_filters(app):
     app.jinja_env.filters["qs_active"] = qs_active
     app.jinja_env.filters["qs_toggler"] = qs_toggler
+    app.jinja_env.filters["get_user_permissions"] = get_user_permissions
 
 
 def register_extensions(app):
@@ -48,6 +50,7 @@ def register_extensions(app):
     migrate.init_app(app, db)
     mail.init_app(app)
     moment.init_app(app)
+    cache.init_app(app)
 
     if app.config["ELASTICSEARCH_URL"]:
         app.elasticsearch = Elasticsearch([app.config["ELASTICSEARCH_URL"]])
@@ -61,6 +64,7 @@ def register_blueprints(app):
     app.register_blueprint(api.routes.bp, url_prefix="/api")
     app.register_blueprint(main_routes.bp, url_prefix="/")
     app.register_blueprint(oauth.routes.bp, url_prefix="/oauth")
+    app.register_blueprint(rbac.routes.bp, url_prefix="/rbac")
 
 
 def register_errorhandlers(app):

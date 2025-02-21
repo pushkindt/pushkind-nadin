@@ -236,7 +236,7 @@ def RemoveProject(project_id):
         db.session.commit()
         flash(f"Клиент {project.name} удален.")
     else:
-        flash("Такого клиента не существует.")
+        flash("Такого клиента не существует.", "danger")
     return redirect(url_for("main.ShowProjects"))
 
 
@@ -264,7 +264,7 @@ def EditProject():
             db.session.commit()
             flash(f"Клиент {project_name} изменён.")
         else:
-            flash("Такого клиента не существует.")
+            flash("Такого клиента не существует.", "error")
     else:
         flash_errors(form)
     return redirect(url_for("main.ShowProjects"))
@@ -279,7 +279,7 @@ def UploadProjects():
         try:
             projects, projects_order_history = projects_excel_to_df(form.projects.data)
         except Exception as exc:
-            flash("Не удалось загрузить файл. Проверьте формат.", category="error")
+            flash("Не удалось загрузить файл. Проверьте формат.", "error")
             current_app.logger.error(exc)
             return redirect(url_for("main.ShowProjects"))
         original_projects = pd.read_sql(
@@ -318,7 +318,7 @@ def UploadProjects():
         db.session.commit()
         projects_order_history.to_sql("project_order_history", db.engine, if_exists="append", index=False)
 
-        flash("Список клиентов успешно загружен.")
+        flash("Список клиентов успешно загружен.", "success")
     else:
         flash_errors(form)
     return redirect(url_for("main.ShowProjects"))

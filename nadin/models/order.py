@@ -314,7 +314,7 @@ class Order(SearchableMixin, db.Model):
             vendor_id = vendor.id if vendor else None
             orders = orders.filter(Order.vendors.any(OrderVendor.vendor_id == vendor_id))
         elif user.projects:
-            orders = orders.filter(Order.project_id.in_(user.projects_list))
+            orders = orders.filter(Order.project_id.in_(user.project_ids))
         elif user.role == UserRoles.initiative:
             orders = orders.filter(Order.initiative_id == user.id)
         return orders

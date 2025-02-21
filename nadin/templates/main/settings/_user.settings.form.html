@@ -43,9 +43,9 @@
 		{% endif %}
 		{% if current_user.role.name == 'admin' %}
 		<div class="row mb-3">
-			{{ user_form.role.label(class_='col-md-2 col-form-label') }}
+			{{ user_form.roles.label(class_='col-md-2 col-form-label') }}
 			<div class="col-md-10">
-				{{ user_form.role(class_='form-select') }}
+				{{ user_form.roles(class_='form-control') }}
 			</div>
 		</div>
 		{% endif %}

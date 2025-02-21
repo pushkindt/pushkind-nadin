@@ -9,8 +9,12 @@
 			{{ user.email }}
 		</div>
 		<div class="col-sm overflow-hidden">
-			<span class="d-sm-none fw-bold">Права:</span>
-			{{ user.role }}
+			<span class="d-sm-none fw-bold">Роли:</span>
+			<ul>
+				{% for role in user.roles %}
+					<li>{{role}}</li>
+				{% endfor %}
+			</ul>
 		</div>
 		<div class="col-sm overflow-hidden">
 			<span class="d-sm-none fw-bold">Активность:</span>

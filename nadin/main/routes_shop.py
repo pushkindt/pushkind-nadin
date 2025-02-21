@@ -95,7 +95,7 @@ def shop_products(cat_id, vendor_id):
 
     project = Project.query.filter_by(id=project_id, hub_id=current_user.hub_id).first()
     if not project:
-        flash("Выберите клиента.")
+        flash("Выберите клиента.", "danger")
         return redirect(url_for("main.shop_categories"))
 
     category = Category.query.filter_by(id=cat_id).first()
@@ -137,11 +137,11 @@ def shop_cart():
             settings = AppSettings.query.filter_by(hub_id=current_user.hub_id).first()
             products = Product.query.filter(Product.id.in_(p["product"] for p in form.cart.data)).all()
             if len(products) == 0:
-                flash("Заявка не может быть пуста.")
+                flash("Заявка не может быть пуста.", "danger")
                 return render_template("main/shop/shop_cart.html", form=form)
             project = Project.query.filter_by(id=form.project_id.data).first()
             if project is None:
-                flash("Такого клиента не существует.")
+                flash("Такого клиента не существует.", "danger")
                 return redirect(url_for("main.shop_cart"))
             order_products = []
             order_vendors = []
@@ -174,7 +174,7 @@ def shop_cart():
                 order_products.append(order_product)
             categories = list(set(categories))
             if settings.single_category_orders and len(categories) > 1:
-                flash("Заявки с более чем одной категорией не разрешены.")
+                flash("Заявки с более чем одной категорией не разрешены.", "danger")
                 return redirect(url_for("main.shop_categories"))
             order_number = Order.new_order_number(current_user.hub_id)
             now = datetime.now(tz=timezone.utc)
@@ -206,7 +206,7 @@ def shop_cart():
                 )
                 db.session.add(event)
                 db.session.commit()
-            flash("Заявка успешно создана.")
+            flash("Заявка успешно создана.", "success")
             SendEmailNotification("new", order)
             return redirect(url_for("main.ShowIndex"))
 

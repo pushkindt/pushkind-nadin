@@ -40,7 +40,7 @@ def show_order(order_id):
 
     order = get_order(order_id)
     if order is None:
-        flash("Заявка с таким номером не найдена.")
+        flash("Заявка с таким номером не найдена.", "danger")
         return redirect(url_for("main.ShowIndex"))
 
     approval_form = OrderApprovalForm()
@@ -88,22 +88,22 @@ def split_order(order_id):
 
     order = get_order(order_id)
     if order is None:
-        flash("Заявка с таким номером не найдена.")
+        flash("Заявка с таким номером не найдена.", "danger")
         return redirect(url_for("main.ShowIndex"))
 
     if len(order.children) > 0:
-        flash("Нельзя разделять заявки, которые были объединены или разделены.")
+        flash("Нельзя разделять заявки, которые были объединены или разделены.", "danger")
         return redirect(url_for("main.ShowIndex"))
 
     if order.status != OrderStatus.new:
-        flash("Нельзя модифицировать согласованную или аннулированную заявку.")
+        flash("Нельзя модифицировать согласованную или аннулированную заявку.", "danger")
         return redirect(url_for("main.show_order", order_id=order_id))
 
     form = SplitOrderForm()
     if form.validate_on_submit():
         product_ids = form.products.data
         if not isinstance(product_ids, list) or len(product_ids) == 0:
-            flash("Некорректный список позиции.")
+            flash("Некорректный список позиции.", "danger")
             return redirect(url_for("main.show_order", order_id=order_id))
 
         product_lists = [[], []]
@@ -115,7 +115,7 @@ def split_order(order_id):
                 product_lists[1].append(product)
 
         if len(product_lists[0]) == 0 or len(product_lists[1]) == 0:
-            flash("Некорректный список позиции.")
+            flash("Некорректный список позиции.", "danger")
             return redirect(url_for("main.show_order", order_id=order_id))
 
         message_flash = "заявка разделена на заявки"
@@ -178,7 +178,7 @@ def split_order(order_id):
 def duplicate_order(order_id):
     order = get_order(order_id)
     if order is None:
-        flash("Заявка с таким номером не найдена.")
+        flash("Заявка с таким номером не найдена.", "danger")
         return redirect(url_for("main.ShowIndex"))
 
     order_number = Order.new_order_number(current_user.hub_id)
@@ -236,11 +236,11 @@ def save_quantity(order_id):
 
     order = get_order(order_id)
     if order is None:
-        flash("Заявка с таким номером не найдена.")
+        flash("Заявка с таким номером не найдена.", "danger")
         return redirect(url_for("main.ShowIndex"))
 
     if order.status != OrderStatus.new:
-        flash("Нельзя модифицировать согласованную или аннулированную заявку.")
+        flash("Нельзя модифицировать согласованную или аннулированную заявку.", "danger")
         return redirect(url_for("main.show_order", order_id=order_id))
 
     form = ChangeQuantityForm()
@@ -258,7 +258,7 @@ def save_quantity(order_id):
                 .first()
             )
             if not product:
-                flash("Указанный товар не найден.")
+                flash("Указанный товар не найден.", "danger")
                 return redirect(url_for("main.show_order", order_id=order_id))
             product = product.to_dict(current_user.price_level, current_user.discount)
             product["categoryId"] = product["cat_id"]
@@ -309,11 +309,11 @@ def save_quantity(order_id):
 def SaveApproval(order_id):
     order = get_order(order_id)
     if order is None:
-        flash("Заявка с таким номером не найдена.")
+        flash("Заявка с таким номером не найдена.", "danger")
         return redirect(url_for("main.ShowIndex"))
 
     if order.status == OrderStatus.cancelled:
-        flash("Нельзя модифицировать аннулированную заявку.")
+        flash("Нельзя модифицировать аннулированную заявку.", "danger")
         return redirect(url_for("main.show_order", order_id=order_id))
 
     form = OrderApprovalForm()
@@ -329,7 +329,7 @@ def SaveApproval(order_id):
         ).first()
 
         if user_approval is not None:
-            flash("Вы уже выполнили это действие.")
+            flash("Вы уже выполнили это действие.", "danger")
             return redirect(url_for("main.show_order", order_id=order_id))
 
         last_status = order.status
@@ -385,7 +385,7 @@ def SaveApproval(order_id):
                     if form.product_id.data == product["id"]:
                         break
                 else:
-                    flash("Указанный позиция не найдена в заявке.")
+                    flash("Указанный позиция не найдена в заявке.", "danger")
                     return redirect(url_for("main.show_order", order_id=order_id))
                 product_approval = OrderApproval.query.filter_by(
                     order_id=order_id,
@@ -411,7 +411,7 @@ def SaveApproval(order_id):
                 order.status = OrderStatus.clarification
         db.session.add(event)
         db.session.commit()
-        flash("Согласование сохранено.")
+        flash("Согласование сохранено.", "success")
 
         if order.status != last_status:
             if order.status == OrderStatus.new:
@@ -431,11 +431,11 @@ def SaveApproval(order_id):
 def SaveParameters(order_id):
     order = get_order(order_id)
     if order is None:
-        flash("Заявка с таким номером не найдена.")
+        flash("Заявка с таким номером не найдена.", "danger")
         return redirect(url_for("main.ShowIndex"))
 
     if order.status != OrderStatus.new:
-        flash("Нельзя модифицировать согласованную или аннулированную заявку.")
+        flash("Нельзя модифицировать согласованную или аннулированную заявку.", "danger")
         return redirect(url_for("main.show_order", order_id=order_id))
 
     form = InitiativeForm()
@@ -473,7 +473,7 @@ def SaveParameters(order_id):
         OrderApproval.query.filter_by(order_id=order.id).delete()
         db.session.commit()
 
-        flash("Параметры заявки успешно сохранены.")
+        flash("Параметры заявки успешно сохранены.", "success")
     else:
         flash_errors(form)
     return redirect(url_for("main.show_order", order_id=order_id))
@@ -484,7 +484,7 @@ def SaveParameters(order_id):
 def LeaveComment(order_id):
     order = get_order(order_id)
     if order is None:
-        flash("Заявка с таким номером не найдена.")
+        flash("Заявка с таким номером не найдена.", "danger")
         return redirect(url_for("main.ShowIndex"))
     form = LeaveCommentForm()
     form.notify_reviewers.choices = [(r.id, r.name) for r in order.reviewers]
@@ -502,11 +502,11 @@ def LeaveComment(order_id):
 def process_payment(order_id):
     order = get_order(order_id)
     if order is None:
-        flash("Заявка с таким номером не найдена.")
+        flash("Заявка с таким номером не найдена.", "danger")
         return redirect(url_for("main.ShowIndex"))
 
     if order.status == OrderStatus.cancelled:
-        flash("Нельзя оплатить аннулированную заявку.")
+        flash("Нельзя оплатить аннулированную заявку.", "danger")
         return redirect(url_for("main.show_order", order_id=order_id))
 
     order.status = OrderStatus.payed
@@ -530,11 +530,11 @@ def process_payment(order_id):
 def deliver_order(order_id):
     order = get_order(order_id)
     if order is None:
-        flash("Заявка с таким номером не найдена.")
+        flash("Заявка с таким номером не найдена.", "danger")
         return redirect(url_for("main.ShowIndex"))
 
     if order.status == OrderStatus.cancelled:
-        flash("Нельзя доставить аннулированную заявку.")
+        flash("Нельзя доставить аннулированную заявку.", "danger")
         return redirect(url_for("main.show_order", order_id=order_id))
 
     form = LeaveCommentForm()
@@ -566,11 +566,11 @@ def deliver_order(order_id):
 def pickup_order(order_id):
     order = get_order(order_id)
     if order is None:
-        flash("Заявка с таким номером не найдена.")
+        flash("Заявка с таким номером не найдена.", "danger")
         return redirect(url_for("main.ShowIndex"))
 
     if order.status == OrderStatus.cancelled:
-        flash("Нельзя выдать аннулированную заявку.")
+        flash("Нельзя выдать аннулированную заявку.", "danger")
         return redirect(url_for("main.show_order", order_id=order_id))
 
     order.status = OrderStatus.fulfilled
@@ -594,11 +594,11 @@ def pickup_order(order_id):
 def return_order(order_id):
     order = get_order(order_id)
     if order is None:
-        flash("Заявка с таким номером не найдена.")
+        flash("Заявка с таким номером не найдена.", "danger")
         return redirect(url_for("main.ShowIndex"))
 
     if order.status == OrderStatus.cancelled:
-        flash("Нельзя вернуть аннулированную заявку.")
+        flash("Нельзя вернуть аннулированную заявку.", "danger")
         return redirect(url_for("main.show_order", order_id=order_id))
 
     order.status = OrderStatus.returned
@@ -622,11 +622,11 @@ def return_order(order_id):
 def cancel_order(order_id):
     order = get_order(order_id)
     if order is None:
-        flash("Заявка с таким номером не найдена.")
+        flash("Заявка с таким номером не найдена.", "danger")
         return redirect(url_for("main.ShowIndex"))
 
     if order.status == OrderStatus.cancelled:
-        flash("Нельзя аннулировать аннулированную заявку.")
+        flash("Нельзя аннулировать аннулированную заявку.", "danger")
         return redirect(url_for("main.show_order", order_id=order_id))
 
     form = LeaveCommentForm()
@@ -636,7 +636,7 @@ def cancel_order(order_id):
         order.total = 0
         form.comment_and_send_email(order, EventType.cancelled)
         db.session.commit()
-        flash("Заявка аннулирована.")
+        flash("Заявка аннулирована.", "success")
     else:
         flash_errors(form)
     return redirect(url_for("main.show_order", order_id=order_id))

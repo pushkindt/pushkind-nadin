@@ -76,6 +76,14 @@
                             Профиль
                         </a>
                     </li>
+                    {% if current_user.id | get_user_permissions("rbac_show") %}
+                    <li>
+                        <a class="dropdown-item icon-link" href="{{url_for('rbac.show_rbac')}}">
+                            <i class="bi bi-person-circle mb-2"></i>
+                            Роли
+                        </a>
+                    </li>
+                    {% endif %}
                     {% if current_user.role.name in ["admin", "supervisor"] %}
                     <li>
                         <a class="dropdown-item icon-link" href="{{url_for('admin.show_admin_page')}}" >

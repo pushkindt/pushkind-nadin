@@ -28,7 +28,7 @@
 				Email
 			</div>
 			<div class="col overflow-hidden">
-				Права
+				Роли
 			</div>
 			<div class="col overflow-hidden">
 				Активность
@@ -77,8 +77,14 @@
 		//Scripts
 		{% if current_user.role.name not in ['initiative'] %}
 			var projectsData = $("#about_user-projects");
-			projectsData.val({{ current_user.projects_list }});
+			projectsData.val({{ current_user.project_ids }});
 
+			var rolesData = $("#roles");
+			rolesData.val({{ current_user.role_ids }});
+
+
+			rolesData.selectize({});
+			selectizeRoles = rolesData[0].selectize;
 
 			projectsData.selectize({
 				valueField: 'id',
@@ -117,27 +123,7 @@
 
 		
 		{% if current_user.role.name == 'admin' %}
-			var users = [{% for user in users %}{{ user | safe }},{% endfor %}];
-
-			function HideUserData() {
-				if ($("#role").val() == 2) {
-					selectizeProjects.clear(false);
-					projectsData.val(null);
-					projectsData.removeAttr('value');
-					$("#userDataWrapper").hide();
-				} else {
-					let user_id = Number($("#about_user-id").text());
-					users.some(function (user) {
-						if (user["id"] == user_id) {
-							$("#userDataWrapper").show();
-							user["projects"].forEach(function (p) {
-								selectizeProjects.registerOption(p);
-							});
-							selectizeProjects.setValue(user["project_ids"]);
-						}
-					});
-				}
-			}
+			var users = [{% for user in users %}{{ user | safe }},{% endfor %}]
 
 
 			$("#usersFilter").on("keyup", function () {
@@ -163,24 +149,16 @@
 						$("#about_user-email_disapproved").prop("checked", user["email_disapproved"]);
 						$("#about_user-email_approved").prop("checked", user["email_approved"]);
 						$("#about_user-email_comment").prop("checked", user["email_comment"]);
-						$("#role").val(user["role_id"]);
-						$("#removeUserButton").attr("href", "{{ url_for('main.RemoveUser', user_id='0') }}".replace("0", user_id));
+						selectizeRoles.setValue(user["role_ids"]);
+						selectizeProjects.setValue(user["project_ids"]);
 
-						if (user["role_id"] != 2){
-							$("#userDataWrapper").show();
-							user["projects"].forEach(function (p) {
-								selectizeProjects.registerOption(p);
-							});
-							selectizeProjects.setValue(user["project_ids"]);
-						}
-						else
-							HideUserData();
+						$("#removeUserButton").attr("href", "{{ url_for('main.RemoveUser', user_id='0') }}".replace("0", user_id));
 						return true;
 					}
 				});
 				userModal.show();
 			});
-			$("#role").change(HideUserData);
+
 		{% endif %}
 	});
 </script>

@@ -99,7 +99,7 @@
                                 <span class="fw-bold text-warning">ждём</span>
                                 {% set ns = namespace (first = 1) %}
                                 {% for user in appr.position.users | selectattr('role', 'equalto', 3) %}
-                                    {% if order.project_id in user.projects_list and order.categories_list | intersect(user.categories_list) %}
+                                    {% if order.project_id in user.project_ids and order.categories_list | intersect(user.categories_list) %}
                                         {% if ns.first == 0 %}
                                             или
                                         {% endif %}

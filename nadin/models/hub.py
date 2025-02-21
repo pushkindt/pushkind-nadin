@@ -49,6 +49,29 @@ class UserRoles(enum.IntEnum):
         return pretty[self.value]
 
 
+class Role(db.Model):
+    id = db.Column(db.Integer, primary_key=True, nullable=False)
+    name = db.Column(db.String(128), unique=True, nullable=False)
+    actions = db.relationship("Action", secondary="action_role", backref="roles")
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.name
+
+
+class Action(db.Model):
+    id = db.Column(db.Integer, primary_key=True, nullable=False)
+    name = db.Column(db.String(80), unique=True, nullable=False, index=True)
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.name
+
+
 class Vendor(SearchableMixin, db.Model):
 
     __searchable__ = ["name", "email"]
@@ -118,12 +141,19 @@ class User(SearchableMixin, UserMixin, db.Model):
     )
     orders = db.relationship("Order")
     hub = db.relationship("Vendor", back_populates="users", foreign_keys=[hub_id])
+    roles = db.relationship("Role", secondary="user_role")
 
     @property
-    def projects_list(self):
+    def project_ids(self):
         with db.session.no_autoflush:
             result = db.session.query(UserProject.project_id).filter(UserProject.user_id == self.id).all()
         return [p[0] for p in result]
+
+    @property
+    def role_ids(self):
+        with db.session.no_autoflush:
+            result = db.session.query(UserRole.role_id).filter(UserRole.user_id == self.id).all()
+        return [r[0] for r in result]
 
     @property
     def hub_list(self):
@@ -204,7 +234,8 @@ class User(SearchableMixin, UserMixin, db.Model):
             "email_disapproved": self.email_disapproved,
             "email_approved": self.email_approved,
             "email_comment": self.email_comment,
-            "project_ids": self.projects_list,
+            "project_ids": self.project_ids,
+            "role_ids": self.role_ids,
         }
         if include_projects:
             data["projects"] = [p.to_dict() for p in self.projects]
@@ -230,3 +261,15 @@ class UserProject(db.Model):
     __tablename__ = "user_project"
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey("project.id"), primary_key=True)
+
+
+class UserRole(db.Model):
+    __tablename__ = "user_role"
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    role_id = db.Column(db.Integer, db.ForeignKey("role.id"), primary_key=True)
+
+
+class ActionRole(db.Model):
+    __tablename__ = "action_role"
+    action_id = db.Column(db.Integer, db.ForeignKey("action.id"), primary_key=True)
+    role_id = db.Column(db.Integer, db.ForeignKey("role.id"), primary_key=True)

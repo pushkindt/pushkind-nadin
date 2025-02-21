@@ -97,7 +97,7 @@ def upload_products():
     form = UploadProductsForm()
     vendor = _get_vendor(request.args.get("vendor_id", type=int))
     if vendor is None:
-        flash("Такой поставщик не найден.")
+        flash("Такой поставщик не найден.", "error")
         return redirect(url_for("main.show_products"))
 
     if form.validate_on_submit():
@@ -106,11 +106,11 @@ def upload_products():
         try:
             new_products = pd.read_excel(form.products.data, engine="openpyxl", dtype=str, keep_default_na=False)
         except ValueError as e:
-            flash(str(e), category="error")
+            flash(str(e), "error")
             return redirect(url_for("main.show_products", vendor_id=vendor.id))
 
         if "sku" not in new_products.columns:
-            flash("Не найден столбец sku.", category="error")
+            flash("Не найден столбец sku.", "error")
             return redirect(url_for("main.show_products", vendor_id=vendor.id))
 
         if "tags" in new_products.columns:
@@ -139,7 +139,7 @@ def upload_products():
             db.session.commit()
 
         run_async(Product.reindex)
-        flash("Список товаров успешно обновлён.")
+        flash("Список товаров успешно обновлён.", "success")
     else:
         flash_errors(form)
     return redirect(url_for("main.show_products", vendor_id=vendor.id))
@@ -151,13 +151,13 @@ def upload_products():
 def remove_products():
     vendor = _get_vendor(request.args.get("vendor_id", type=int))
     if vendor is None:
-        flash("Такой поставщик не найден.")
+        flash("Такой поставщик не найден.", "danger")
         return redirect(url_for("main.show_products"))
     products = Product.query.filter_by(vendor_id=vendor.id).all()
     ProductTag.query.filter(ProductTag.product_id.in_([p.id for p in products])).delete()
     Product.query.filter_by(vendor_id=vendor.id).delete()
     db.session.commit()
-    flash("Список товаров успешно очищен.")
+    flash("Список товаров успешно очищен.", "success")
     return redirect(url_for("main.show_products", vendor_id=vendor.id))
 
 
@@ -167,7 +167,7 @@ def remove_products():
 def download_products():
     vendor = _get_vendor(request.args.get("vendor_id", type=int))
     if vendor is None:
-        flash("Такой поставщик не найден.")
+        flash("Такой поставщик не найден.", "danger")
         return redirect(url_for("main.show_products"))
 
     products = Product.query.filter_by(vendor_id=vendor.id).all()
@@ -202,12 +202,12 @@ def download_products():
 def edit_product(product_id):
     vendor = _get_vendor(request.args.get("vendor_id", type=int))
     if vendor is None:
-        flash("Такой поставщик не найден.")
+        flash("Такой поставщик не найден.", "danger")
         return redirect(url_for("main.show_products"))
 
     product = Product.query.filter_by(id=product_id, vendor_id=vendor.id).first()
     if product is None:
-        flash("Такой товар не найден.")
+        flash("Такой товар не найден.", "danger")
         return redirect(url_for("main.show_products"))
 
     form = EditProductForm()
@@ -216,7 +216,7 @@ def edit_product(product_id):
         if form.delete.data:
             db.session.delete(product)
             db.session.commit()
-            flash("Товар успешно удалён.")
+            flash("Товар успешно удалён.", "success")
             return redirect(url_for("main.show_products", vendor_id=vendor.id))
 
         product.name = form.name.data.strip()[:128]
@@ -252,7 +252,7 @@ def edit_product(product_id):
             product.tags = tags
 
         db.session.commit()
-        flash("Товар успешно сохранён.")
+        flash("Товар успешно сохранён.", "success")
     else:
         flash_errors(form)
     return redirect(url_for("main.show_products", vendor_id=vendor.id))

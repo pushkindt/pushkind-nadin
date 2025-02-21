@@ -83,7 +83,7 @@ def SaveAppSettings():
             full_path = os.path.join("nadin", "static", "upload", file_name)
             f.save(full_path)
         db.session.commit()
-        flash("Настройки рассылки 1С успешно сохранены.")
+        flash("Настройки рассылки 1С успешно сохранены.", "success")
     else:
         flash_errors(form)
     return redirect(url_for("admin.show_admin_page"))
@@ -97,7 +97,7 @@ def SaveCategoryResponsibility():
     if form.validate_on_submit():
         category = Category.query.filter_by(id=form.category_id.data).first()
         if category is None:
-            flash("Категория с таким идентификатором не найдена.")
+            flash("Категория с таким идентификатором не найдена.", "danger")
         else:
             category.code = form.code.data.strip()
             if form.image.data:
@@ -109,7 +109,7 @@ def SaveCategoryResponsibility():
                 category.image = url_for("static", filename=os.path.join("upload", file_name))
 
             db.session.commit()
-            flash("Категория успешно отредактирована.")
+            flash("Категория успешно отредактирована.", "success")
     else:
         flash_errors(form)
     return redirect(url_for("admin.show_admin_page"))
@@ -157,13 +157,13 @@ def remove_category(category_id: int | None):
         Product.query.delete()
         Category.query.delete()
         db.session.commit()
-        flash("Все категории и товары удалены.")
+        flash("Все категории и товары удалены.", "success")
         return redirect(url_for("admin.show_admin_page"))
 
     category = Category.query.filter_by(id=category_id).first()
     if category is not None:
         if category.children:
-            flash("Невозможно удалить категорию, содержащую подкатегории.")
+            flash("Невозможно удалить категорию, содержащую подкатегории.", "danger")
             return redirect(url_for("admin.show_admin_page"))
         db.session.delete(category)
         db.session.commit()
@@ -174,7 +174,7 @@ def remove_category(category_id: int | None):
             db.session.commit()
         flash(f'Категория "{category.name}" удалена.')
     else:
-        flash("Такой категории не существует.")
+        flash("Такой категории не существует.", "danger")
     return redirect(url_for("admin.show_admin_page"))
 
 
@@ -196,9 +196,9 @@ def add_hub():
             )
             db.session.add(app_settings)
             db.session.commit()
-            flash("Хаб добавлен.")
+            flash("Хаб добавлен.", "success")
         else:
-            flash("Хаб с таким электронным адресом уже существует.")
+            flash("Хаб с таким электронным адресом уже существует.", "danger")
     else:
         flash_errors(form)
 
@@ -216,7 +216,7 @@ def select_hub():
         current_user.hub_id = form.hub_id.data
         current_user.set_initiative_project()
         db.session.commit()
-        flash("Хаб изменен.")
+        flash("Хаб изменен.", "success")
     else:
         flash_errors(form)
 

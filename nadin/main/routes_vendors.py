@@ -52,7 +52,7 @@ def add_vendor():
         store_email = form.email.data.strip().lower()
         vendor_admin = User.query.filter_by(email=store_email).first()
         if vendor_admin:
-            flash("Невозможно создать поставщика, так как электронный адрес занят.")
+            flash("Невозможно создать поставщика, так как электронный адрес занят.", "danger")
             return redirect(url_for("main.show_vendors"))
         vendor_admin = User(email=store_email, name=store_name, role=UserRoles.vendor, hub_id=current_user.hub_id)
         vendor_admin.set_password(form.password.data)
@@ -62,7 +62,7 @@ def add_vendor():
         store = Vendor(hub_id=current_user.hub_id, name=store_name, email=store_email)
         db.session.add(store)
         db.session.commit()
-        flash("Магазин успешно добавлен.")
+        flash("Магазин успешно добавлен.", "success")
     else:
         flash_errors(form)
     return redirect(url_for("main.show_vendors"))
@@ -79,9 +79,9 @@ def remove_vendor(store_id):
         if vendor_admin is not None:
             db.session.delete(vendor_admin)
         db.session.commit()
-        flash("Поставщик успешно удалён.")
+        flash("Поставщик успешно удалён.", "success")
     else:
-        flash("Этот поставщик не зарегистрован в системе.")
+        flash("Этот поставщик не зарегистрован в системе.", "danger")
     return redirect(url_for("main.show_vendors"))
 
 
@@ -93,7 +93,7 @@ def activate_vendor(store_id):
     if store is not None:
         store.enabled = not store.enabled
         db.session.commit()
-        flash("Поставщик успешно изменён.")
+        flash("Поставщик успешно изменён.", "success")
     else:
-        flash("Этот поставщик не зарегистрован в системе.")
+        flash("Этот поставщик не зарегистрован в системе.", "danger")
     return redirect(url_for("main.show_vendors"))
